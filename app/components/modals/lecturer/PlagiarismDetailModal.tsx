@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import Modal from '@/app/components/ui/Modal';
-import ConfirmDialog from '@/app/components/ui/ConfirmDialog';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { toast } from '@/components/ui/Toast';
 
 interface PlagiarismDetailModalProps {
   open: boolean;
@@ -93,7 +93,7 @@ export default function PlagiarismDetailModal({ open, onClose }: PlagiarismDetai
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {[
             { name: 'Nguyễn M. Khoa', id: 'SV001', color: '#7c3aed', lines: codeA },
-            { name: 'Đỗ Quang Vinh',  id: 'SV005', color: '#ef4444', lines: codeB },
+            { name: 'Đỗ Quang Vinh', id: 'SV005', color: '#ef4444', lines: codeB },
           ].map((sv) => (
             <div key={sv.id} style={{ border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
               <div style={{
@@ -144,9 +144,9 @@ export default function PlagiarismDetailModal({ open, onClose }: PlagiarismDetai
           <label className="form-label">Hành động</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
             {[
-              { val: 'warn',   label: '⚠️ Cảnh báo' ,       desc: 'Gửi email cảnh báo đến sinh viên' },
-              { val: 'deduct', label: '📉 Trừ điểm (50%)',   desc: 'Bài nộp bị trừ 50% điểm' },
-              { val: 'zero',   label: '❌ Hủy bài nộp',      desc: 'Sinh viên nhận 0 điểm cho bài này' },
+              { val: 'warn', label: '⚠️ Cảnh báo', desc: 'Gửi email cảnh báo đến sinh viên' },
+              { val: 'deduct', label: '📉 Trừ điểm (50%)', desc: 'Bài nộp bị trừ 50% điểm' },
+              { val: 'zero', label: '❌ Hủy bài nộp', desc: 'Sinh viên nhận 0 điểm cho bài này' },
             ].map(opt => (
               <label key={opt.val} style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer',

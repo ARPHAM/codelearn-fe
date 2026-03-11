@@ -1,24 +1,24 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const logs = [
-  { id: 'LOG-0091', time: '22:41:02', user: 'GV. Nguyễn Văn A', role: 'Lecturer', action: 'UPDATE_SCORE',  target: 'SV001 - Bài BFS - 8.5 → 9.0',  ip: '192.168.1.12', severity: 'warning' },
-  { id: 'LOG-0090', time: '22:38:55', user: 'GV. Trần Thị B',   role: 'Lecturer', action: 'DELETE_EXAM',   target: 'Đề thi: "Kiểm tra giữa kỳ HK1"', ip: '192.168.1.45', severity: 'danger' },
-  { id: 'LOG-0089', time: '22:35:10', user: 'GV. Lê Văn C',     role: 'Lecturer', action: 'CREATE_EXAM',   target: 'Đề thi: "Kiểm tra cuối kỳ HK2"', ip: '192.168.1.78', severity: 'info' },
-  { id: 'LOG-0088', time: '22:30:47', user: 'Admin System',      role: 'Admin',    action: 'CONFIG_UPDATE', target: 'Python timeout: 5s → 10s',         ip: '127.0.0.1',    severity: 'warning' },
-  { id: 'LOG-0087', time: '22:28:31', user: 'GV. Nguyễn Văn A', role: 'Lecturer', action: 'UPDATE_SCORE',  target: 'SV005 - Bài DP - 5.0 → 7.5',       ip: '192.168.1.12', severity: 'warning' },
-  { id: 'LOG-0086', time: '22:20:15', user: 'Admin System',      role: 'Admin',    action: 'USER_LOGIN',    target: 'Admin dashboard',                   ip: '203.113.1.5',  severity: 'info' },
-  { id: 'LOG-0085', time: '22:15:03', user: 'GV. Phạm Thị D',   role: 'Lecturer', action: 'CREATE_EXERCISE',target: 'Bài: Maximum Subarray (Medium)',   ip: '192.168.1.99', severity: 'info' },
-  { id: 'LOG-0084', time: '21:58:42', user: 'GV. Trần Thị B',   role: 'Lecturer', action: 'KICK_STUDENT',  target: 'SV012 - Phòng #A3F2',              ip: '192.168.1.45', severity: 'danger' },
+  { id: 'LOG-0091', time: '22:41:02', user: 'GV. Nguyễn Văn A', role: 'Lecturer', action: 'UPDATE_SCORE', target: 'SV001 - Bài BFS - 8.5 → 9.0', ip: '192.168.1.12', severity: 'warning' },
+  { id: 'LOG-0090', time: '22:38:55', user: 'GV. Trần Thị B', role: 'Lecturer', action: 'DELETE_EXAM', target: 'Đề thi: "Kiểm tra giữa kỳ HK1"', ip: '192.168.1.45', severity: 'danger' },
+  { id: 'LOG-0089', time: '22:35:10', user: 'GV. Lê Văn C', role: 'Lecturer', action: 'CREATE_EXAM', target: 'Đề thi: "Kiểm tra cuối kỳ HK2"', ip: '192.168.1.78', severity: 'info' },
+  { id: 'LOG-0088', time: '22:30:47', user: 'Admin System', role: 'Admin', action: 'CONFIG_UPDATE', target: 'Python timeout: 5s → 10s', ip: '127.0.0.1', severity: 'warning' },
+  { id: 'LOG-0087', time: '22:28:31', user: 'GV. Nguyễn Văn A', role: 'Lecturer', action: 'UPDATE_SCORE', target: 'SV005 - Bài DP - 5.0 → 7.5', ip: '192.168.1.12', severity: 'warning' },
+  { id: 'LOG-0086', time: '22:20:15', user: 'Admin System', role: 'Admin', action: 'USER_LOGIN', target: 'Admin dashboard', ip: '203.113.1.5', severity: 'info' },
+  { id: 'LOG-0085', time: '22:15:03', user: 'GV. Phạm Thị D', role: 'Lecturer', action: 'CREATE_EXERCISE', target: 'Bài: Maximum Subarray (Medium)', ip: '192.168.1.99', severity: 'info' },
+  { id: 'LOG-0084', time: '21:58:42', user: 'GV. Trần Thị B', role: 'Lecturer', action: 'KICK_STUDENT', target: 'SV012 - Phòng #A3F2', ip: '192.168.1.45', severity: 'danger' },
 ];
 
 const actionMeta: Record<string, { label: string; cls: string; icon: string }> = {
-  UPDATE_SCORE:    { label: 'Sửa điểm',       cls: 'badge-yellow', icon: '✏️' },
-  DELETE_EXAM:     { label: 'Xóa đề thi',     cls: 'badge-red',    icon: '🗑' },
-  CREATE_EXAM:     { label: 'Tạo đề thi',     cls: 'badge-green',  icon: '➕' },
-  CONFIG_UPDATE:   { label: 'Cấu hình',       cls: 'badge-orange', icon: '⚙' },
-  USER_LOGIN:      { label: 'Đăng nhập',      cls: 'badge-cyan',   icon: '🔑' },
-  CREATE_EXERCISE: { label: 'Tạo bài tập',    cls: 'badge-green',  icon: '📝' },
-  KICK_STUDENT:    { label: 'Kick sinh viên', cls: 'badge-red',    icon: '⛔' },
+  UPDATE_SCORE: { label: 'Sửa điểm', cls: 'badge-yellow', icon: '✏️' },
+  DELETE_EXAM: { label: 'Xóa đề thi', cls: 'badge-red', icon: '🗑' },
+  CREATE_EXAM: { label: 'Tạo đề thi', cls: 'badge-green', icon: '➕' },
+  CONFIG_UPDATE: { label: 'Cấu hình', cls: 'badge-orange', icon: '⚙' },
+  USER_LOGIN: { label: 'Đăng nhập', cls: 'badge-cyan', icon: '🔑' },
+  CREATE_EXERCISE: { label: 'Tạo bài tập', cls: 'badge-green', icon: '📝' },
+  KICK_STUDENT: { label: 'Kick sinh viên', cls: 'badge-red', icon: '⛔' },
 };
 
 const severityLeft: Record<string, string> = { info: '#06b6d4', warning: '#f59e0b', danger: '#ef4444' };
@@ -41,10 +41,10 @@ export default function AuditLogPage() {
         {/* Stats */}
         <div className="grid-4">
           {[
-            { label: 'Hôm nay',       value: '91',  icon: '📋', color: '#7c3aed' },
-            { label: 'Cảnh báo',      value: '12',  icon: '⚠️', color: '#f59e0b' },
-            { label: 'Nguy hiểm',     value: '3',   icon: '🚨', color: '#ef4444' },
-            { label: 'Người dùng',    value: '8',   icon: '👤', color: '#06b6d4' },
+            { label: 'Hôm nay', value: '91', icon: '📋', color: '#7c3aed' },
+            { label: 'Cảnh báo', value: '12', icon: '⚠️', color: '#f59e0b' },
+            { label: 'Nguy hiểm', value: '3', icon: '🚨', color: '#ef4444' },
+            { label: 'Người dùng', value: '8', icon: '👤', color: '#06b6d4' },
           ].map(s => (
             <div key={s.label} className="stat-card" style={{ borderLeft: `3px solid ${s.color}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>

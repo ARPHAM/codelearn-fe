@@ -1,4 +1,4 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const opponents = [
   { name: 'Phạm Thu Hà', rank: '#1', win: 42, rating: 1850, avatar: '#f59e0b', status: 'ready' },

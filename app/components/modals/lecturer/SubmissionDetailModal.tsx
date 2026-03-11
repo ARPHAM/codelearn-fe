@@ -1,13 +1,13 @@
 'use client';
 import { useState } from 'react';
-import Modal from '@/app/components/ui/Modal';
+import Modal from '@/components/ui/Modal';
 
 const testCasesData = [
-  { id: 1, input: 'n=5, edges=[(0,1),(1,2)]', expected: '[0,1,2]', got: '[0,1,2]',  time: '12ms', mem: '2.1MB', status: 'pass' },
-  { id: 2, input: 'n=3, edges=[(0,2),(2,1)]', expected: '[0,2,1]', got: '[0,2,1]',  time: '8ms',  mem: '2.0MB', status: 'pass' },
-  { id: 3, input: 'n=6 (disconnected)',        expected: '[0,1,3]', got: '[0,1]',    time: '15ms', mem: '2.3MB', status: 'fail' },
-  { id: 4, input: 'n=100, complete graph',     expected: 'BFS order', got: 'BFS order', time: '45ms', mem: '3.4MB', status: 'pass' },
-  { id: 5, input: 'Empty graph n=0',           expected: '[]',      got: '[]',       time: '2ms',  mem: '1.8MB', status: 'pass' },
+  { id: 1, input: 'n=5, edges=[(0,1),(1,2)]', expected: '[0,1,2]', got: '[0,1,2]', time: '12ms', mem: '2.1MB', status: 'pass' },
+  { id: 2, input: 'n=3, edges=[(0,2),(2,1)]', expected: '[0,2,1]', got: '[0,2,1]', time: '8ms', mem: '2.0MB', status: 'pass' },
+  { id: 3, input: 'n=6 (disconnected)', expected: '[0,1,3]', got: '[0,1]', time: '15ms', mem: '2.3MB', status: 'fail' },
+  { id: 4, input: 'n=100, complete graph', expected: 'BFS order', got: 'BFS order', time: '45ms', mem: '3.4MB', status: 'pass' },
+  { id: 5, input: 'Empty graph n=0', expected: '[]', got: '[]', time: '2ms', mem: '1.8MB', status: 'pass' },
 ];
 
 const sourceCode = `#include <bits/stdc++.h>
@@ -86,9 +86,9 @@ export default function SubmissionDetailModal({ open, onClose }: SubmissionDetai
       {/* Tabs */}
       <div className="modal-tabs">
         {[
-          { id: 'code',      label: '💻 Source Code' },
+          { id: 'code', label: '💻 Source Code' },
           { id: 'testcases', label: '🧪 Test Cases (4/5)' },
-          { id: 'stderr',    label: '📟 Terminal Output' },
+          { id: 'stderr', label: '📟 Terminal Output' },
         ].map(t => (
           <div key={t.id} className={`modal-tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id as typeof tab)}>
             {t.label}

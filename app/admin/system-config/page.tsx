@@ -1,4 +1,4 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const languages = [
   { lang: 'C++', version: 'GCC 13.2', icon: '⚙️', color: '#06b6d4', enabled: true, libs: ['STL', 'bits/stdc++.h'], timeout: 5, mem: 256 },
@@ -9,18 +9,22 @@ const languages = [
 ];
 
 const systemSettings = [
-  { group: 'Sandbox', settings: [
-    { key: 'Max concurrent executions', value: '20', type: 'number' },
-    { key: 'Default timeout (s)', value: '5', type: 'number' },
-    { key: 'Default memory limit (MB)', value: '128', type: 'number' },
-    { key: 'Enable network access', value: 'false', type: 'toggle' },
-  ]},
-  { group: 'Plagiarism', settings: [
-    { key: 'Detection algorithm', value: 'AST + Token', type: 'select' },
-    { key: 'Warning threshold (%)', value: '40', type: 'number' },
-    { key: 'Danger threshold (%)', value: '70', type: 'number' },
-    { key: 'Auto-flag submissions', value: 'true', type: 'toggle' },
-  ]},
+  {
+    group: 'Sandbox', settings: [
+      { key: 'Max concurrent executions', value: '20', type: 'number' },
+      { key: 'Default timeout (s)', value: '5', type: 'number' },
+      { key: 'Default memory limit (MB)', value: '128', type: 'number' },
+      { key: 'Enable network access', value: 'false', type: 'toggle' },
+    ]
+  },
+  {
+    group: 'Plagiarism', settings: [
+      { key: 'Detection algorithm', value: 'AST + Token', type: 'select' },
+      { key: 'Warning threshold (%)', value: '40', type: 'number' },
+      { key: 'Danger threshold (%)', value: '70', type: 'number' },
+      { key: 'Auto-flag submissions', value: 'true', type: 'toggle' },
+    ]
+  },
 ];
 
 export default function SystemConfigPage() {
@@ -77,7 +81,7 @@ export default function SystemConfigPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
                   {[
                     { label: 'Timeout', val: `${lang.timeout}s`, icon: '⏱' },
-                    { label: 'Memory',  val: `${lang.mem} MB`, icon: '🧠' },
+                    { label: 'Memory', val: `${lang.mem} MB`, icon: '🧠' },
                     { label: 'Network', val: 'Disabled', icon: '🌐' },
                   ].map(r => (
                     <div key={r.label} style={{ background: 'var(--bg-secondary)', borderRadius: 8, padding: '8px 10px' }}>

@@ -1,4 +1,4 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const questions = [
   { id: 'Q001', title: 'Cài đặt BFS trên đồ thị có hướng', difficulty: 'medium', tags: ['Graph', 'BFS', 'Traversal'], lang: 'C++', uses: 12, score: 10 },

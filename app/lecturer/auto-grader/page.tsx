@@ -1,27 +1,27 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const submissions = [
   { id: 'SV001', name: 'Nguyễn Minh Khoa', exercise: 'BFS Graph Traversal', lang: 'C++', time: '2 phút trước', score: 95, pass: 19, total: 20, mem: '4.2MB', cpu: '0.18s', status: 'pass' },
-  { id: 'SV002', name: 'Trần Thị Lan',     exercise: 'Dynamic Programming', lang: 'Python', time: '5 phút trước', score: 70, pass: 14, total: 20, mem: '8.1MB', cpu: '0.42s', status: 'partial' },
-  { id: 'SV003', name: 'Lê Văn Hùng',      exercise: 'BFS Graph Traversal', lang: 'Java', time: '8 phút trước', score: 0,  pass: 0,  total: 20, mem: '-',     cpu: '-',     status: 'fail' },
-  { id: 'SV004', name: 'Phạm Thu Hà',      exercise: 'Sorting Algorithms',  lang: 'C++', time: '12 phút trước', score: 100, pass: 20, total: 20, mem: '2.8MB', cpu: '0.09s', status: 'pass' },
-  { id: 'SV005', name: 'Đỗ Quang Vinh',    exercise: 'Dynamic Programming', lang: 'C++', time: '15 phút trước', score: 55, pass: 11, total: 20, mem: '6.3MB', cpu: '1.21s', status: 'partial' },
-  { id: 'SV006', name: 'Hoàng Thị Mai',    exercise: 'Sorting Algorithms',  lang: 'Python', time: '18 phút trước', score: 100, pass: 20, total: 20, mem: '3.1MB', cpu: '0.15s', status: 'pass' },
+  { id: 'SV002', name: 'Trần Thị Lan', exercise: 'Dynamic Programming', lang: 'Python', time: '5 phút trước', score: 70, pass: 14, total: 20, mem: '8.1MB', cpu: '0.42s', status: 'partial' },
+  { id: 'SV003', name: 'Lê Văn Hùng', exercise: 'BFS Graph Traversal', lang: 'Java', time: '8 phút trước', score: 0, pass: 0, total: 20, mem: '-', cpu: '-', status: 'fail' },
+  { id: 'SV004', name: 'Phạm Thu Hà', exercise: 'Sorting Algorithms', lang: 'C++', time: '12 phút trước', score: 100, pass: 20, total: 20, mem: '2.8MB', cpu: '0.09s', status: 'pass' },
+  { id: 'SV005', name: 'Đỗ Quang Vinh', exercise: 'Dynamic Programming', lang: 'C++', time: '15 phút trước', score: 55, pass: 11, total: 20, mem: '6.3MB', cpu: '1.21s', status: 'partial' },
+  { id: 'SV006', name: 'Hoàng Thị Mai', exercise: 'Sorting Algorithms', lang: 'Python', time: '18 phút trước', score: 100, pass: 20, total: 20, mem: '3.1MB', cpu: '0.15s', status: 'pass' },
 ];
 
 const testCases = [
   { id: 1, input: 'n=5, edges=[(0,1),(1,2)]', expected: '[0,1,2]', got: '[0,1,2]', time: '12ms', status: 'pass' },
-  { id: 2, input: 'n=3, edges=[(0,2),(2,1)]', expected: '[0,2,1]', got: '[0,2,1]', time: '8ms',  status: 'pass' },
-  { id: 3, input: 'n=6 (disconnected)',        expected: '[0,1,3]', got: '[0,1]',   time: '15ms', status: 'fail' },
-  { id: 4, input: 'n=100, complete graph',     expected: 'BFS order', got: 'BFS order', time: '45ms', status: 'pass' },
-  { id: 5, input: 'Empty graph n=0',           expected: '[]', got: '[]', time: '2ms', status: 'pass' },
+  { id: 2, input: 'n=3, edges=[(0,2),(2,1)]', expected: '[0,2,1]', got: '[0,2,1]', time: '8ms', status: 'pass' },
+  { id: 3, input: 'n=6 (disconnected)', expected: '[0,1,3]', got: '[0,1]', time: '15ms', status: 'fail' },
+  { id: 4, input: 'n=100, complete graph', expected: 'BFS order', got: 'BFS order', time: '45ms', status: 'pass' },
+  { id: 5, input: 'Empty graph n=0', expected: '[]', got: '[]', time: '2ms', status: 'pass' },
 ];
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { cls: string; label: string; icon: string }> = {
-    pass:    { cls: 'badge-green',  label: 'Passed',   icon: '✅' },
-    fail:    { cls: 'badge-red',    label: 'Failed',   icon: '❌' },
-    partial: { cls: 'badge-yellow', label: 'Partial',  icon: '⚠️' },
+    pass: { cls: 'badge-green', label: 'Passed', icon: '✅' },
+    fail: { cls: 'badge-red', label: 'Failed', icon: '❌' },
+    partial: { cls: 'badge-yellow', label: 'Partial', icon: '⚠️' },
   };
   const c = cfg[status] || cfg.fail;
   return <span className={`badge ${c.cls}`}>{c.icon} {c.label}</span>;
@@ -112,7 +112,7 @@ export default function AutoGraderPage() {
                     <td>
                       <div style={{ fontSize: 12 }}>{s.pass}/{s.total}</div>
                       <div className="progress-bar" style={{ marginTop: 4, width: 60 }}>
-                        <div className="progress-fill" style={{ width: `${(s.pass/s.total)*100}%`, background: s.pass === s.total ? 'var(--accent-green)' : s.pass === 0 ? 'var(--accent-red)' : 'var(--accent-yellow)' }} />
+                        <div className="progress-fill" style={{ width: `${(s.pass / s.total) * 100}%`, background: s.pass === s.total ? 'var(--accent-green)' : s.pass === 0 ? 'var(--accent-red)' : 'var(--accent-yellow)' }} />
                       </div>
                     </td>
                     <td style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{s.cpu}</td>

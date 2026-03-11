@@ -1,6 +1,6 @@
 'use client';
-import Modal from '@/app/components/ui/Modal';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import { toast } from '@/components/ui/Toast';
 
 interface ProfileCardModalProps {
   open: boolean;
@@ -9,8 +9,8 @@ interface ProfileCardModalProps {
 
 const badges = [
   { icon: '⚡', name: 'Speed Coder', earned: true },
-  { icon: '🔥', name: 'On Fire',     earned: true },
-  { icon: '🎯', name: 'Perfect',     earned: true },
+  { icon: '🔥', name: 'On Fire', earned: true },
+  { icon: '🎯', name: 'Perfect', earned: true },
   { icon: '🏆', name: 'Battle Master', earned: false },
 ];
 

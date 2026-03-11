@@ -1,30 +1,30 @@
 'use client';
 import { useState } from 'react';
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
-import { toast } from '@/app/components/ui/Toast';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { toast } from '@/components/ui/Toast';
 
 // Lecturer
-import SubmissionDetailModal from '@/app/components/modals/lecturer/SubmissionDetailModal';
-import PlagiarismDetailModal from '@/app/components/modals/lecturer/PlagiarismDetailModal';
-import AddEditQuestionModal  from '@/app/components/modals/lecturer/AddEditQuestionModal';
-import PreviewExamModal      from '@/app/components/modals/lecturer/PreviewExamModal';
-import NotifyClassModal      from '@/app/components/modals/lecturer/NotifyClassModal';
-import StudentProfileModal   from '@/app/components/modals/lecturer/StudentProfileModal';
+import SubmissionDetailModal from '@/components/modals/lecturer/SubmissionDetailModal';
+import PlagiarismDetailModal from '@/components/modals/lecturer/PlagiarismDetailModal';
+import AddEditQuestionModal from '@/components/modals/lecturer/AddEditQuestionModal';
+import PreviewExamModal from '@/components/modals/lecturer/PreviewExamModal';
+import NotifyClassModal from '@/components/modals/lecturer/NotifyClassModal';
+import StudentProfileModal from '@/components/modals/lecturer/StudentProfileModal';
 
 // Student
-import SubmitConfirmModal  from '@/app/components/modals/student/SubmitConfirmModal';
-import StuckAlert          from '@/app/components/modals/student/StuckAlert';
-import InviteMemberModal   from '@/app/components/modals/student/InviteMemberModal';
-import ChallengeModal      from '@/app/components/modals/student/ChallengeModal';
-import BattleResultModal   from '@/app/components/modals/student/BattleResultModal';
-import SkillNodeModal      from '@/app/components/modals/student/SkillNodeModal';
-import ProfileCardModal    from '@/app/components/modals/student/ProfileCardModal';
+import SubmitConfirmModal from '@/components/modals/student/SubmitConfirmModal';
+import StuckAlert from '@/components/modals/student/StuckAlert';
+import InviteMemberModal from '@/components/modals/student/InviteMemberModal';
+import ChallengeModal from '@/components/modals/student/ChallengeModal';
+import BattleResultModal from '@/components/modals/student/BattleResultModal';
+import SkillNodeModal from '@/components/modals/student/SkillNodeModal';
+import ProfileCardModal from '@/components/modals/student/ProfileCardModal';
 
 // Admin
-import EditResourceLimitModal from '@/app/components/modals/admin/EditResourceLimitModal';
-import AuditDetailModal       from '@/app/components/modals/admin/AuditDetailModal';
-import AddLanguageModal       from '@/app/components/modals/admin/AddLanguageModal';
-import KillJobConfirm         from '@/app/components/modals/admin/KillJobConfirm';
+import EditResourceLimitModal from '@/components/modals/admin/EditResourceLimitModal';
+import AuditDetailModal from '@/components/modals/admin/AuditDetailModal';
+import AddLanguageModal from '@/components/modals/admin/AddLanguageModal';
+import KillJobConfirm from '@/components/modals/admin/KillJobConfirm';
 
 type ModalKey =
   | 'submission' | 'plagiarism' | 'addQuestion' | 'previewExam' | 'notifyClass' | 'studentProfile'
@@ -35,33 +35,33 @@ const groups: { label: string; icon: string; color: string; items: { key: ModalK
   {
     label: 'Giảng viên', icon: '🎓', color: '#7c3aed',
     items: [
-      { key: 'submission',    label: 'Submission Detail', desc: 'Tab: Code · Test Cases · Terminal', icon: '📋' },
-      { key: 'plagiarism',    label: 'Plagiarism Detail', desc: 'Code diff 2 cột + Flag action', icon: '🔍' },
-      { key: 'addQuestion',   label: 'Thêm/Sửa câu hỏi', desc: 'Tab: Đề · Test Cases · Hints', icon: '➕' },
-      { key: 'previewExam',   label: 'Preview Đề thi',   desc: 'Preview + Shuffle + Export PDF', icon: '👁' },
-      { key: 'notifyClass',   label: 'Thông báo lớp',    desc: 'Target + Channel (email/inapp)', icon: '📣' },
-      { key: 'studentProfile',label: 'Hồ sơ Sinh viên',  desc: 'Stats + Chart + Bài stuck', icon: '👤' },
+      { key: 'submission', label: 'Submission Detail', desc: 'Tab: Code · Test Cases · Terminal', icon: '📋' },
+      { key: 'plagiarism', label: 'Plagiarism Detail', desc: 'Code diff 2 cột + Flag action', icon: '🔍' },
+      { key: 'addQuestion', label: 'Thêm/Sửa câu hỏi', desc: 'Tab: Đề · Test Cases · Hints', icon: '➕' },
+      { key: 'previewExam', label: 'Preview Đề thi', desc: 'Preview + Shuffle + Export PDF', icon: '👁' },
+      { key: 'notifyClass', label: 'Thông báo lớp', desc: 'Target + Channel (email/inapp)', icon: '📣' },
+      { key: 'studentProfile', label: 'Hồ sơ Sinh viên', desc: 'Stats + Chart + Bài stuck', icon: '👤' },
     ],
   },
   {
     label: 'Sinh viên', icon: '🎮', color: '#06b6d4',
     items: [
       { key: 'submitConfirm', label: 'Xác nhận Nộp bài', desc: 'Score circle + pass/fail bar', icon: '📤' },
-      { key: 'stuck',         label: 'AI Stuck Alert',   desc: 'Floating card — gợi ý khi stuck', icon: '🤖' },
-      { key: 'invite',        label: 'Mời Pair member',  desc: 'Copy link + search students', icon: '👥' },
-      { key: 'challenge',     label: 'Thách đấu 1v1',    desc: 'VS banner + options + rating preview', icon: '⚔️' },
-      { key: 'battleResult',  label: 'Kết quả Battle',   desc: 'Winner banner + comparison grid', icon: '🏆' },
-      { key: 'skillNode',     label: 'Chi tiết Skill Node',desc: 'Progress + exercise list', icon: '🎯' },
-      { key: 'profileCard',   label: 'Profile Card',     desc: 'Stats + badges + actions', icon: '🪪' },
+      { key: 'stuck', label: 'AI Stuck Alert', desc: 'Floating card — gợi ý khi stuck', icon: '🤖' },
+      { key: 'invite', label: 'Mời Pair member', desc: 'Copy link + search students', icon: '👥' },
+      { key: 'challenge', label: 'Thách đấu 1v1', desc: 'VS banner + options + rating preview', icon: '⚔️' },
+      { key: 'battleResult', label: 'Kết quả Battle', desc: 'Winner banner + comparison grid', icon: '🏆' },
+      { key: 'skillNode', label: 'Chi tiết Skill Node', desc: 'Progress + exercise list', icon: '🎯' },
+      { key: 'profileCard', label: 'Profile Card', desc: 'Stats + badges + actions', icon: '🪪' },
     ],
   },
   {
     label: 'Admin', icon: '⚙️', color: '#10b981',
     items: [
-      { key: 'editLimit',   label: 'Sửa Resource Limit', desc: 'Sliders CPU/RAM/Timeout + Docker flags', icon: '🎚️' },
+      { key: 'editLimit', label: 'Sửa Resource Limit', desc: 'Sliders CPU/RAM/Timeout + Docker flags', icon: '🎚️' },
       { key: 'auditDetail', label: 'Chi tiết Audit Log', desc: 'Before/After + JSON payload', icon: '📋' },
-      { key: 'addLang',     label: 'Thêm ngôn ngữ mới', desc: 'Docker image + test connection', icon: '🖥️' },
-      { key: 'killJob',     label: 'Kill Container Job', desc: 'Confirm dialog nguy hiểm', icon: '⛔' },
+      { key: 'addLang', label: 'Thêm ngôn ngữ mới', desc: 'Docker image + test connection', icon: '🖥️' },
+      { key: 'killJob', label: 'Kill Container Job', desc: 'Confirm dialog nguy hiểm', icon: '⛔' },
     ],
   },
 ];
@@ -164,26 +164,26 @@ export default function PopupDemoPage() {
       {/* ====== ALL MODALS ====== */}
 
       {/* Lecturer */}
-      <SubmissionDetailModal  open={!!open.submission}     onClose={() => toggle('submission', false)} />
-      <PlagiarismDetailModal  open={!!open.plagiarism}     onClose={() => toggle('plagiarism', false)} />
-      <AddEditQuestionModal   open={!!open.addQuestion}    onClose={() => toggle('addQuestion', false)} />
-      <PreviewExamModal       open={!!open.previewExam}    onClose={() => toggle('previewExam', false)} />
-      <NotifyClassModal       open={!!open.notifyClass}    onClose={() => toggle('notifyClass', false)} />
-      <StudentProfileModal    open={!!open.studentProfile} onClose={() => toggle('studentProfile', false)} />
+      <SubmissionDetailModal open={!!open.submission} onClose={() => toggle('submission', false)} />
+      <PlagiarismDetailModal open={!!open.plagiarism} onClose={() => toggle('plagiarism', false)} />
+      <AddEditQuestionModal open={!!open.addQuestion} onClose={() => toggle('addQuestion', false)} />
+      <PreviewExamModal open={!!open.previewExam} onClose={() => toggle('previewExam', false)} />
+      <NotifyClassModal open={!!open.notifyClass} onClose={() => toggle('notifyClass', false)} />
+      <StudentProfileModal open={!!open.studentProfile} onClose={() => toggle('studentProfile', false)} />
 
       {/* Student */}
-      <SubmitConfirmModal  open={!!open.submitConfirm} onClose={() => toggle('submitConfirm', false)} />
-      <InviteMemberModal   open={!!open.invite}        onClose={() => toggle('invite', false)} />
-      <ChallengeModal      open={!!open.challenge}     onClose={() => toggle('challenge', false)} />
-      <BattleResultModal   open={!!open.battleResult}  onClose={() => toggle('battleResult', false)} />
-      <SkillNodeModal      open={!!open.skillNode}     onClose={() => toggle('skillNode', false)} />
-      <ProfileCardModal    open={!!open.profileCard}   onClose={() => toggle('profileCard', false)} />
+      <SubmitConfirmModal open={!!open.submitConfirm} onClose={() => toggle('submitConfirm', false)} />
+      <InviteMemberModal open={!!open.invite} onClose={() => toggle('invite', false)} />
+      <ChallengeModal open={!!open.challenge} onClose={() => toggle('challenge', false)} />
+      <BattleResultModal open={!!open.battleResult} onClose={() => toggle('battleResult', false)} />
+      <SkillNodeModal open={!!open.skillNode} onClose={() => toggle('skillNode', false)} />
+      <ProfileCardModal open={!!open.profileCard} onClose={() => toggle('profileCard', false)} />
 
       {/* Admin */}
-      <EditResourceLimitModal open={!!open.editLimit}   onClose={() => toggle('editLimit', false)} />
-      <AuditDetailModal       open={!!open.auditDetail} onClose={() => toggle('auditDetail', false)} />
-      <AddLanguageModal       open={!!open.addLang}     onClose={() => toggle('addLang', false)} />
-      <KillJobConfirm         open={!!open.killJob}     onClose={() => toggle('killJob', false)} />
+      <EditResourceLimitModal open={!!open.editLimit} onClose={() => toggle('editLimit', false)} />
+      <AuditDetailModal open={!!open.auditDetail} onClose={() => toggle('auditDetail', false)} />
+      <AddLanguageModal open={!!open.addLang} onClose={() => toggle('addLang', false)} />
+      <KillJobConfirm open={!!open.killJob} onClose={() => toggle('killJob', false)} />
 
       {/* Floating Stuck Alert */}
       {showStuck && <StuckAlert minutesStuck={32} onAccept={() => setShowStuck(false)} onDismiss={() => setShowStuck(false)} />}

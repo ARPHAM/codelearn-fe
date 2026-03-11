@@ -1,23 +1,23 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const leaderboard = [
-  { rank: 1,  name: 'Phạm Thu Hà',    score: 4820, badge: '🥇', streak: 15, solved: 87, win: 42, avatar: '#f59e0b' },
-  { rank: 2,  name: 'Nguyễn M. Khoa', score: 4560, badge: '🥈', streak: 12, solved: 82, win: 38, avatar: '#7c3aed' },
-  { rank: 3,  name: 'Trần Thị Lan',   score: 4210, badge: '🥉', streak: 9,  solved: 76, win: 31, avatar: '#06b6d4' },
-  { rank: 4,  name: 'Đỗ Quang Vinh',  score: 3890, badge: '',   streak: 7,  solved: 71, win: 27, avatar: '#10b981' },
-  { rank: 5,  name: 'Hoàng Thị Mai',  score: 3640, badge: '',   streak: 6,  solved: 68, win: 24, avatar: '#ec4899' },
-  { rank: 6,  name: 'Vũ Đức Nam',     score: 3320, badge: '',   streak: 5,  solved: 64, win: 20, avatar: '#f97316' },
-  { rank: 7,  name: 'Bùi Thị Thúy',   score: 3100, badge: '',   streak: 3,  solved: 59, win: 17, avatar: '#8b5cf6' },
-  { rank: 8,  name: 'Lê Văn Hùng',    score: 2850, badge: '',   streak: 2,  solved: 54, win: 14, avatar: '#64748b' },
+  { rank: 1, name: 'Phạm Thu Hà', score: 4820, badge: '🥇', streak: 15, solved: 87, win: 42, avatar: '#f59e0b' },
+  { rank: 2, name: 'Nguyễn M. Khoa', score: 4560, badge: '🥈', streak: 12, solved: 82, win: 38, avatar: '#7c3aed' },
+  { rank: 3, name: 'Trần Thị Lan', score: 4210, badge: '🥉', streak: 9, solved: 76, win: 31, avatar: '#06b6d4' },
+  { rank: 4, name: 'Đỗ Quang Vinh', score: 3890, badge: '', streak: 7, solved: 71, win: 27, avatar: '#10b981' },
+  { rank: 5, name: 'Hoàng Thị Mai', score: 3640, badge: '', streak: 6, solved: 68, win: 24, avatar: '#ec4899' },
+  { rank: 6, name: 'Vũ Đức Nam', score: 3320, badge: '', streak: 5, solved: 64, win: 20, avatar: '#f97316' },
+  { rank: 7, name: 'Bùi Thị Thúy', score: 3100, badge: '', streak: 3, solved: 59, win: 17, avatar: '#8b5cf6' },
+  { rank: 8, name: 'Lê Văn Hùng', score: 2850, badge: '', streak: 2, solved: 54, win: 14, avatar: '#64748b' },
 ];
 
 const badges = [
-  { icon: '⚡', name: 'Speed Coder',    desc: 'Giải trong < 5 phút', color: '#f59e0b', earned: true },
-  { icon: '🔥', name: 'On Fire',        desc: 'Streak 7 ngày',       color: '#ef4444', earned: true },
-  { icon: '🎯', name: 'Perfect Score',  desc: '100% test cases',     color: '#10b981', earned: true },
-  { icon: '🤝', name: 'Helper',         desc: 'Giúp 10 bạn',       color: '#06b6d4', earned: false },
-  { icon: '🏆', name: 'Battle Master',  desc: 'Thắng 50 trận',      color: '#7c3aed', earned: false },
-  { icon: '🧠', name: 'Algorithm God',  desc: 'Giải 100 bài hard',  color: '#ec4899', earned: false },
+  { icon: '⚡', name: 'Speed Coder', desc: 'Giải trong < 5 phút', color: '#f59e0b', earned: true },
+  { icon: '🔥', name: 'On Fire', desc: 'Streak 7 ngày', color: '#ef4444', earned: true },
+  { icon: '🎯', name: 'Perfect Score', desc: '100% test cases', color: '#10b981', earned: true },
+  { icon: '🤝', name: 'Helper', desc: 'Giúp 10 bạn', color: '#06b6d4', earned: false },
+  { icon: '🏆', name: 'Battle Master', desc: 'Thắng 50 trận', color: '#7c3aed', earned: false },
+  { icon: '🧠', name: 'Algorithm God', desc: 'Giải 100 bài hard', color: '#ec4899', earned: false },
 ];
 
 export default function LeaderboardPage() {

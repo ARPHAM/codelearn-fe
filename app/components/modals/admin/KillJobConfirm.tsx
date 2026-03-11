@@ -1,6 +1,6 @@
 'use client';
-import ConfirmDialog from '@/app/components/ui/ConfirmDialog';
-import { toast } from '@/app/components/ui/Toast';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { toast } from '@/components/ui/Toast';
 
 interface KillJobConfirmProps {
   open: boolean;

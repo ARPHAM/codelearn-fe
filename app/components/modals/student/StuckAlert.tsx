@@ -1,5 +1,5 @@
 'use client';
-import { toast } from '@/app/components/ui/Toast';
+import { toast } from '@/components/ui/Toast';
 
 interface StuckAlertProps {
   onAccept: () => void;

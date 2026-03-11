@@ -1,6 +1,6 @@
 'use client';
-import Modal from '@/app/components/ui/Modal';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import { toast } from '@/components/ui/Toast';
 
 interface StudentProfileModalProps {
   open: boolean;
@@ -12,8 +12,8 @@ const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
 const stuckExercises = [
   { name: 'Dynamic Programming', stuck: '4.2 giờ', status: 'stuck' },
-  { name: 'Graph BFS/DFS',        stuck: '2.8 giờ', status: 'stuck' },
-  { name: 'Sorting Algorithms',   stuck: '0.5 giờ', status: 'done' },
+  { name: 'Graph BFS/DFS', stuck: '2.8 giờ', status: 'stuck' },
+  { name: 'Sorting Algorithms', stuck: '0.5 giờ', status: 'done' },
 ];
 
 export default function StudentProfileModal({ open, onClose }: StudentProfileModalProps) {

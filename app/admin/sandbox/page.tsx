@@ -1,18 +1,18 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const sandboxJobs = [
-  { id: 'JOB-4821', student: 'Nguyễn M. Khoa', exercise: 'Binary Search', lang: 'C++',    cpu: 78, ram: 62, status: 'running', time: '1.2s / 5s' },
-  { id: 'JOB-4822', student: 'Trần Thị Lan',   exercise: 'BFS Graph',     lang: 'Python', cpu: 45, ram: 88, status: 'running', time: '2.8s / 5s' },
-  { id: 'JOB-4823', student: 'Lê Văn Hùng',    exercise: 'Dynamic Prog',  lang: 'Java',   cpu: 91, ram: 71, status: 'warning', time: '4.1s / 5s' },
-  { id: 'JOB-4820', student: 'Phạm Thu Hà',    exercise: 'Quicksort',     lang: 'C++',    cpu: 0,  ram: 0,  status: 'done',    time: '0.3s / 5s' },
-  { id: 'JOB-4819', student: 'Đỗ Quang Vinh',  exercise: 'BFS Graph',     lang: 'Python', cpu: 0,  ram: 0,  status: 'timeout', time: '5.0s / 5s' },
+  { id: 'JOB-4821', student: 'Nguyễn M. Khoa', exercise: 'Binary Search', lang: 'C++', cpu: 78, ram: 62, status: 'running', time: '1.2s / 5s' },
+  { id: 'JOB-4822', student: 'Trần Thị Lan', exercise: 'BFS Graph', lang: 'Python', cpu: 45, ram: 88, status: 'running', time: '2.8s / 5s' },
+  { id: 'JOB-4823', student: 'Lê Văn Hùng', exercise: 'Dynamic Prog', lang: 'Java', cpu: 91, ram: 71, status: 'warning', time: '4.1s / 5s' },
+  { id: 'JOB-4820', student: 'Phạm Thu Hà', exercise: 'Quicksort', lang: 'C++', cpu: 0, ram: 0, status: 'done', time: '0.3s / 5s' },
+  { id: 'JOB-4819', student: 'Đỗ Quang Vinh', exercise: 'BFS Graph', lang: 'Python', cpu: 0, ram: 0, status: 'timeout', time: '5.0s / 5s' },
 ];
 
 const langLimits = [
-  { lang: 'C++',    icon: '⚙️', cpu: '1 vCPU', ram: '256 MB', timeout: '5s', active: true },
+  { lang: 'C++', icon: '⚙️', cpu: '1 vCPU', ram: '256 MB', timeout: '5s', active: true },
   { lang: 'Python', icon: '🐍', cpu: '0.5 vCPU', ram: '128 MB', timeout: '10s', active: true },
-  { lang: 'Java',   icon: '☕', cpu: '1 vCPU', ram: '512 MB', timeout: '10s', active: true },
-  { lang: 'Node.js',icon: '🟢', cpu: '0.5 vCPU', ram: '256 MB', timeout: '10s', active: false },
+  { lang: 'Java', icon: '☕', cpu: '1 vCPU', ram: '512 MB', timeout: '10s', active: true },
+  { lang: 'Node.js', icon: '🟢', cpu: '0.5 vCPU', ram: '256 MB', timeout: '10s', active: false },
 ];
 
 function StatusDot({ status }: { status: string }) {
@@ -53,9 +53,9 @@ export default function SandboxPage() {
         <div className="grid-4">
           {[
             { label: 'Jobs đang chạy', value: '3', icon: '▶', color: '#10b981' },
-            { label: 'CPU Server TB',  value: '68%', icon: '💻', color: '#f59e0b' },
-            { label: 'RAM Server TB',  value: '74%', icon: '🧠', color: '#06b6d4' },
-            { label: 'Jobs hôm nay',   value: '284', icon: '📊', color: '#7c3aed' },
+            { label: 'CPU Server TB', value: '68%', icon: '💻', color: '#f59e0b' },
+            { label: 'RAM Server TB', value: '74%', icon: '🧠', color: '#06b6d4' },
+            { label: 'Jobs hôm nay', value: '284', icon: '📊', color: '#7c3aed' },
           ].map(s => (
             <div key={s.label} className="stat-card" style={{ borderLeft: `3px solid ${s.color}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

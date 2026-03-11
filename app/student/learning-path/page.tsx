@@ -1,4 +1,4 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 type NodeStatus = 'done' | 'active' | 'locked';
 
@@ -7,13 +7,13 @@ const pathNodes: Array<{
   status: NodeStatus; x: number; y: number; progress: number;
   children: string[];
 }> = [
-  { id: 'A', title: 'Array & String Basics', tag: 'Arrays', difficulty: 'easy',   status: 'done',   x: 50,  y: 60,  progress: 100, children: ['B', 'C'] },
-  { id: 'B', title: 'Two Pointers',          tag: 'Pointers', difficulty: 'easy',  status: 'done',   x: 20,  y: 35,  progress: 100, children: ['D'] },
-  { id: 'C', title: 'Sliding Window',        tag: 'Arrays', difficulty: 'medium', status: 'done',   x: 80,  y: 35,  progress: 100, children: ['E'] },
-  { id: 'D', title: 'Binary Search',         tag: 'Search', difficulty: 'medium', status: 'active', x: 20,  y: 15,  progress: 60,  children: ['F'] },
-  { id: 'E', title: 'Stack & Queue',         tag: 'DS', difficulty: 'medium',     status: 'active', x: 72,  y: 15,  progress: 30,  children: ['F'] },
-  { id: 'F', title: 'Graph BFS/DFS',         tag: 'Graph', difficulty: 'hard',    status: 'locked', x: 46,  y: 0,   progress: 0,   children: [] },
-];
+    { id: 'A', title: 'Array & String Basics', tag: 'Arrays', difficulty: 'easy', status: 'done', x: 50, y: 60, progress: 100, children: ['B', 'C'] },
+    { id: 'B', title: 'Two Pointers', tag: 'Pointers', difficulty: 'easy', status: 'done', x: 20, y: 35, progress: 100, children: ['D'] },
+    { id: 'C', title: 'Sliding Window', tag: 'Arrays', difficulty: 'medium', status: 'done', x: 80, y: 35, progress: 100, children: ['E'] },
+    { id: 'D', title: 'Binary Search', tag: 'Search', difficulty: 'medium', status: 'active', x: 20, y: 15, progress: 60, children: ['F'] },
+    { id: 'E', title: 'Stack & Queue', tag: 'DS', difficulty: 'medium', status: 'active', x: 72, y: 15, progress: 30, children: ['F'] },
+    { id: 'F', title: 'Graph BFS/DFS', tag: 'Graph', difficulty: 'hard', status: 'locked', x: 46, y: 0, progress: 0, children: [] },
+  ];
 
 const suggested = [
   { id: 'Q047', title: 'Binary Search in Rotated Array', tag: 'Binary Search', diff: 'medium', reason: 'Bạn đang yếu Binary Search' },
@@ -160,11 +160,11 @@ export default function LearningPathPage() {
             <div className="card">
               <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>📉 Kỹ năng cần cải thiện</div>
               {[
-                { skill: 'Binary Search',  score: 40, color: 'var(--accent-red)' },
+                { skill: 'Binary Search', score: 40, color: 'var(--accent-red)' },
                 { skill: 'Dynamic Programming', score: 28, color: 'var(--accent-red)' },
-                { skill: 'Graph Algorithms',    score: 55, color: 'var(--accent-yellow)' },
-                { skill: 'Stack & Queue',        score: 62, color: 'var(--accent-yellow)' },
-                { skill: 'Sorting',             score: 88, color: 'var(--accent-green)' },
+                { skill: 'Graph Algorithms', score: 55, color: 'var(--accent-yellow)' },
+                { skill: 'Stack & Queue', score: 62, color: 'var(--accent-yellow)' },
+                { skill: 'Sorting', score: 88, color: 'var(--accent-green)' },
               ].map(s => (
                 <div key={s.skill} style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 12 }}>

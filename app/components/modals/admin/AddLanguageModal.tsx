@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import Modal from '@/app/components/ui/Modal';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import { toast } from '@/components/ui/Toast';
 
 interface AddLanguageModalProps {
   open: boolean;
@@ -9,7 +9,7 @@ interface AddLanguageModalProps {
 }
 
 const COMMON_LIBS: Record<string, string[]> = {
-  Go:   ['fmt', 'sort', 'math', 'strings', 'strconv'],
+  Go: ['fmt', 'sort', 'math', 'strings', 'strconv'],
   Rust: ['std::io', 'std::collections::HashMap'],
   Ruby: ['Set', 'Comparable'],
 };
@@ -69,8 +69,8 @@ export default function AddLanguageModal({ open, onClose }: AddLanguageModalProp
             <button className="btn btn-ghost" onClick={handleTest} disabled={!image.trim() || testStatus === 'testing'} style={{ flexShrink: 0 }}>
               {testStatus === 'testing' ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid var(--border)', borderTopColor: 'var(--accent-cyan)', borderRadius: '50%' }} />
                 : testStatus === 'ok' ? '✅ OK'
-                : testStatus === 'fail' ? '❌ Fail'
-                : '🔌 Test'}
+                  : testStatus === 'fail' ? '❌ Fail'
+                    : '🔌 Test'}
             </button>
           </div>
           {testStatus === 'ok' && (
@@ -92,9 +92,9 @@ export default function AddLanguageModal({ open, onClose }: AddLanguageModalProp
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <input className="input" placeholder="Thêm thư viện..." value={newLib} onChange={e => setNewLib(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && newLib.trim() && !libs.includes(newLib.trim())) { setLibs([...libs, newLib.trim()]); setNewLib(''); }}}
+              onKeyDown={e => { if (e.key === 'Enter' && newLib.trim() && !libs.includes(newLib.trim())) { setLibs([...libs, newLib.trim()]); setNewLib(''); } }}
               style={{ flex: 1 }} />
-            <button className="btn btn-ghost" onClick={() => { if (newLib.trim() && !libs.includes(newLib.trim())) { setLibs([...libs, newLib.trim()]); setNewLib(''); }}}>+ Thêm</button>
+            <button className="btn btn-ghost" onClick={() => { if (newLib.trim() && !libs.includes(newLib.trim())) { setLibs([...libs, newLib.trim()]); setNewLib(''); } }}>+ Thêm</button>
           </div>
         </div>
 

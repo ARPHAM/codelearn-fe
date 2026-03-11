@@ -1,18 +1,18 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const codeLines = [
-  { num: 1,  code: 'def pair_sum(arr, target):',            user: null },
-  { num: 2,  code: '    seen = {}',                           user: null },
-  { num: 3,  code: '    result = []',                         user: null },
-  { num: 4,  code: '    for i, num in enumerate(arr):',       user: 'A' },
-  { num: 5,  code: '        complement = target - num',       user: 'A' },
-  { num: 6,  code: '        if complement in seen:',          user: null },
-  { num: 7,  code: '            result.append((seen[complement], i))', user: null },
-  { num: 8,  code: '        seen[num] = i',                   user: 'B' },
-  { num: 9,  code: '    return result',                       user: null },
-  { num: 10, code: '',                                        user: null },
-  { num: 11, code: '# Test',                                  user: 'B' },
-  { num: 12, code: 'print(pair_sum([2,7,11,15], 9))',         user: null },
+  { num: 1, code: 'def pair_sum(arr, target):', user: null },
+  { num: 2, code: '    seen = {}', user: null },
+  { num: 3, code: '    result = []', user: null },
+  { num: 4, code: '    for i, num in enumerate(arr):', user: 'A' },
+  { num: 5, code: '        complement = target - num', user: 'A' },
+  { num: 6, code: '        if complement in seen:', user: null },
+  { num: 7, code: '            result.append((seen[complement], i))', user: null },
+  { num: 8, code: '        seen[num] = i', user: 'B' },
+  { num: 9, code: '    return result', user: null },
+  { num: 10, code: '', user: null },
+  { num: 11, code: '# Test', user: 'B' },
+  { num: 12, code: 'print(pair_sum([2,7,11,15], 9))', user: null },
 ];
 
 const messages = [

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import Modal from '@/app/components/ui/Modal';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import { toast } from '@/components/ui/Toast';
 
 interface EditResourceLimitModalProps {
   open: boolean;

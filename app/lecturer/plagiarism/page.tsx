@@ -1,23 +1,23 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const students = ['Nguyễn M. Khoa', 'Trần T. Lan', 'Lê V. Hùng', 'Phạm T. Hà', 'Đỗ Q. Vinh', 'Hoàng T. Mai', 'Vũ Đức Nam', 'Bùi T. Thúy'];
 
 const matrix = [
-  [100, 82, 5,  3,  78, 12, 8,  4 ],
-  [82, 100, 6,  2,  75, 10, 7,  3 ],
-  [5,   6, 100, 15,  4,  9, 22, 11],
-  [3,   2,  15,100,  3,  8, 19, 14],
-  [78,  75,  4,  3, 100, 11,  6,  2],
-  [12,  10,  9,  8,  11,100, 18, 27],
-  [8,   7,  22, 19,   6, 18,100, 35],
-  [4,   3,  11, 14,   2, 27, 35,100],
+  [100, 82, 5, 3, 78, 12, 8, 4],
+  [82, 100, 6, 2, 75, 10, 7, 3],
+  [5, 6, 100, 15, 4, 9, 22, 11],
+  [3, 2, 15, 100, 3, 8, 19, 14],
+  [78, 75, 4, 3, 100, 11, 6, 2],
+  [12, 10, 9, 8, 11, 100, 18, 27],
+  [8, 7, 22, 19, 6, 18, 100, 35],
+  [4, 3, 11, 14, 2, 27, 35, 100],
 ];
 
 const detectedPairs = [
-  { a: 'Nguyễn M. Khoa', b: 'Đỗ Q. Vinh',  sim: 82, risk: 'high',   lines: '42–67, 88–102' },
-  { a: 'Trần T. Lan',    b: 'Đỗ Q. Vinh',  sim: 75, risk: 'high',   lines: '15–38, 55–71' },
-  { a: 'Vũ Đức Nam',     b: 'Bùi T. Thúy', sim: 35, risk: 'medium', lines: '22–29' },
-  { a: 'Hoàng T. Mai',   b: 'Bùi T. Thúy', sim: 27, risk: 'medium', lines: '78–84' },
+  { a: 'Nguyễn M. Khoa', b: 'Đỗ Q. Vinh', sim: 82, risk: 'high', lines: '42–67, 88–102' },
+  { a: 'Trần T. Lan', b: 'Đỗ Q. Vinh', sim: 75, risk: 'high', lines: '15–38, 55–71' },
+  { a: 'Vũ Đức Nam', b: 'Bùi T. Thúy', sim: 35, risk: 'medium', lines: '22–29' },
+  { a: 'Hoàng T. Mai', b: 'Bùi T. Thúy', sim: 27, risk: 'medium', lines: '78–84' },
 ];
 
 function simColor(v: number): string {

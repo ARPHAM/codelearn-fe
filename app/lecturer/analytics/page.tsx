@@ -1,18 +1,18 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const exercises = [
   { name: 'BFS Graph Traversal', stuck: 68, submitted: 82, total: 120, avg: 47, alert: true },
   { name: 'Dynamic Programming', stuck: 88, submitted: 55, total: 120, avg: 72, alert: true },
-  { name: 'Sorting Algorithms',  stuck: 12, submitted: 108,total: 120, avg: 28, alert: false },
-  { name: 'Binary Search Tree',  stuck: 34, submitted: 91, total: 120, avg: 38, alert: false },
-  { name: 'Greedy Algorithms',   stuck: 71, submitted: 48, total: 120, avg: 65, alert: true },
+  { name: 'Sorting Algorithms', stuck: 12, submitted: 108, total: 120, avg: 28, alert: false },
+  { name: 'Binary Search Tree', stuck: 34, submitted: 91, total: 120, avg: 38, alert: false },
+  { name: 'Greedy Algorithms', stuck: 71, submitted: 48, total: 120, avg: 65, alert: true },
 ];
 
 const weeklyData = [65, 72, 58, 80, 91, 76, 88];
 const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
 const weakStudents = [
-  { name: 'Lê Văn Hùng',   stuck: 3, timeStuck: 4.2, skills: ['Graph', 'DP'] },
+  { name: 'Lê Văn Hùng', stuck: 3, timeStuck: 4.2, skills: ['Graph', 'DP'] },
   { name: 'Đỗ Quang Vinh', stuck: 2, timeStuck: 2.8, skills: ['DP'] },
   { name: 'Nguyễn Thu An', stuck: 2, timeStuck: 3.5, skills: ['Graph', 'Greedy'] },
 ];
@@ -54,7 +54,7 @@ export default function AnalyticsPage() {
         {/* Top stats */}
         <div className="grid-4">
           {[
-            { label: 'Sinh viên',    value: '120', icon: '👥', color: '#7c3aed', trend: '+5 tuần này' },
+            { label: 'Sinh viên', value: '120', icon: '👥', color: '#7c3aed', trend: '+5 tuần này' },
             { label: 'Tỷ lệ hoàn thành', value: '73%', icon: '✅', color: '#10b981', trend: '↑ 8% so tháng trước' },
             { label: 'Đang gặp khó', value: '28', icon: '⚠️', color: '#f59e0b', trend: 'Cần chú ý' },
             { label: 'Bài tập cần review', value: '3', icon: '🚨', color: '#ef4444', trend: '> 60% sv thất bại' },
@@ -140,7 +140,7 @@ export default function AnalyticsPage() {
               <div style={{ fontWeight: 700, fontSize: 14, color: '#f87171', marginBottom: 12 }}>🚨 Cảnh báo hệ thống</div>
               {[
                 { ex: 'Dynamic Programming', pct: 88, msg: 'Cần giảng lại bài' },
-                { ex: 'Greedy Algorithms',   pct: 71, msg: 'Tỷ lệ thất bại cao' },
+                { ex: 'Greedy Algorithms', pct: 71, msg: 'Tỷ lệ thất bại cao' },
                 { ex: 'BFS Graph Traversal', pct: 68, msg: 'Nhiều SV bị stuck > 30 phút' },
               ].map(alert => (
                 <div key={alert.ex} style={{
@@ -197,9 +197,9 @@ export default function AnalyticsPage() {
               <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12 }}>🎯 Điểm phân phối lớp</div>
               {[
                 { range: 'A (90-100)', pct: 18, color: 'var(--accent-green)' },
-                { range: 'B (70-89)',  pct: 35, color: 'var(--accent-cyan)' },
+                { range: 'B (70-89)', pct: 35, color: 'var(--accent-cyan)' },
                 { range: 'C (50-69)', pct: 28, color: 'var(--accent-yellow)' },
-                { range: 'D (< 50)',  pct: 19, color: 'var(--accent-red)' },
+                { range: 'D (< 50)', pct: 19, color: 'var(--accent-red)' },
               ].map(g => (
                 <div key={g.range} style={{ marginBottom: 8 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 11 }}>

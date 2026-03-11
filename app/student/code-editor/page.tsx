@@ -1,4 +1,4 @@
-import DashboardLayout from '@/app/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const aiMessages = [
   {
@@ -17,15 +17,15 @@ const aiMessages = [
 ];
 
 const editorLines = [
-  { n: 1,  code: 'def find_peak(arr):', err: false },
-  { n: 2,  code: '    if not arr:', err: false },
-  { n: 3,  code: '        return -1', err: false },
-  { n: 4,  code: '    peak = 0', err: false },
-  { n: 5,  code: '    for i in range(len(arr)):', err: false },
-  { n: 6,  code: '        if arr[i] > arr[peak]:', err: false },
-  { n: 7,  code: '            peak = i', err: false },
-  { n: 8,  code: '        if i < len(arr) - 1 and arr[i] < arr[i+1]:', err: true },
-  { n: 9,  code: '            continue', err: false },
+  { n: 1, code: 'def find_peak(arr):', err: false },
+  { n: 2, code: '    if not arr:', err: false },
+  { n: 3, code: '        return -1', err: false },
+  { n: 4, code: '    peak = 0', err: false },
+  { n: 5, code: '    for i in range(len(arr)):', err: false },
+  { n: 6, code: '        if arr[i] > arr[peak]:', err: false },
+  { n: 7, code: '            peak = i', err: false },
+  { n: 8, code: '        if i < len(arr) - 1 and arr[i] < arr[i+1]:', err: true },
+  { n: 9, code: '            continue', err: false },
   { n: 10, code: '    return peak', err: false },
   { n: 11, code: '', err: false },
   { n: 12, code: '# Test', err: false },
@@ -79,7 +79,7 @@ export default function CodeEditorPage() {
             <div style={{ flex: 1, overflowY: 'auto', padding: '14px' }}>
               <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Find Peak Element</div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
-                Một phần tử đỉnh là phần tử lớn hơn các phần tử kề cạnh. Cho mảng <code style={{ background: 'var(--bg-secondary)', padding: '1px 5px', borderRadius: 3, fontFamily: 'monospace' }}>nums</code>, 
+                Một phần tử đỉnh là phần tử lớn hơn các phần tử kề cạnh. Cho mảng <code style={{ background: 'var(--bg-secondary)', padding: '1px 5px', borderRadius: 3, fontFamily: 'monospace' }}>nums</code>,
                 tìm và trả về chỉ số của một phần tử đỉnh bất kỳ.
               </div>
 
@@ -146,9 +146,9 @@ export default function CodeEditorPage() {
                   <span className="code-line-number" style={{ color: line.err ? '#f87171' : undefined }}>{line.n}</span>
                   <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, flex: 1 }}>
                     {line.code.startsWith('def ') ? <><span className="code-keyword">def </span><span className="code-func">{line.code.slice(4)}</span></> :
-                     line.code.startsWith('#') ? <span className="code-comment">{line.code}</span> :
-                     line.code.startsWith('    if') || line.code.startsWith('    for') ? <><span style={{ color: 'var(--text-muted)' }}>{'    '}</span><span className="code-keyword">{line.code.trim().split(' ')[0]}</span><span className="code-string"> {line.code.trim().slice(line.code.trim().split(' ')[0].length)}</span></> :
-                     <span>{line.code}</span>}
+                      line.code.startsWith('#') ? <span className="code-comment">{line.code}</span> :
+                        line.code.startsWith('    if') || line.code.startsWith('    for') ? <><span style={{ color: 'var(--text-muted)' }}>{'    '}</span><span className="code-keyword">{line.code.trim().split(' ')[0]}</span><span className="code-string"> {line.code.trim().slice(line.code.trim().split(' ')[0].length)}</span></> :
+                          <span>{line.code}</span>}
                   </span>
                   {line.err && <span style={{ fontSize: 11, color: '#f87171' }}>⚠ IndexError</span>}
                 </div>

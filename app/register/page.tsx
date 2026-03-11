@@ -1,11 +1,12 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { toast } from '@/app/components/ui/Toast';
+import { toast } from '@/components/ui/Toast';
+import { useRegister } from './_api/mutation';
 
 const STEPS = ['Thông tin', 'Tài khoản', 'Hoàn tất'];
 
-const MAJORS = ['Khoa học Máy tính', 'Kỹ thuật Phần mềm', 'Hệ thống Thông tin', 'Mạng & Truyền thông', 'Khác'];
+const MAJORS = ['Công nghệ thông tin', 'An toàn thông tin', 'Khoa học Máy tính', 'Hệ thống Thông tin quản lý', 'Kỹ thuật Phần mềm', 'Khác'];
 
 export default function RegisterPage() {
   const [step, setStep] = useState(0);
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [pwStrength, setPwStrength] = useState(0);
 
+  const registerMutation = useRegister();
   const update = (k: keyof typeof form, v: string | boolean) => setForm(prev => ({ ...prev, [k]: v }));
 
   const calcStrength = (pw: string) => {
@@ -52,9 +54,21 @@ export default function RegisterPage() {
   const handleRegister = async () => {
     if (!form.agree) { toast({ type: 'error', title: 'Vui lòng đồng ý điều khoản!' }); return; }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1600));
-    setLoading(false);
-    setStep(2);
+    try {
+      await registerMutation.mutateAsync({
+        fullName: form.fullName,
+        mssv: form.mssv,
+        email: form.email,
+        password: form.password,
+        role: role,
+        major: form.major
+      })
+      setStep(2);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -110,7 +124,7 @@ export default function RegisterPage() {
                 <label className="form-label">Đăng ký với tư cách</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {[
-                    { val: 'student',  icon: '🎓', label: 'Sinh viên',  desc: 'Học viên tham gia khóa học' },
+                    { val: 'student', icon: '🎓', label: 'Sinh viên', desc: 'Học viên tham gia khóa học' },
                     { val: 'lecturer', icon: '👨‍🏫', label: 'Giảng viên', desc: 'Tạo & quản lý bài tập' },
                   ].map(r => (
                     <button key={r.val} onClick={() => setRole(r.val as 'student' | 'lecturer')} style={{
@@ -183,8 +197,10 @@ export default function RegisterPage() {
                   <div style={{ marginTop: 8 }}>
                     <div style={{ display: 'flex', gap: 4, marginBottom: 5 }}>
                       {[1, 2, 3, 4].map(i => (
-                        <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, transition: 'background 0.3s',
-                          background: i <= pwStrength ? strengthColors[pwStrength] : 'var(--bg-hover)' }} />
+                        <div key={i} style={{
+                          flex: 1, height: 4, borderRadius: 2, transition: 'background 0.3s',
+                          background: i <= pwStrength ? strengthColors[pwStrength] : 'var(--bg-hover)'
+                        }} />
                       ))}
                     </div>
                     <div style={{ fontSize: 11, fontWeight: 600, color: strengthColors[pwStrength] }}>

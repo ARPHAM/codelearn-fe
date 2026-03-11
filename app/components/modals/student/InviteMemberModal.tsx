@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import Modal from '@/app/components/ui/Modal';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import { toast } from '@/components/ui/Toast';
 
 interface InviteMemberModalProps {
   open: boolean;
@@ -9,10 +9,10 @@ interface InviteMemberModalProps {
 }
 
 const students = [
-  { id: 'SV001', name: 'Nguyễn M. Khoa',  avatar: '#7c3aed', online: true },
-  { id: 'SV005', name: 'Đỗ Quang Vinh',   avatar: '#10b981', online: true },
-  { id: 'SV008', name: 'Trần Thị Lan',    avatar: '#f59e0b', online: false },
-  { id: 'SV012', name: 'Phạm Minh Tuấn',  avatar: '#06b6d4', online: true },
+  { id: 'SV001', name: 'Nguyễn M. Khoa', avatar: '#7c3aed', online: true },
+  { id: 'SV005', name: 'Đỗ Quang Vinh', avatar: '#10b981', online: true },
+  { id: 'SV008', name: 'Trần Thị Lan', avatar: '#f59e0b', online: false },
+  { id: 'SV012', name: 'Phạm Minh Tuấn', avatar: '#06b6d4', online: true },
 ];
 
 export default function InviteMemberModal({ open, onClose }: InviteMemberModalProps) {

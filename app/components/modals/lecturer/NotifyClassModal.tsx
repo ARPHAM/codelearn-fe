@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import Modal from '@/app/components/ui/Modal';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import { toast } from '@/components/ui/Toast';
 
 interface NotifyClassModalProps {
   open: boolean;
@@ -49,7 +49,7 @@ export default function NotifyClassModal({ open, onClose }: NotifyClassModalProp
           <label className="form-label">Đối tượng nhận</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
-              { val: 'all',   label: '👥 Toàn bộ lớp', desc: '120 sinh viên' },
+              { val: 'all', label: '👥 Toàn bộ lớp', desc: '120 sinh viên' },
               { val: 'stuck', label: '⚠️ Sinh viên đang stuck', desc: '28 sinh viên' },
             ].map(opt => (
               <label key={opt.val} style={{

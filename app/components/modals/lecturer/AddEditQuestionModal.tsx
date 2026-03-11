@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import Modal from '@/app/components/ui/Modal';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import { toast } from '@/components/ui/Toast';
 
 interface AddEditQuestionModalProps {
   open: boolean;
@@ -46,9 +46,9 @@ export default function AddEditQuestionModal({ open, onClose, mode = 'add' }: Ad
       {/* Tabs */}
       <div className="modal-tabs">
         {[
-          { id: 'problem',   label: '📝 Đề bài' },
+          { id: 'problem', label: '📝 Đề bài' },
           { id: 'testcases', label: `🧪 Test Cases (${testCases.length})` },
-          { id: 'hints',     label: '💡 Gợi ý' },
+          { id: 'hints', label: '💡 Gợi ý' },
         ].map(t => (
           <div key={t.id} className={`modal-tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id as typeof tab)}>
             {t.label}
@@ -102,9 +102,9 @@ export default function AddEditQuestionModal({ open, onClose, mode = 'add' }: Ad
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <input className="input" placeholder="Thêm tag..." value={newTag} onChange={e => setNewTag(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && newTag.trim()) { setTags([...tags, newTag.trim()]); setNewTag(''); }}}
+                onKeyDown={e => { if (e.key === 'Enter' && newTag.trim()) { setTags([...tags, newTag.trim()]); setNewTag(''); } }}
                 style={{ flex: 1 }} />
-              <button className="btn btn-ghost" onClick={() => { if (newTag.trim()) { setTags([...tags, newTag.trim()]); setNewTag(''); }}}>+ Thêm</button>
+              <button className="btn btn-ghost" onClick={() => { if (newTag.trim()) { setTags([...tags, newTag.trim()]); setNewTag(''); } }}>+ Thêm</button>
             </div>
           </div>
         </div>

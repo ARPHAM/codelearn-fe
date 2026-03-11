@@ -1,6 +1,6 @@
 'use client';
-import Modal from '@/app/components/ui/Modal';
-import { toast } from '@/app/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import { toast } from '@/components/ui/Toast';
 
 interface SkillNodeModalProps {
   open: boolean;
@@ -8,11 +8,11 @@ interface SkillNodeModalProps {
 }
 
 const exercises = [
-  { id: 'Q047', title: 'Binary Search Basics',          status: 'done',   diff: 'easy'   },
-  { id: 'Q048', title: 'Binary Search on Answer',        status: 'done',   diff: 'medium' },
+  { id: 'Q047', title: 'Binary Search Basics', status: 'done', diff: 'easy' },
+  { id: 'Q048', title: 'Binary Search on Answer', status: 'done', diff: 'medium' },
   { id: 'Q049', title: 'Search in Rotated Sorted Array', status: 'active', diff: 'medium' },
-  { id: 'Q050', title: 'Find Peak Element',              status: 'active', diff: 'medium' },
-  { id: 'Q051', title: 'Median of Two Sorted Arrays',    status: 'locked', diff: 'hard'   },
+  { id: 'Q050', title: 'Find Peak Element', status: 'active', diff: 'medium' },
+  { id: 'Q051', title: 'Median of Two Sorted Arrays', status: 'locked', diff: 'hard' },
 ];
 
 const diffColors: Record<string, string> = { easy: 'badge-green', medium: 'badge-yellow', hard: 'badge-red' };

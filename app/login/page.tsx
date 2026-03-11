@@ -1,13 +1,15 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { toast } from '@/app/components/ui/Toast';
+import { toast } from '@/components/ui/Toast';
+import { useGoogleLogin } from '@react-oauth/google';
+import { useLogin } from './_api/mutation';
 
 const FEATURES = [
   { icon: '🤖', title: 'AI Code Assistant', desc: 'Hỗ trợ gỡ lỗi & gợi ý thông minh' },
-  { icon: '⚔️', title: 'Code Battle',        desc: '1v1 thách đấu lập trình realtime' },
-  { icon: '🗺️', title: 'Learning Path',      desc: 'Lộ trình cá nhân hóa theo kỹ năng' },
-  { icon: '📊', title: 'Auto-Grader',         desc: 'Chấm bài tự động với Docker sandbox' },
+  { icon: '⚔️', title: 'Code Battle', desc: '1v1 thách đấu lập trình realtime' },
+  { icon: '🗺️', title: 'Learning Path', desc: 'Lộ trình cá nhân hóa theo kỹ năng' },
+  { icon: '📊', title: 'Auto-Grader', desc: 'Chấm bài tự động với Docker sandbox' },
 ];
 
 export default function LoginPage() {
@@ -17,39 +19,44 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const loginMutation = useLogin()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) { setError('Vui lòng điền đầy đủ thông tin'); return; }
     setError('');
+    const res = await loginMutation.mutateAsync({ email, password, role })
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
+    const roleUser = res.data.data.user.role;
+    setTimeout(() => { window.location.href = roleUser === 'lecturer' ? '/lecturer/analytics' : roleUser === 'admin' ? '/admin/sandbox' : '/student/code-editor'; }, 800);
+    // await new Promise(r => setTimeout(r, 1400));
     setLoading(false);
-    toast({ type: 'success', title: 'Đăng nhập thành công!', message: `Xin chào, ${role === 'student' ? 'Sinh viên' : role === 'lecturer' ? 'Giảng viên' : 'Admin'} 👋` });
-    setTimeout(() => { window.location.href = role === 'lecturer' ? '/lecturer/analytics' : role === 'admin' ? '/admin/sandbox' : '/student/code-editor'; }, 800);
+    // toast({ type: 'success', title: 'Đăng nhập thành công!', message: `Xin chào, ${role === 'student' ? 'Sinh viên' : role === 'lecturer' ? 'Giảng viên' : 'Admin'} 👋` });
+    // setTimeout(() => { window.location.href = role === 'lecturer' ? '/lecturer/analytics' : role === 'admin' ? '/admin/sandbox' : '/student/code-editor'; }, 800);
   };
 
+  const handleLoginGoogle = useGoogleLogin({
+    onSuccess: tokenResponse => console.log(tokenResponse),
+  });
+
   const roleConfig = {
-    student:  { label: 'Sinh viên',  icon: '🎓', gradient: 'var(--gradient-purple)', color: 'var(--accent-purple)' },
+    student: { label: 'Sinh viên', icon: '🎓', gradient: 'var(--gradient-purple)', color: 'var(--accent-purple)' },
     lecturer: { label: 'Giảng viên', icon: '👨‍🏫', gradient: 'linear-gradient(135deg, #1d4ed8, #06b6d4)', color: '#3b82f6' },
-    admin:    { label: 'Admin',      icon: '⚙️',  gradient: 'linear-gradient(135deg, #065f46, #10b981)', color: '#10b981' },
+    admin: { label: 'Admin', icon: '⚙️', gradient: 'linear-gradient(135deg, #065f46, #10b981)', color: '#10b981' },
   };
   const rc = roleConfig[role];
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', fontFamily: 'var(--font-body)' }}>
 
-      {/* Left panel — branding */}
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
         padding: '60px 64px', position: 'relative', overflow: 'hidden',
         background: 'linear-gradient(160deg, #0d1117 0%, #0f0a1e 60%, #0a1628 100%)',
       }}>
-        {/* Background glows */}
         <div style={{ position: 'absolute', top: -120, left: -80, width: 400, height: 400, borderRadius: '50%', background: 'rgba(124,58,237,0.12)', filter: 'blur(80px)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: -80, right: -60, width: 300, height: 300, borderRadius: '50%', background: 'rgba(6,182,212,0.08)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
-        {/* Logo */}
         <div style={{ marginBottom: 56, position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
             <div style={{
@@ -65,7 +72,6 @@ export default function LoginPage() {
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginLeft: 56 }}>Nền tảng học lập trình thông minh</div>
         </div>
 
-        {/* Hero text */}
         <div style={{ position: 'relative', zIndex: 1, marginBottom: 48 }}>
           <h1 style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.2, marginBottom: 16, letterSpacing: '-1px' }}>
             Học lập trình<br />
@@ -77,7 +83,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Feature pills */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'relative', zIndex: 1 }}>
           {FEATURES.map(f => (
             <div key={f.title} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -94,7 +99,6 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* Stats row */}
         <div style={{ display: 'flex', gap: 32, marginTop: 48, position: 'relative', zIndex: 1 }}>
           {[['1,200+', 'Sinh viên'], ['48+', 'Giảng viên'], ['3,500+', 'Bài tập']].map(([n, l]) => (
             <div key={l}>
@@ -105,7 +109,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right panel — login form */}
       <div style={{
         width: 480, display: 'flex', flexDirection: 'column', justifyContent: 'center',
         padding: '48px 52px', background: 'var(--bg-secondary)', borderLeft: '1px solid var(--border)',
@@ -118,7 +121,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Role selector */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>
             Đăng nhập với tư cách
@@ -141,11 +143,10 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <label className="form-label">Email / MSSV</label>
-            <input className="input" type="text" placeholder={role === 'student' ? '2151063@student.hcmus.edu.vn' : role === 'lecturer' ? 'gv.nguyenvana@hcmus.edu.vn' : 'admin@codelearn.vn'}
+            <input className="input" type="text" placeholder={role === 'student' ? '12345678@st.neu.edu.vn' : role === 'lecturer' ? '12345678@te.neu.edu.vn' : 'admin@codelearn.vn'}
               value={email} onChange={e => setEmail(e.target.value)} style={{ fontSize: 14 }} />
           </div>
 
@@ -164,14 +165,12 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <div style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8, border: '1px solid rgba(239,68,68,0.25)' }}>
               ⚠️ {error}
             </div>
           )}
 
-          {/* Submit */}
           <button type="submit" disabled={loading} style={{
             width: '100%', padding: '13px', borderRadius: 10, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
             background: loading ? 'rgba(124,58,237,0.5)' : rc.gradient,
@@ -181,25 +180,24 @@ export default function LoginPage() {
           }}>
             {loading
               ? <><span className="spin" style={{ display: 'inline-block', width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%' }} /> Đang đăng nhập...</>
-              : <>{rc.icon} Đăng nhập</>
+              : <>Đăng nhập</>
             }
           </button>
         </form>
 
-        {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>hoặc tiếp tục với</span>
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
 
-        {/* SSO buttons */}
         <div style={{ display: 'flex', gap: 10 }}>
           {[
-            { icon: '🎓', label: 'HCMUS SSO', color: '#1d4ed8' },
-            { icon: '🔵', label: 'Microsoft',  color: '#2563eb' },
+            { icon: '🔵', label: 'Google', color: '#2563eb', onClick: () => handleLoginGoogle() },
+            { icon: '🎓', label: 'HCMUS SSO', color: '#1d4ed8', onClick: () => toast({ type: 'info', title: 'HCMUS SSO...' }) },
+            { icon: '🔵', label: 'Microsoft', color: '#2563eb', onClick: () => toast({ type: 'info', title: 'Microsoft SSO...' }) },
           ].map(s => (
-            <button key={s.label} onClick={() => toast({ type: 'info', title: `${s.label} SSO...` })} style={{
+            <button key={s.label} onClick={s.onClick} style={{
               flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer',
               border: '1px solid var(--border)', background: 'var(--bg-tertiary)',
               color: 'var(--text-secondary)', fontWeight: 600, fontSize: 13,
@@ -214,7 +212,6 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* Footer */}
         <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 28, lineHeight: 1.6 }}>
           Bằng cách đăng nhập, bạn đồng ý với{' '}
           <Link href="#" style={{ color: 'var(--accent-purple-light)', textDecoration: 'none' }}>Điều khoản sử dụng</Link>{' '}và{' '}
