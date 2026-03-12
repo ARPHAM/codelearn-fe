@@ -1,6 +1,10 @@
 'use client';
 
+import { useCurrentUserInfo } from "../_api/queries";
+
 export default function Topbar() {
+  const { data: user } = useCurrentUserInfo()
+
   return (
     <header style={{
       height: 'var(--topbar-height)',
@@ -64,8 +68,8 @@ export default function Topbar() {
           background: 'var(--bg-tertiary)',
           transition: 'border-color 0.2s',
         }}>
-          <div className="avatar" style={{ background: 'var(--gradient-purple)', color: 'white', width: 28, height: 28, fontSize: 11 }}>GV</div>
-          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Nguyễn A.</span>
+          <div className="avatar" style={{ background: 'var(--gradient-purple)', color: 'white', width: 28, height: 28, fontSize: 11 }}>{user?.avatar ?? user?.role?.slice(0, 2).toUpperCase() ?? 'Hi'}</div>
+          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{user?.name ?? 'Hi'}</span>
           <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>▾</span>
         </div>
       </div>

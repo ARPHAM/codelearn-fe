@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { toast } from '@/components/ui/Toast';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useLogin } from './_api/mutation';
+import { broadcastAuthChange } from "@/config/auth-channel";
 
 const FEATURES = [
   { icon: '🤖', title: 'AI Code Assistant', desc: 'Hỗ trợ gỡ lỗi & gợi ý thông minh' },
@@ -28,11 +29,9 @@ export default function LoginPage() {
     const res = await loginMutation.mutateAsync({ email, password, role })
     setLoading(true);
     const roleUser = res.data.data.user.role;
+    broadcastAuthChange();
     setTimeout(() => { window.location.href = roleUser === 'lecturer' ? '/lecturer/analytics' : roleUser === 'admin' ? '/admin/sandbox' : '/student/code-editor'; }, 800);
-    // await new Promise(r => setTimeout(r, 1400));
     setLoading(false);
-    // toast({ type: 'success', title: 'Đăng nhập thành công!', message: `Xin chào, ${role === 'student' ? 'Sinh viên' : role === 'lecturer' ? 'Giảng viên' : 'Admin'} 👋` });
-    // setTimeout(() => { window.location.href = role === 'lecturer' ? '/lecturer/analytics' : role === 'admin' ? '/admin/sandbox' : '/student/code-editor'; }, 800);
   };
 
   const handleLoginGoogle = useGoogleLogin({

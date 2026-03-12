@@ -1,15 +1,16 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCurrentUserInfo } from '../_api/queries';
 
 const navGroups = [
   {
     label: '🎓 Giảng viên',
     color: '#7c3aed',
     items: [
-      { href: '/lecturer/analytics',     icon: '📊', label: 'Analytics Dashboard' },
-      { href: '/lecturer/auto-grader',   icon: '⚡', label: 'Auto-Grader' },
-      { href: '/lecturer/plagiarism',    icon: '🔍', label: 'Phát hiện Đạo văn' },
+      { href: '/lecturer/analytics', icon: '📊', label: 'Analytics Dashboard' },
+      { href: '/lecturer/auto-grader', icon: '⚡', label: 'Auto-Grader' },
+      { href: '/lecturer/plagiarism', icon: '🔍', label: 'Phát hiện Đạo văn' },
       { href: '/lecturer/question-bank', icon: '🗃️', label: 'Ngân hàng Câu hỏi' },
     ],
   },
@@ -17,19 +18,19 @@ const navGroups = [
     label: '🎮 Sinh viên',
     color: '#06b6d4',
     items: [
-      { href: '/student/code-editor',      icon: '💻', label: 'Code Editor + AI' },
+      { href: '/student/code-editor', icon: '💻', label: 'Code Editor + AI' },
       { href: '/student/pair-programming', icon: '👥', label: 'Pair Programming' },
-      { href: '/student/code-battle',      icon: '⚔️', label: 'Code Battle' },
-      { href: '/student/learning-path',    icon: '🗺️', label: 'Lộ trình Học tập' },
-      { href: '/student/leaderboard',      icon: '🏆', label: 'Leaderboard' },
+      { href: '/student/code-battle', icon: '⚔️', label: 'Code Battle' },
+      { href: '/student/learning-path', icon: '🗺️', label: 'Lộ trình Học tập' },
+      { href: '/student/leaderboard', icon: '🏆', label: 'Leaderboard' },
     ],
   },
   {
     label: '⚙️ Admin',
     color: '#f59e0b',
     items: [
-      { href: '/admin/sandbox',       icon: '🐳', label: 'Sandbox Resources' },
-      { href: '/admin/audit-log',     icon: '📋', label: 'Log & Audit' },
+      { href: '/admin/sandbox', icon: '🐳', label: 'Sandbox Resources' },
+      { href: '/admin/audit-log', icon: '📋', label: 'Log & Audit' },
       { href: '/admin/system-config', icon: '🔧', label: 'Cấu hình Hệ thống' },
     ],
   },
@@ -37,6 +38,8 @@ const navGroups = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+
+  const { data: user } = useCurrentUserInfo()
 
   return (
     <aside style={{
@@ -105,18 +108,18 @@ export default function Sidebar() {
                     cursor: 'pointer',
                     transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => {
-                    if (!active) {
-                      (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)';
-                      (e.currentTarget as HTMLDivElement).style.color = 'var(--text-primary)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!active) {
-                      (e.currentTarget as HTMLDivElement).style.background = 'transparent';
-                      (e.currentTarget as HTMLDivElement).style.color = 'var(--text-secondary)';
-                    }
-                  }}>
+                    onMouseEnter={e => {
+                      if (!active) {
+                        (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)';
+                        (e.currentTarget as HTMLDivElement).style.color = 'var(--text-primary)';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!active) {
+                        (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+                        (e.currentTarget as HTMLDivElement).style.color = 'var(--text-secondary)';
+                      }
+                    }}>
                     <span style={{ fontSize: 15 }}>{item.icon}</span>
                     <span>{item.label}</span>
                   </div>
@@ -133,10 +136,10 @@ export default function Sidebar() {
         borderTop: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
-        <div className="avatar" style={{ background: 'var(--gradient-purple)', color: 'white' }}>GV</div>
+        <div className="avatar" style={{ background: 'var(--gradient-purple)', color: 'white' }}>{user?.avatar ? user?.avatar?.charAt(0).toUpperCase() : user?.role?.slice(0, 2).toUpperCase()}</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Nguyễn Văn A</div>
-          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Giảng viên</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{user?.name || 'Hi'}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{user?.role || 'User'}</div>
         </div>
         <div style={{ fontSize: 16, cursor: 'pointer', color: 'var(--text-muted)' }}>⚙</div>
       </div>
