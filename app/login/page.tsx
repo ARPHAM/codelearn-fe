@@ -26,11 +26,10 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email || !password) { setError('Vui lòng điền đầy đủ thông tin'); return; }
     setError('');
-    const res = await loginMutation.mutateAsync({ email, password, role })
+    await loginMutation.mutateAsync({ email, password, role })
     setLoading(true);
-    const roleUser = res.data.data.user.role;
     broadcastAuthChange();
-    setTimeout(() => { window.location.href = roleUser === 'lecturer' ? '/lecturer/analytics' : roleUser === 'admin' ? '/admin/sandbox' : '/student/code-editor'; }, 800);
+    setTimeout(() => { window.location.href = '/' }, 800);
     setLoading(false);
   };
 

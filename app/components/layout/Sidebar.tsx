@@ -1,7 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
 import { useCurrentUserInfo } from '../_api/queries';
+import { useState } from 'react';
+import { useLogout } from '../_api/mutations';
 
 const navGroups = [
   {
@@ -39,8 +41,19 @@ const navGroups = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [isDropdownHovered, setIsDropdownHovered] = useState(false);
+  const [isDropdownClicked, setIsDropdownClicked] = useState(false);
 
-  const { data: user } = useCurrentUserInfo()
+  const { data: user, isPending } = useCurrentUserInfo()
+  const { mutate: logout } = useLogout()
+
+  if (isPending) {
+    return null
+  }
+
+  if (!user) {
+    redirect('/login')
+  }
 
   return (
     <aside style={{
@@ -132,17 +145,70 @@ export default function Sidebar() {
       </nav>
 
       {/* User info */}
-      <div style={{
-        padding: '16px 20px',
-        borderTop: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', gap: 10,
-      }}>
+      <div
+        style={{
+          padding: '16px 20px',
+          borderTop: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          position: 'relative',
+        }}
+        onMouseEnter={() => setIsDropdownHovered(true)}
+        onMouseLeave={() => setIsDropdownHovered(false)}
+        onClick={() => setIsDropdownClicked(!isDropdownClicked)}
+      >
         <div className="avatar" style={{ background: 'var(--gradient-purple)', color: 'white' }}>{user?.avatar ? user?.avatar?.charAt(0).toUpperCase() : user?.role?.slice(0, 2).toUpperCase()}</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{user?.name || 'Hi'}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{user?.role || 'User'}</div>
+        <div style={{ flex: 1, cursor: 'pointer' }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{user.name || 'Hi'}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{user.role || 'User'}</div>
         </div>
         <div style={{ fontSize: 16, cursor: 'pointer', color: 'var(--text-muted)' }}>⚙</div>
+
+        {/* Dropdown menu */}
+        {(isDropdownHovered || isDropdownClicked) && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: 10,
+              right: 10,
+              paddingBottom: 8,
+              zIndex: 50,
+              cursor: 'default',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              background: 'var(--bg-primary, #fff)',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              padding: '6px 0',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}>
+              <div
+                style={{ padding: '8px 16px', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover, rgba(0,0,0,0.05))'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                onClick={() => { setIsDropdownClicked(false); setIsDropdownHovered(false); }}
+              >
+                Thông tin cá nhân
+              </div>
+              <div
+                style={{ padding: '8px 16px', fontSize: 13, color: '#ef4444', cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover, rgba(0,0,0,0.05))'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                onClick={() => {
+                  setIsDropdownClicked(false);
+                  setIsDropdownHovered(false);
+                  logout();
+                }}
+              >
+                Đăng xuất
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );
