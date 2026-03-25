@@ -38,7 +38,6 @@ export default function AuditLogPage() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid-4">
           {[
             { label: 'Hôm nay', value: '91', icon: '📋', color: '#7c3aed' },
@@ -58,7 +57,6 @@ export default function AuditLogPage() {
           ))}
         </div>
 
-        {/* Filters */}
         <div className="card" style={{ padding: '14px 16px', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <input className="input" placeholder="🔍 Tìm theo user, action, target..." style={{ flex: 1, minWidth: 260 }} />
           <select className="select"><option>Tất cả loại</option><option>Sửa điểm</option><option>Xóa đề thi</option><option>Cấu hình</option></select>
@@ -68,7 +66,6 @@ export default function AuditLogPage() {
           <button className="btn btn-primary">🔍 Lọc</button>
         </div>
 
-        {/* Log table */}
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <table className="table">
             <thead>

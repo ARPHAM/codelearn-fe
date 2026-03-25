@@ -6,7 +6,7 @@ import Editor from '@monaco-editor/react'
 import './styles.module.css'
 import { JetBrains_Mono } from 'next/font/google'
 import { io, Socket } from 'socket.io-client'
-import { useSubmitCode, useGetSubmissionDetails } from './_mutation'
+import { useSubmitCode, useGetSubmissionDetails } from './_api/mutation'
 
 const mono = JetBrains_Mono({
     subsets: ['latin'],
@@ -111,7 +111,7 @@ export default function CodeEditorPage() {
 
         // Auto main file assignment
         if (files.length === 1 && mainFile !== files[0].filename) {
-            setMainFile(files[0].filename)
+            setMainFile(files[0].filename + languageOptions.find(l => l.value === files[0].language)?.extension)
         }
     }, [files, activeFile, mainFile])
 
@@ -135,8 +135,8 @@ export default function CodeEditorPage() {
         try {
             const response = await submitCode.mutateAsync({
                 exerciseId: 1,
-                language,
-                mainFile,
+                language: files.find(f => f.filename === activeFile)?.language || files[0].language,
+                mainFile: mainFile + languageOptions.find(l => l.value === files[0].language)?.extension,
                 files: files.map(f => ({
                     filename: f.filename + languageOptions.find(l => l.value === f.language)?.extension,
                     content: f.content
@@ -376,7 +376,7 @@ export default function CodeEditorPage() {
                                 ))}
                             </div>
 
-                            <select onChange={(e) => setLanguage(e.target.value)} className="select" value={language}>
+                            <select onChange={(e) => setFiles(prev => prev.map(f => f.filename === activeFile ? { ...f, language: e.target.value } : f))} className="select" value={files.find(f => f.filename === activeFile)?.language || files[0].language}>
                                 {languageOptions.map((option) => (
                                     <option key={option.value} value={option.value}>
                                         {option.label}
@@ -390,7 +390,7 @@ export default function CodeEditorPage() {
                             {activeFile ? (
                                 <Editor
                                     height="100%"
-                                    language={language}
+                                    language={files.find(f => f.filename === activeFile)?.language || files[0].language}
                                     value={currentFileContent}
                                     onChange={handleEditorChange}
                                     onMount={handleMount}
