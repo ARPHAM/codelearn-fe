@@ -1,4 +1,5 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import Link from 'next/link';
 
 const questions = [
   { id: 'Q001', title: 'Cài đặt BFS trên đồ thị có hướng', difficulty: 'medium', tags: ['Graph', 'BFS', 'Traversal'], lang: 'C++', uses: 12, score: 10 },
@@ -24,7 +25,9 @@ export default function QuestionBankPage() {
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="btn btn-ghost">📥 Import</button>
             <button className="btn btn-cyan">🎲 Random Đề thi</button>
-            <button className="btn btn-primary">➕ Thêm câu hỏi</button>
+            <Link href="/lecturer/question-bank/create">
+              <button className="btn btn-primary">➕ Thêm câu hỏi</button>
+            </Link>
           </div>
         </div>
 
