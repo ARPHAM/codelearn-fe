@@ -61,7 +61,11 @@ export const getParticipants = async (roomId: string): Promise<ParticipantData[]
  */
 export const getWorkspaceFiles = async (workspaceId: string): Promise<WorkspaceFile[]> => {
     const res = await axios.get(`/workspaces/${workspaceId}/files`);
-    return res.data.data;
+    // Map 'path' to 'filePath' to maintain consistency with frontend
+    return (res.data.data || []).map((f: any) => ({
+        ...f,
+        filePath: f.filePath || f.path
+    }));
 };
 
 /**
@@ -84,4 +88,22 @@ export const joinRoomApi = async (roomId: string): Promise<void> => {
  */
 export const leaveRoomApi = async (roomId: string): Promise<void> => {
     await axios.post(`/rooms/${roomId}/leave`);
+};
+
+/**
+ * Create a new file in workspace
+ */
+export const createFileApi = async (workspaceId: string, filePath: string, content: string = ''): Promise<WorkspaceFile> => {
+    // New spec: Use 'filePath' in body, workspaceId in URL
+    const res = await axios.post(`/workspaces/${workspaceId}/files`, { filePath, content });
+    return res.data.data;
+};
+
+/**
+ * Delete a file from workspace
+ */
+export const deleteFileApi = async (workspaceId: string, filePath: string): Promise<void> => {
+    // filePath can contain slashes, so it might need careful URL encoding or use a query param/body
+    // But according to spec: DELETE /workspaces/:workspaceId/files/*
+    await axios.delete(`/workspaces/${workspaceId}/files/${filePath}`);
 };

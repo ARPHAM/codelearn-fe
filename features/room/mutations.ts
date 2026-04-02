@@ -7,13 +7,15 @@ export const useCreateRoom = () => {
     });
 };
 
-export const useJoinRoom = () => {
+export const useJoinRoom = (options?: any) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (roomId: string) => joinRoomApi(roomId),
-        onSuccess: (_, roomId) => {
+        onSuccess: (data, roomId, context) => {
             queryClient.invalidateQueries({ queryKey: ['room_participants', roomId] });
+            if (options?.onSuccess) options.onSuccess(data, roomId, context);
         },
+        ...options
     });
 };
 

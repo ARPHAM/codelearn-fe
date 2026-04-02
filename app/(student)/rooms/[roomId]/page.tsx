@@ -2,8 +2,10 @@
 
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useRoom } from '@/features/room/queries';
+import { useRoom, useParticipants } from '@/features/room/queries';
+import { useJoinRoom } from '@/features/room/mutations';
 import { ParticipantData } from '@/features/room/api';
 import { useRoomSocket } from '@/features/realtime/useRoomSocket';
 import CodeEditor from '@/components/editor/CodeEditor';
@@ -17,13 +19,33 @@ interface PageProps {
 
 export default function RoomPage({ params }: PageProps) {
     const { roomId } = use(params);
+    const queryClient = useQueryClient();
     const router = useRouter();
     // Fetch static room metadata (REST DB query)
     const { data: roomInfo, isLoading: isRoomLoading, error } = useRoom(roomId);
+    const { data: participants } = useParticipants(roomId);
+    const { mutate: joinRoom, isPending: isJoining } = useJoinRoom({
+        onSuccess: () => {
+            console.log("Join room success!");
+            // Mutation itself invalidates, but we can do extra if needed
+        },
+        onError: (err: any) => {
+            console.error("Join room failed:", err.response?.data || err.message);
+        }
+    });
 
+    console.log(`[RoomPage] isJoining: ${isJoining}, roomId: ${roomId}`);
     const room = roomInfo?.room;
     const sessionRest = roomInfo?.session;
     const currentUserRole = roomInfo?.currentUserRole;
+
+    // Join room when room info is loaded
+    useEffect(() => {
+        if (room?.id) {
+            console.log("Calling joinRoom for roomId:", room.id);
+            joinRoom(room.id);
+        }
+    }, [room?.id, joinRoom]);
 
     const shouldEnableSocket = !!room && (sessionRest !== null || currentUserRole === 'HOST');
 
@@ -35,6 +57,28 @@ export default function RoomPage({ params }: PageProps) {
     const { data: currentUser } = useCurrentUserInfo();
     const [viewingUser, setViewingUser] = useState<ParticipantData | null>(null);
     const [copied, setCopied] = useState(false);
+
+    // Find our own workspaceId (using id from auth/me)
+    const currentUserParticipant = participants?.find(p => {
+        // MUST check roomId to avoid stale cache from previous room
+        if (p.roomId !== roomId) return false;
+        
+        // Match by id (UUID)
+        const matched = currentUser?.id && String(p.userId) === String(currentUser?.id);
+        if (matched) console.log("Matched participant by ID:", p.userId, "Workspace:", p.workspaceId);
+        return matched;
+    });
+    const workspaceId = currentUserParticipant?.workspaceId;
+    
+    console.log("[RoomPage] Current User ID:", currentUser?.id);
+    console.log("[RoomPage] Participants count:", participants?.length);
+    console.log("[RoomPage] Final Workspace ID:", workspaceId);
+
+    const formatTime = (seconds: number) => {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
 
     const handleCopyLink = () => {
         const url = typeof window !== 'undefined' ? window.location.href : '';
@@ -55,20 +99,16 @@ export default function RoomPage({ params }: PageProps) {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const formatTime = (seconds: number) => {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
-        return `${m}:${s.toString().padStart(2, '0')}`;
-    };
-
     // LOADING STATE
-    if (isRoomLoading) {
+    const isLoading = isRoomLoading || isJoining;
+
+    if (isLoading) {
         return (
             <DashboardLayout>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 120px)' }}>
                     <div style={{ textAlign: 'center' }}>
                         <div className="spin" style={{ width: 32, height: 32, border: '3px solid var(--border)', borderTopColor: 'var(--accent-purple)', borderRadius: '50%', margin: '0 auto 16px' }} />
-                        <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading Session Environment...</p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Đang kết nối phòng học...</p>
                     </div>
                 </div>
             </DashboardLayout>
@@ -216,7 +256,7 @@ export default function RoomPage({ params }: PageProps) {
                     >
                         {/* Editor fills rest */}
                         <div style={{ flex: 1 }}>
-                            <CodeEditor roomId={roomId} viewingUser={viewingUser} />
+                            <CodeEditor roomId={roomId} viewingUser={viewingUser} workspaceId={workspaceId} />
                         </div>
                     </div>
 

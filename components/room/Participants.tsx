@@ -22,6 +22,8 @@ export default function Participants({ roomId, currentUserId, viewingUser, onSel
     useEffect(() => {
         const handleMembersOnline = (data: { roomId: string; userIds: string[] }) => {
             setOnlineUserIds(new Set(data.userIds));
+            // Ensure the full participant list is fresh (it might have been fetched before we joined DB)
+            queryClient.invalidateQueries({ queryKey: ['room_participants', roomId] });
         };
 
         const handleUserJoined = (data: { userId: string }) => {
