@@ -65,17 +65,23 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
     // Cursor tracking refs
     const decorationsRef = useRef<string[]>([]);
     const remoteCursorPosRef = useRef<{ line: number, column: number, filePath: string } | null>(null);
+    const remoteSelectionRef = useRef<any>(null);
 
     const isViewingRef = useRef<boolean>(isViewing);
     const viewingUserRef = useRef<ParticipantData | null>(viewingUser);
+    const roomIdRef = useRef<string>(roomId);
+    const currentUserRef = useRef<any>(currentUser);
+
 
     useEffect(() => { currentContentRef.current = content; }, [content]);
     useEffect(() => { currentFilePathRef.current = filePath; }, [filePath]);
     useEffect(() => { isViewingRef.current = isViewing; }, [isViewing]);
     useEffect(() => { viewingUserRef.current = viewingUser; }, [viewingUser]);
+    useEffect(() => { roomIdRef.current = roomId; }, [roomId]);
+    useEffect(() => { currentUserRef.current = currentUser; }, [currentUser]);
 
     // Define renderRemoteCursor outside useEffect so it's accessible to onMount
-    const renderRemoteCursor = useCallback((line: number, column: number, filePathToMatch: string) => {
+    const renderRemoteCursor = useCallback((line: number, column: number, filePathToMatch: string, selection?: any) => {
         if (!editorRef.current || !monacoRef.current) return;
         const model = editorRef.current.getModel();
         if (!model) return;
@@ -88,24 +94,47 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
         const matchesPath = String(filePathToMatch || '').trim().toLowerCase() === String(currentPath || '').trim().toLowerCase();
 
         if (matchesUser && matchesPath) {
-            console.log("[renderRemoteCursor] Rendering at:", line, column);
             const maxLine = model.getLineCount();
             const safeLine = Math.min(Math.max(1, line), maxLine);
             const maxColumn = model.getLineMaxColumn(safeLine);
-            
             const safeColumn = Math.min(Math.max(1, column), maxColumn);
-            const endColumn = Math.min(safeColumn + 1, maxColumn);
 
-            const newDecorations = [
-                {
-                    range: new monacoRef.current.Range(safeLine, safeColumn, safeLine, endColumn),
+            const newDecorations = [];
+
+            // 1. TẠO DECORATION CHO VÙNG BÔI ĐEN (SELECTION)
+            const hasSelection = selection && (
+                selection.startLineNumber !== selection.endLineNumber || 
+                selection.startColumn !== selection.endColumn
+            );
+            
+            console.log("[renderRemoteCursor] Selection Check:", { hasSelection, selection });
+
+            if (hasSelection) {
+                console.log("[renderRemoteCursor] Adding Selection Decoration:", selection);
+                newDecorations.push({
+                    range: new monacoRef.current.Range(
+                        selection.startLineNumber, selection.startColumn,
+                        selection.endLineNumber, selection.endColumn
+                    ),
                     options: {
-                        beforeContentClassName: 'remote-cursor-v6-combined',
+                        className: 'remote-selection',
                         stickiness: monacoRef.current.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-                        hoverMessage: { value: currentViewingUser?.user?.fullName || 'User' }
                     }
+                });
+            }
+
+            // 2. TẠO DECORATION CHO CON TRỎ (CURSOR + LABEL)
+            // Cursor luôn ở vị trí line, column nhận được (là vị trí 'active' của selection)
+            console.log("[renderRemoteCursor] Adding Cursor Decoration at:", safeLine, safeColumn);
+            newDecorations.push({
+                range: new monacoRef.current.Range(safeLine, safeColumn, safeLine, safeColumn),
+                options: {
+                    beforeContentClassName: 'remote-cursor-v6-combined',
+                    stickiness: monacoRef.current.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+                    hoverMessage: { value: currentViewingUser?.user?.fullName || 'User' }
                 }
-            ];
+            });
+
             decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, newDecorations);
         } else {
             console.log("[renderRemoteCursor] Skip rendering. Matches:", { matchesUser, matchesPath, filePathToMatch, currentPath });
@@ -294,20 +323,36 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
         const handleCursorMoved = (data: { userId: string, filePath: string, line: number, column: number }) => {
             const isViewingNow = isViewingRef.current;
             const currentPath = currentFilePathRef.current;
-            const userMatches = isViewingNow && data.userId === viewingUser?.userId;
+            const userMatches = isViewingNow && data.userId === viewingUserRef.current?.userId;
             const pathMatch = String(data.filePath || '').trim().toLowerCase() === String(currentPath || '').trim().toLowerCase();
 
-            console.log("[handleCursorMoved] Arrived:", data.userId, "Match User:", userMatches, "Match Path:", pathMatch, "Data Path:", data.filePath, "Editor Path:", currentPath);
-
             if (userMatches) {
+                console.log("[handleCursorMoved] Received cursor_move:", { line: data.line, column: data.column, path: data.filePath });
                 remoteCursorPosRef.current = { line: data.line, column: data.column, filePath: data.filePath };
-                renderRemoteCursor(data.line, data.column, data.filePath);
+                renderRemoteCursor(data.line, data.column, data.filePath, remoteSelectionRef.current);
 
                 if (isFollowing && pathMatch && editorRef.current) {
-                    console.log("[handleCursorMoved] Following to:", data.line, data.column);
                     const position = { lineNumber: data.line, column: data.column };
                     editorRef.current.revealPositionInCenter(position, monacoRef.current.editor.ScrollType.Smooth);
                 }
+            }
+        };
+
+        const handleSelectionMoved = (data: { userId: string, filePath: string, selection: any }) => {
+            console.log("[handleSelectionMoved] RAW DATA RECEIVED:", data);
+            const isViewingNow = isViewingRef.current;
+            const currentPath = currentFilePathRef.current;
+            const userMatches = isViewingNow && data.userId === viewingUserRef.current?.userId;
+            
+            if (userMatches && String(data.filePath || '').trim().toLowerCase() === String(currentPath || '').trim().toLowerCase()) {
+                remoteSelectionRef.current = data.selection;
+                console.log("[handleSelectionMoved] Rendering selection...");
+                renderRemoteCursor(
+                    data.selection.positionLineNumber, 
+                    data.selection.positionColumn, 
+                    data.filePath, 
+                    data.selection
+                );
             }
         };
 
@@ -317,8 +362,10 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
         socket.on('file_delete', handleFileDelete);
         socket.on('file_switched', handleFileSwitched);
         socket.on('cursor_moved', handleCursorMoved);
+        socket.on('selection_moved', handleSelectionMoved);
         // Fallback for simple relay
         socket.on('cursor_move', handleCursorMoved);
+        socket.on('selection_move', handleSelectionMoved);
 
         return () => {
             socket.off('request_user_code', handleCodeRequest);
@@ -327,20 +374,43 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
             socket.off('file_delete', handleFileDelete);
             socket.off('file_switched', handleFileSwitched);
             socket.off('cursor_moved', handleCursorMoved);
+            socket.off('selection_moved', handleSelectionMoved);
             socket.off('cursor_move', handleCursorMoved);
+            socket.off('selection_move', handleSelectionMoved);
         };
     }, [roomId, isViewing, viewingUser?.userId, filePath, isFollowing, currentUser?.id]);
 
-    // Emit cursor move
+    // Emit cursor/selection move
     const handleCursorChange = (e: any) => {
         if (!isViewingRef.current && socket.connected) {
-            console.log("[handleCursorChange] Emitting:", e.position.lineNumber, e.position.column);
             socket.emit('cursor_move', {
-                roomId,
-                userId: currentUser?.id,
+                roomId: roomIdRef.current,
+                userId: currentUserRef.current?.id,
                 filePath: currentFilePathRef.current,
                 line: e.position.lineNumber,
                 column: e.position.column
+            });
+        }
+    };
+
+    const handleSelectionChange = (e: any) => {
+        if (!isViewingRef.current && socket.connected) {
+            const plainSelection = {
+                startLineNumber: e.selection.startLineNumber,
+                startColumn: e.selection.startColumn,
+                endLineNumber: e.selection.endLineNumber,
+                endColumn: e.selection.endColumn,
+                positionLineNumber: e.selection.positionLineNumber,
+                positionColumn: e.selection.positionColumn,
+            };
+            
+            console.log("[handleSelectionChange] Emitting selection:", plainSelection);
+            
+            socket.emit('selection_move', {
+                roomId: roomIdRef.current,
+                userId: currentUserRef.current?.id,
+                filePath: currentFilePathRef.current,
+                selection: plainSelection
             });
         }
     };
@@ -370,12 +440,13 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
         monacoRef.current = monaco;
 
         editor.onDidChangeCursorPosition(handleCursorChange);
+        editor.onDidChangeCursorSelection(handleSelectionChange);
 
         // Re-render remote cursor on content change (fix Monaco clearing decorations)
         editor.onDidChangeModelContent(() => {
             if (isViewingRef.current && remoteCursorPosRef.current) {
                 const { line, column, filePath } = remoteCursorPosRef.current;
-                renderRemoteCursor(line, column, filePath);
+                renderRemoteCursor(line, column, filePath, remoteSelectionRef.current);
             }
         });
 
@@ -514,6 +585,10 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
                     width: 0;
                     height: 100%;
                 }
+                /* Selection highlight */
+                .remote-selection {
+                    background-color: rgba(59, 130, 246, 0.25) !important;
+                }
                 /* Cursor bar */
                 .remote-cursor-v6-combined::before {
                     content: '';
@@ -523,7 +598,7 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
                     border-left: 2px solid #3b82f6;
                     height: 1.25em;
                     animation: cursor-blink 1s step-end infinite;
-                    animation-delay: 500ms; /* Chỉ bắt đầu nháy sau 500ms đứng yên */
+                    animation-delay: 500ms;
                 }
                 /* Name label */
                 .remote-cursor-v6-combined::after {
