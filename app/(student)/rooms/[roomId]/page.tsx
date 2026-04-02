@@ -10,7 +10,7 @@ import { ParticipantData } from '@/features/room/api';
 import { useRoomSocket } from '@/features/realtime/useRoomSocket';
 import CodeEditor from '@/components/editor/CodeEditor';
 import Participants from '@/components/room/Participants';
-import { Copy, Check, AlertTriangle, WifiOff, PlusCircle, ArrowLeft, Eye } from 'lucide-react';
+import { Copy, Check, AlertTriangle, WifiOff, PlusCircle, ArrowLeft } from 'lucide-react';
 import { useCurrentUserInfo } from '@/app/components/_api/queries';
 
 interface PageProps {
@@ -21,28 +21,23 @@ export default function RoomPage({ params }: PageProps) {
     const { roomId } = use(params);
     const queryClient = useQueryClient();
     const router = useRouter();
-    // Fetch static room metadata (REST DB query)
     const { data: roomInfo, isLoading: isRoomLoading, error } = useRoom(roomId);
     const { data: participants } = useParticipants(roomId);
     const { mutate: joinRoom, isPending: isJoining } = useJoinRoom({
         onSuccess: () => {
             console.log("Join room success!");
-            // Mutation itself invalidates, but we can do extra if needed
         },
         onError: (err: any) => {
             console.error("Join room failed:", err.response?.data || err.message);
         }
     });
 
-    console.log(`[RoomPage] isJoining: ${isJoining}, roomId: ${roomId}`);
     const room = roomInfo?.room;
     const sessionRest = roomInfo?.session;
     const currentUserRole = roomInfo?.currentUserRole;
 
-    // Join room when room info is loaded
     useEffect(() => {
         if (room?.id) {
-            console.log("Calling joinRoom for roomId:", room.id);
             joinRoom(room.id);
         }
     }, [room?.id, joinRoom]);
@@ -58,22 +53,12 @@ export default function RoomPage({ params }: PageProps) {
     const [viewingUser, setViewingUser] = useState<ParticipantData | null>(null);
     const [copied, setCopied] = useState(false);
 
-    // Find our own workspaceId (using id from auth/me)
     const currentUserParticipant = participants?.find(p => {
-        // MUST check roomId to avoid stale cache from previous room
         if (p.roomId !== roomId) return false;
-        
-        // Match by id (UUID)
-        const matched = currentUser?.id && String(p.userId) === String(currentUser?.id);
-        if (matched) console.log("Matched participant by ID:", p.userId, "Workspace:", p.workspaceId);
-        return matched;
+        return currentUser?.id && String(p.userId) === String(currentUser?.id);
     });
     const workspaceId = currentUserParticipant?.workspaceId;
     
-    console.log("[RoomPage] Current User ID:", currentUser?.id);
-    console.log("[RoomPage] Participants count:", participants?.length);
-    console.log("[RoomPage] Final Workspace ID:", workspaceId);
-
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
@@ -99,7 +84,6 @@ export default function RoomPage({ params }: PageProps) {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    // LOADING STATE
     const isLoading = isRoomLoading || isJoining;
 
     if (isLoading) {
@@ -115,7 +99,6 @@ export default function RoomPage({ params }: PageProps) {
         );
     }
 
-    // ERROR STATE
     if (error || !room) {
         return (
             <DashboardLayout>
@@ -136,7 +119,6 @@ export default function RoomPage({ params }: PageProps) {
         );
     }
 
-    // WAITING FOR HOST (Guest + no session)
     if (!shouldEnableSocket && currentUserRole === 'GUEST') {
         return (
             <DashboardLayout>
@@ -154,7 +136,6 @@ export default function RoomPage({ params }: PageProps) {
 
     return (
         <DashboardLayout>
-            {/* Modal Overlay for CLOSED state */}
             {sessionStatus === 'CLOSED' && (
                 <div className="modal-backdrop">
                     <div className="modal-box" style={{ width: 380 }}>
@@ -179,62 +160,61 @@ export default function RoomPage({ params }: PageProps) {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 14 }}>
-                {/* HEADER */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                    <div>
-                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{
-                                width: 10, height: 10, borderRadius: '50%',
-                                background: isConnected ? 'var(--accent-green)' : 'var(--accent-red)',
-                                boxShadow: isConnected ? '0 0 8px var(--accent-green)' : '0 0 8px var(--accent-red)',
-                            }} />
-                            {room.name}
-                        </h1>
-                        <p className="page-subtitle">
-                            {room.description || 'Code Meeting Room'}
-                            {' · '}
-                            <span style={{ color: sessionStatus === 'ACTIVE' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                                {sessionStatus}
-                            </span>
-                        </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{
+                            width: 12, height: 12, borderRadius: '50%',
+                            background: isConnected ? 'var(--accent-green)' : 'var(--accent-red)',
+                            boxShadow: isConnected ? '0 0 12px var(--accent-green)' : '0 0 12px var(--accent-red)',
+                        }} className={isConnected ? "pulse-glow" : ""} />
+                        <div>
+                            <h1 className="page-title" style={{ fontSize: 24, letterSpacing: '-0.02em' }}>
+                                {room.name}
+                            </h1>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                                <span className={`badge ${sessionStatus === 'ACTIVE' ? 'badge-green' : 'badge-red'}`} style={{ fontSize: 10 }}>
+                                    {sessionStatus}
+                                </span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>•</span>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>
+                                    {room.description || 'Collaborative Workspace'}
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                        {/* Connection lost warning */}
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                         {!isConnected && (
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 6,
-                                background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                                borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#f87171',
-                            }}>
-                                <WifiOff size={14} /> Mất kết nối...
-                            </div>
-                        )}
-
-                        {/* Closing countdown */}
-                        {sessionStatus === 'CLOSING' && closingTimeLeft !== null && (
                             <div style={{
                                 display: 'flex', alignItems: 'center', gap: 8,
                                 background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                                borderRadius: 8, padding: '6px 14px',
+                                borderRadius: 'var(--radius-md)', padding: '8px 16px', fontSize: 12, fontWeight: 700, color: '#f87171',
                             }}>
-                                <span style={{ fontSize: 14 }}>⏱</span>
+                                <WifiOff size={16} /> Mất kết nối
+                            </div>
+                        )}
+
+                        {sessionStatus === 'CLOSING' && closingTimeLeft !== null && (
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                                borderRadius: 'var(--radius-md)', padding: '8px 16px',
+                            }}>
+                                <span style={{ fontSize: 18 }}>⏱</span>
                                 <div>
-                                    <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Phòng sắp đóng</div>
-                                    <div style={{ fontSize: 14, fontWeight: 800, color: '#f87171' }}>{formatTime(closingTimeLeft)}</div>
+                                    <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Sắp đóng</div>
+                                    <div style={{ fontSize: 15, fontWeight: 800, color: '#f87171', lineHeight: 1 }}>{formatTime(closingTimeLeft)}</div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Copy Link */}
-                        <button className="btn btn-ghost" onClick={handleCopyLink} style={{ fontSize: 12 }}>
-                            {copied ? <Check size={14} /> : <Copy size={14} />}
-                            {copied ? 'Đã sao chép' : '🔗 Copy Link'}
+                        <button className="btn btn-ghost" onClick={handleCopyLink} style={{ borderRadius: 'var(--radius-md)', padding: '10px 16px' }}>
+                            {copied ? <Check size={16} style={{ color: 'var(--accent-green)' }} /> : <Copy size={16} />}
+                            <span style={{ fontSize: 13 }}>{copied ? 'Đã copy' : 'Mời bạn bè'}</span>
                         </button>
                     </div>
                 </div>
 
-                {/* MAIN GRID */}
                 <div
                     style={{
                         display: 'grid',
@@ -244,7 +224,6 @@ export default function RoomPage({ params }: PageProps) {
                         minHeight: 0,
                     }}
                 >
-                    {/* CENTER: Editor */}
                     <div
                         className="card"
                         style={{
@@ -252,15 +231,16 @@ export default function RoomPage({ params }: PageProps) {
                             display: 'flex',
                             flexDirection: 'column',
                             overflow: 'hidden',
+                            background: '#0b0f1a',
+                            border: '1px solid var(--border)',
+                            boxShadow: 'var(--shadow-card)',
                         }}
                     >
-                        {/* Editor fills rest */}
                         <div style={{ flex: 1 }}>
                             <CodeEditor roomId={roomId} viewingUser={viewingUser} workspaceId={workspaceId} />
                         </div>
                     </div>
 
-                    {/* RIGHT: Participants */}
                     <div
                         className="card"
                         style={{
@@ -268,6 +248,9 @@ export default function RoomPage({ params }: PageProps) {
                             display: 'flex',
                             flexDirection: 'column',
                             overflow: 'hidden',
+                            background: '#0b0f1a',
+                            border: '1px solid var(--border)',
+                            boxShadow: 'var(--shadow-card)',
                         }}
                     >
                         <Participants roomId={roomId} currentUserId={currentUser?.id} viewingUser={viewingUser} onSelectUser={setViewingUser} />
