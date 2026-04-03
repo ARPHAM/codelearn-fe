@@ -6,7 +6,8 @@ import Editor from '@monaco-editor/react'
 import './styles.module.css'
 import { JetBrains_Mono } from 'next/font/google'
 import { io, Socket } from 'socket.io-client'
-import { useSubmitCode, useRunCode } from '@/features/problems/mutations'
+import { useSubmitCode, useRunCode } from './_api/mutations'
+import { getRunResult, getSubmissionResult } from '@/features/problems/mutations'
 import { useLanguages } from '@/src/hooks/useLanguages'
 import { toast } from '@/components/ui/Toast'
 
@@ -14,6 +15,45 @@ const mono = JetBrains_Mono({
     subsets: ['latin'],
     weight: ['400', '500', '600'],
 })
+
+const getMonacoLanguage = (ext: string): string => {
+    const mapping: Record<string, string> = {
+        '.py': 'python',
+        '.cpp': 'cpp',
+        '.cxx': 'cpp',
+        '.java': 'java',
+        '.js': 'javascript',
+        '.ts': 'typescript',
+        '.cs': 'csharp',
+        '.go': 'go',
+        '.rs': 'rust',
+        '.php': 'php',
+        '.rb': 'ruby',
+        '.sql': 'sql',
+        '.css': 'css',
+        '.html': 'html',
+    }
+    return mapping[ext.toLowerCase()] || 'text'
+}
+
+const getExt = (filename: string) => {
+    const parts = filename.split('.');
+    return parts.length > 1 ? '.' + parts.pop() : '';
+}
+
+const getUniqueFilename = (name: string, files: any[]) => {
+    let newName = name;
+    let counter = 1;
+    const parts = name.split('.');
+    const ext = parts.length > 1 ? '.' + parts.pop() : '';
+    const base = (parts.length === 0 && ext) ? '' : parts.join('.');
+
+    while (files.find(f => f.filename === newName)) {
+        newName = `${base}_${counter}${ext}`;
+        counter++;
+    }
+    return newName;
+}
 
 const aiMessages = [
     {
@@ -46,24 +86,121 @@ export default function CodeEditorPage() {
     const [language, setLanguage] = useState('python')
     const [files, setFiles] = useState([
         {
-            filename: "main",
+            filename: "main.py",
             language: "python",
             content: `def find_peak(arr):\n    if not arr:\n        return -1\n    peak = 0\n    for i in range(len(arr)):\n        if arr[i] > arr[peak]:\n            peak = i\n        if i < len(arr) - 1 and arr[i] < arr[i+1]:\n            continue\n    return peak\n\n# Test\nprint(find_peak([1,3,2,5,4]))`
         },
         {
-            filename: "helper",
+            filename: "helper.py",
             language: "python",
             content: `def helper():\n    return 'Hello'`
         }
     ])
 
-    const [activeFileName, setActiveFileName] = useState<string>("main")
-    const [mainFileName, setMainFileName] = useState<string>("main")
+    const [activeFileName, setActiveFileName] = useState<string>("main.py")
+    const [mainFileName, setMainFileName] = useState<string>("main.py")
+
+    // --- File Handlers ---
+    const handleAddFile = () => {
+        let name = prompt("Nhập tên file (VD: utils.py):");
+        if (!name) return;
+
+        // Nếu người dùng không nhập đuôi, tự động thêm đuôi theo ngôn ngữ hiện tại
+        if (!name.includes('.')) {
+            const langObj = languages.find(l => l.name.toLowerCase() === language.toLowerCase());
+            if (langObj) name += langObj.ext;
+            else name += '.txt';
+        }
+
+        const finalName = getUniqueFilename(name, files);
+        const langObj = languages.find(l => l.ext === getExt(finalName));
+        
+        setFiles(prev => [...prev, {
+            filename: finalName,
+            language: langObj?.name.toLowerCase() || 'text',
+            content: langObj?.template || ""
+        }]);
+        setActiveFileName(finalName);
+    };
+
+    const handleRenameFile = (oldName: string) => {
+        let newName = prompt("Nhập tên file mới:", oldName);
+        if (!newName || newName === oldName) return;
+
+        if (files.find(f => f.filename === newName)) {
+            toast({ type: 'error', title: 'Lỗi', message: 'Tên file đã tồn tại.' });
+            return;
+        }
+
+        setFiles(prev => prev.map(f => f.filename === oldName ? { ...f, filename: newName } : f));
+        if (activeFileName === oldName) setActiveFileName(newName);
+        if (mainFileName === oldName) setMainFileName(newName);
+
+        // Kiểm tra tính hợp lệ nếu đổi tên file Main
+        if (mainFileName === oldName) {
+            const ext = getExt(newName);
+            const lang = languages.find(l => l.ext === ext);
+            if (!lang) {
+                toast({ type: 'warning', title: 'Cảnh báo', message: `File chính hiện có đuôi ${ext} không được hỗ trợ bởi các ngôn ngữ lập trình khả dụng.` });
+            }
+        }
+    };
+
+    const handleDeleteFile = (name: string) => {
+        if (files.length <= 1) return;
+        if (name === mainFileName) {
+            toast({ type: 'warning', title: 'Cảnh báo', message: 'Không thể xóa file chính.' });
+            return;
+        }
+        setFiles(prev => prev.filter(f => f.filename !== name));
+        if (activeFileName === name) {
+            setActiveFileName(mainFileName);
+        }
+    };
+
+    const handleSetMain = (name: string) => {
+        const ext = getExt(name);
+        const lang = languages.find(l => l.ext === ext);
+        
+        if (!lang) {
+            toast({ type: 'warning', title: 'Lưu ý', message: 'File này không có đuôi hỗ trợ chạy code, nhưng vẫn có thể làm file chính.' });
+        } else {
+            setLanguage(lang.name.toLowerCase());
+        }
+        
+        setMainFileName(name);
+        toast({ type: 'info', title: 'Đã cập nhật', message: `Đã đặt ${name} làm file chính.` });
+    };
+
+    const handleLanguageChange = (newLang: string) => {
+        setLanguage(newLang);
+        if (!newLang) return; // Trạng thái chưa chọn
+
+        const langObj = languages.find(l => l.name.toLowerCase() === newLang.toLowerCase());
+        if (langObj && mainFileName) {
+            const ext = getExt(mainFileName);
+            if (ext !== langObj.ext) {
+                const parts = mainFileName.split('.');
+                const base = parts.length > 1 ? parts.slice(0, -1).join('.') : mainFileName;
+                const newMainName = getUniqueFilename(base + langObj.ext, files.filter(f => f.filename !== mainFileName));
+                
+                setFiles(prev => prev.map(f => {
+                    if (f.filename === mainFileName) {
+                        return { ...f, filename: newMainName, language: newLang.toLowerCase() };
+                    }
+                    return f;
+                }));
+                setMainFileName(newMainName);
+                if (activeFileName === mainFileName) setActiveFileName(newMainName);
+            }
+        }
+    };
 
     const [status, setStatus] = useState<"IDLE" | "RUNNING" | "QUEUED" | "COMPLETED" | "ERROR">("IDLE")
     const [runResult, setRunResult] = useState<any>(null)
     const [submitResult, setSubmitResult] = useState<any>(null)
     const [customInput, setCustomInput] = useState<string>("")
+    const [resultTab, setResultTab] = useState<'output' | 'input'>('output')
 
     const runMutation = useRunCode()
     const submitMutation = useSubmitCode()
@@ -73,10 +210,23 @@ export default function CodeEditorPage() {
         if (socketRef.current?.connected) return socketRef.current;
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-        const s = io(apiUrl, { autoConnect: true });
+        const s = io(apiUrl, {
+            autoConnect: true,
+            transports: ['websocket'], // Tránh lỗi Session ID unknown
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
+        });
         socketRef.current = s;
 
         s.on('connect', () => console.log("Socket connected for execution results."));
+
+        s.on('connect_error', (err) => {
+            console.error("Socket Connection Error:", err.message);
+            if (err.message === 'xhr poll error' || err.message === 'websocket error') {
+                // Thử lại hoặc thông báo
+            }
+        });
 
         handlerRef.current = (data: any) => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current)
@@ -104,7 +254,8 @@ export default function CodeEditorPage() {
         setFiles(prev => prev.map(f => f.filename === activeFileName ? { ...f, content: value || "" } : f))
     }
 
-    const listenToResult = (id: string) => {
+    const listenToResult = async (id: string, type: 'RUN' | 'SUBMIT') => {
+        console.log("listenToResult", id, type);
         const s = initSocket();
 
         if (currentEventNameRef.current && handlerRef.current && s) {
@@ -112,28 +263,55 @@ export default function CodeEditorPage() {
         }
 
         const newEventName = `submission-${id}`
+        const altEventName = `run-${id}`
         currentEventNameRef.current = newEventName
 
-        if (handlerRef.current && s) {
-            s.on(newEventName, handlerRef.current)
+        const cleanup = () => {
+            if (handlerRef.current && s) {
+                s.off(newEventName, handlerRef.current);
+                s.off(altEventName, handlerRef.current);
+            }
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+
+        const wrappedHandler = (data: any) => {
+            console.log("Socket Result Received:", data);
+            if (handlerRef.current) handlerRef.current(data);
+            cleanup();
+        };
+
+        if (s) {
+            s.on(newEventName, wrappedHandler);
+            s.on(altEventName, wrappedHandler); // Phối hợp lắng nghe cả run-id
+        }
+
+        // --- BƯỚC HYBRID: KIỂM TRA API NGAY LẬP TỨC ---
+        try {
+            console.log(`Checking API ${type} result for ID: ${id}...`);
+            const data = type === 'RUN' ? await getRunResult(id) : await getSubmissionResult(id);
+
+            if (data && data.status !== 'QUEUED' && data.status !== 'PROCESSING') {
+                console.log("API Result Found Immediately:", data);
+                if (handlerRef.current) handlerRef.current(data);
+                cleanup();
+                return;
+            }
+        } catch (err) {
+            console.warn("API check failed, relying on socket:", err);
         }
 
         timeoutRef.current = setTimeout(() => {
             if (status === "QUEUED" || status === "RUNNING") {
                 setStatus("ERROR")
+                cleanup();
                 toast({ type: 'warning', title: 'Timeout', message: "Không nhận được phản hồi từ server sau 15s." })
             }
         }, 15000)
     }
 
     const handleRun = async () => {
-        const currentFile = files.find(f => f.filename === activeFileName);
-        const langInfo = languages.find(l => l.name.toLowerCase() === currentFile?.language.toLowerCase());
-
-        if (!langInfo) {
-            toast({ type: 'error', title: 'Lỗi', message: 'Không tìm thấy thông tin ngôn ngữ.' });
-            return;
-        }
+        const mainFileObj = files.find(f => f.filename === mainFileName) || files[0];
+        const langName = mainFileObj.language || 'python';
 
         setStatus("RUNNING")
         setRunResult(null);
@@ -141,13 +319,16 @@ export default function CodeEditorPage() {
 
         try {
             const resp = await runMutation.mutateAsync({
-                languageId: langInfo.id,
-                code: currentFile?.content || "",
+                language: langName,
+                entryFile: mainFileName,
+                files,
                 input: customInput
             })
 
             setStatus("QUEUED")
-            listenToResult(resp.id)
+            setResultTab('output') // Tự động chuyển sang tab kết quả khi chạy xong
+            console.log("Run Response:", resp);
+            listenToResult(resp.id, 'RUN')
         } catch (err) {
             setStatus("ERROR")
         }
@@ -158,27 +339,19 @@ export default function CodeEditorPage() {
         setRunResult(null);
         setSubmitResult(null);
 
-        const activeFile = files.find(f => f.filename === activeFileName);
-        const langName = activeFile?.language || 'python';
-        const langObj = languages.find(l => l.name.toLowerCase() === langName.toLowerCase());
-        const ext = langObj?.ext || '.py';
+        const mainFileObj = files.find(f => f.filename === mainFileName) || files[0];
+        const langName = mainFileObj.language || 'python';
 
         try {
             const resp = await submitMutation.mutateAsync({
                 language: langName,
-                mainFile: mainFileName + ext,
-                files: files.map(f => {
-                    const fLang = languages.find(l => l.name.toLowerCase() === f.language.toLowerCase());
-                    const fExt = fLang?.ext || '.py';
-                    return {
-                        filename: f.filename + fExt,
-                        content: f.content
-                    }
-                })
+                entryFile: mainFileName,
+                files
             })
 
             setStatus("QUEUED")
-            listenToResult(resp.submissionId)
+            console.log("Submit Response:", resp);
+            listenToResult(resp.submissionId, 'SUBMIT')
         } catch (err) {
             setStatus("ERROR")
         }
@@ -224,6 +397,17 @@ export default function CodeEditorPage() {
                         <p className="page-subtitle">Bài: Find Peak Element · {currentFile?.language} · CS101</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        <select
+                            className="btn"
+                            style={{ background: '#1c212e', fontSize: 13, border: '1px solid var(--border)' }}
+                            value={language}
+                            onChange={(e) => handleLanguageChange(e.target.value)}
+                        >
+                            <option value="">-- Chọn ngôn ngữ --</option>
+                            {languages.map(l => (
+                                <option key={l.id} value={l.name.toLowerCase()}>{l.name}</option>
+                            ))}
+                        </select>
                         <button className="btn btn-ghost" onClick={handleRun} disabled={status === "RUNNING" || status === "QUEUED"}>
                             {status === "RUNNING" || status === "QUEUED" ? "..." : "▶ Chạy code"}
                         </button>
@@ -247,25 +431,86 @@ export default function CodeEditorPage() {
                     {/* CENTER EDITOR */}
                     <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', gap: 8 }}>
-                                {files.map(f => (
-                                    <div
-                                        key={f.filename}
-                                        onClick={() => setActiveFileName(f.filename)}
-                                        style={{
-                                            padding: '4px 8px', borderRadius: 4, cursor: 'pointer',
-                                            background: activeFileName === f.filename ? 'var(--bg-secondary)' : 'transparent'
-                                        }}
-                                    >
-                                        {f.filename}
-                                    </div>
-                                ))}
+                            <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                {files.map(f => {
+                                    const isMain = mainFileName === f.filename;
+                                    const currentLangObj = languages.find(l => l.name.toLowerCase() === language.toLowerCase());
+                                    const fileExt = getExt(f.filename);
+                                    const isExtInvalid = isMain && currentLangObj && fileExt !== currentLangObj.ext && !['.txt', ''].includes(fileExt);
+                                    const isUnsupported = isMain && !languages.find(l => l.ext === fileExt);
+
+                                    return (
+                                        <div
+                                            key={f.filename}
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: 6,
+                                                padding: '4px 10px', borderRadius: '6px 6px 0 0', cursor: 'pointer',
+                                                background: activeFileName === f.filename ? '#0b0f1a' : 'transparent',
+                                                border: activeFileName === f.filename ? '1px solid var(--border)' : '1px solid transparent',
+                                                borderBottom: activeFileName === f.filename ? '1px solid #0b0f1a' : '1px solid transparent',
+                                                marginBottom: -1, zIndex: 1,
+                                                color: activeFileName === f.filename 
+                                                    ? (isMain && (isExtInvalid || isUnsupported) ? 'var(--accent-red)' : 'var(--text-primary)') 
+                                                    : 'var(--text-secondary)',
+                                                fontSize: 12, fontWeight: activeFileName === f.filename ? 600 : 400,
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onClick={() => setActiveFileName(f.filename)}
+                                        >
+                                            <span style={{
+                                                display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+                                                background: isMain ? (isExtInvalid || isUnsupported ? 'var(--accent-red)' : 'var(--accent-purple)') : 'transparent',
+                                                boxShadow: isMain ? `0 0 8px ${isExtInvalid || isUnsupported ? 'var(--accent-red)' : 'var(--accent-purple)'}` : 'none'
+                                            }} />
+                                            {f.filename}
+                                            {activeFileName === f.filename && (
+                                                <div style={{ display: 'flex', gap: 4, marginLeft: 6 }}>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleRenameFile(f.filename); }}
+                                                        style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', fontSize: 10 }}
+                                                        title="Đổi tên file"
+                                                    >
+                                                        ✎
+                                                    </button>
+                                                    {!isMain && (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleSetMain(f.filename); }}
+                                                            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', fontSize: 10 }}
+                                                            title="Đặt làm file chính"
+                                                        >
+                                                            ★
+                                                        </button>
+                                                    )}
+                                                    {files.length > 1 && !isMain && (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleDeleteFile(f.filename); }}
+                                                            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                <button
+                                    onClick={handleAddFile}
+                                    style={{
+                                        padding: '4px 8px', background: 'none', border: 'none',
+                                        color: 'var(--accent-purple)', cursor: 'pointer', fontSize: 18,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}
+                                    title="Thêm file mới"
+                                >
+                                    +
+                                </button>
                             </div>
                         </div>
                         <div className={mono.className} style={{ flex: 1 }}>
                             <Editor
                                 height="100%"
-                                language={currentFile?.language}
+                                language={getMonacoLanguage(getExt(currentFile?.filename || ''))}
                                 value={currentFile?.content}
                                 onChange={handleEditorChange}
                                 onMount={handleMount}
@@ -275,51 +520,96 @@ export default function CodeEditorPage() {
                         </div>
 
                         {/* TERMINAL / RESULTS */}
-                        <div style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)', height: 200, padding: 12, overflowY: 'auto' }}>
-                            <div style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 8 }}>Kết quả</div>
-
-                            {status === "QUEUED" && (
-                                <div style={{ color: 'var(--accent-cyan)' }} className="blink">Đang chờ chấm...</div>
-                            )}
-
-                            {runResult && (
-                                <div style={{ fontSize: 12 }}>
-                                    <div style={{ fontWeight: 'bold', color: runResult.status === 'ACCEPTED' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                                        Trạng thái: {runResult.status}
-                                    </div>
-                                    {runResult.runtime && <div>Thời gian: {runResult.runtime}ms</div>}
-                                    {runResult.compileOutput && (
-                                        <pre style={{ background: '#000', padding: 8, marginTop: 4, color: '#f87171' }}>{runResult.compileOutput}</pre>
-                                    )}
-                                    {runResult.output && (
-                                        <pre style={{ background: '#000', padding: 8, marginTop: 4 }}>{runResult.output}</pre>
-                                    )}
+                        <div style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)', height: 230, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            {/* TABS HEADER */}
+                            <div style={{ display: 'flex', gap: 20, padding: '0 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+                                <div 
+                                    onClick={() => setResultTab('output')}
+                                    style={{ 
+                                        padding: '10px 4px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                        color: resultTab === 'output' ? 'var(--accent-purple)' : 'var(--text-muted)',
+                                        borderBottom: resultTab === 'output' ? '2px solid var(--accent-purple)' : '2px solid transparent',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    💾 Kết quả
                                 </div>
-                            )}
+                                <div 
+                                    onClick={() => setResultTab('input')}
+                                    style={{ 
+                                        padding: '10px 4px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                        color: resultTab === 'input' ? 'var(--accent-purple)' : 'var(--text-muted)',
+                                        borderBottom: resultTab === 'input' ? '2px solid var(--accent-purple)' : '2px solid transparent',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    📥 Custom Input
+                                </div>
+                            </div>
 
-                            {submitResult && (
-                                <div style={{ fontSize: 12 }}>
-                                    <div style={{ fontSize: 18, fontWeight: 'bold', color: 'var(--accent-purple)' }}>
-                                        Điểm: {submitResult.score} / 100
-                                    </div>
-                                    <div style={{ marginBottom: 8 }}>Vượt qua: {submitResult.testcasesPassed} / {submitResult.testcasesTotal} testcases</div>
+                            <div style={{ flex: 1, padding: 12, overflowY: 'auto' }}>
+                                {resultTab === 'input' ? (
+                                    <textarea 
+                                        value={customInput}
+                                        onChange={(e) => setCustomInput(e.target.value)}
+                                        placeholder="Nhập dữ liệu đầu vào tại đây (stdin)..."
+                                        style={{
+                                            width: '100%', height: '100%', background: 'transparent', border: 'none', outline: 'none',
+                                            color: 'var(--text-primary)', fontSize: 12, resize: 'none', fontFamily: 'monospace',
+                                            lineHeight: 1.6
+                                        }}
+                                    />
+                                ) : (
+                                    <>
+                                        {status === "QUEUED" && (
+                                            <div style={{ color: 'var(--accent-cyan)', fontSize: 13 }} className="blink">Đang chờ chấm...</div>
+                                        )}
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: 8 }}>
-                                        {submitResult.results?.map((res: any, idx: number) => (
-                                            <div key={idx} style={{
-                                                padding: '4px 8px', borderRadius: 4, textAlign: 'center', fontSize: 10,
-                                                background: res.passed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                                                border: `1px solid ${res.passed ? 'var(--accent-green)' : 'var(--accent-red)'}`
-                                            }}>
-                                                TC {idx + 1}
+                                        {runResult && (
+                                            <div style={{ fontSize: 12 }}>
+                                                <div style={{ fontWeight: 'bold', color: runResult.status === 'ACCEPTED' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                                                    Trạng thái: {runResult.status}
+                                                </div>
+                                                {runResult.runtime && <div>Thời gian: {runResult.runtime}ms</div>}
+                                                {runResult.compileOutput && (
+                                                    <pre style={{ background: '#000', padding: 8, marginTop: 4, color: '#f87171' }}>{runResult.compileOutput}</pre>
+                                                )}
+                                                {runResult.output && (
+                                                    <pre style={{ background: '#000', padding: 8, marginTop: 4 }}>{runResult.output}</pre>
+                                                )}
                                             </div>
-                                        ))}
-                                    </div>
-                                    {submitResult.error && (
-                                        <div style={{ color: 'var(--accent-red)', marginTop: 8 }}>{submitResult.error}</div>
-                                    )}
-                                </div>
-                            )}
+                                        )}
+
+                                        {submitResult && (
+                                            <div style={{ fontSize: 12 }}>
+                                                <div style={{ fontSize: 18, fontWeight: 'bold', color: 'var(--accent-purple)' }}>
+                                                    Điểm: {submitResult.score} / 100
+                                                </div>
+                                                <div style={{ marginBottom: 8 }}>Vượt qua: {submitResult.testcasesPassed} / {submitResult.testcasesTotal} testcases</div>
+
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: 8 }}>
+                                                    {submitResult.results?.map((res: any, idx: number) => (
+                                                        <div key={idx} style={{
+                                                            padding: '4px 8px', borderRadius: 4, textAlign: 'center', fontSize: 10,
+                                                            background: res.passed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                                                            border: `1px solid ${res.passed ? 'var(--accent-green)' : 'var(--accent-red)'}`
+                                                        }}>
+                                                            TC {idx + 1}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {submitResult.error && (
+                                                    <div style={{ color: 'var(--accent-red)', marginTop: 8 }}>{submitResult.error}</div>
+                                                )}
+                                            </div>
+                                        )}
+                                        
+                                        {!runResult && !submitResult && status === "IDLE" && (
+                                            <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>Chưa có kết quả. Nhấn Chạy code hoặc Nộp bài.</div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 

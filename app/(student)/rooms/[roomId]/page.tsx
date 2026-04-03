@@ -12,7 +12,7 @@ import CodeEditor from '@/components/editor/CodeEditor';
 import Participants from '@/components/room/Participants';
 import { Copy, Check, AlertTriangle, WifiOff, PlusCircle, ArrowLeft, Play, Send } from 'lucide-react';
 import { useCurrentUserInfo } from '@/app/components/_api/queries';
-import { useRunCode, useSubmitCode } from '@/features/problems/mutations';
+import { useRunCode, useSubmitCode, getRunResult, getSubmissionResult } from '@/features/problems/mutations';
 import { useLanguages } from '@/src/hooks/useLanguages';
 import { socket } from '@/features/realtime/socket';
 import { toast } from '@/components/ui/Toast';
@@ -112,15 +112,44 @@ export default function RoomPage({ params }: PageProps) {
         setShowResult(true);
     };
 
-    const listenForExecution = (id: string) => {
+    const listenForExecution = async (id: string, type: 'RUN' | 'SUBMIT') => {
+        console.log("listenForExecution", id, type);
         if (currentEventRef.current) socket.off(currentEventRef.current);
+
         const eventName = `submission-${id}`;
+        const altEventName = `run-${id}`;
         currentEventRef.current = eventName;
-        socket.on(eventName, handleRunSubmitResult);
+
+        const cleanup = () => {
+            socket.off(eventName, handleRunSubmitResult);
+            socket.off(altEventName, handleRunSubmitResult);
+        };
+
+        socket.on(eventName, (data) => {
+            handleRunSubmitResult(data);
+            cleanup();
+        });
+        socket.on(altEventName, (data) => {
+            handleRunSubmitResult(data);
+            cleanup();
+        });
+
+        // --- HYBRID CHECK ---
+        try {
+            const data = type === 'RUN' ? await getRunResult(id) : await getSubmissionResult(id);
+            if (data && data.status !== 'QUEUED' && data.status !== 'PROCESSING') {
+                handleRunSubmitResult(data);
+                cleanup();
+                return;
+            }
+        } catch (err) {
+            console.warn("API Hybrid check failed:", err);
+        }
 
         setTimeout(() => {
             if (execStatus === "QUEUED" || execStatus === "RUNNING") {
                 setExecStatus("ERROR");
+                cleanup();
             }
         }, 30000); // 30s timeout
     };
@@ -133,16 +162,21 @@ export default function RoomPage({ params }: PageProps) {
             // In room mode, we might need to fetch the local main file content
             const files = await getWorkspaceFiles(workspaceId);
             const mainFile = files.find(f => f.filePath === 'main.ts' || f.filePath === 'main.py' || f.filePath.includes('main')) || files[0];
-            const ext = mainFile.filePath.split('.').pop();
-            const langObj = languages.find(l => l.extension.replace('.', '') === ext) || languages[0];
+            const ext = mainFile.filePath.split('.').pop() || '';
+            const langObj = languages.find(l => l.ext.replace('.', '') === ext) || languages[0];
 
+            console.log("langObj", langObj);
             const resp = await runMutation.mutateAsync({
                 languageId: langObj?.id || 1,
-                code: mainFile.content,
+                entryFile: mainFile.filePath,
+                files: files.map(f => ({
+                    filePath: f.filePath,
+                    content: f.content
+                })),
                 input: ""
             });
             setExecStatus("QUEUED");
-            listenForExecution(resp.id);
+            listenForExecution(resp.id, 'RUN');
         } catch (err) {
             setExecStatus("ERROR");
         }
@@ -155,19 +189,19 @@ export default function RoomPage({ params }: PageProps) {
         try {
             const files = await getWorkspaceFiles(workspaceId);
             const mainFile = files.find(f => f.filePath === 'main.ts' || f.filePath === 'main.py' || f.filePath.includes('main')) || files[0];
-            const ext = mainFile.filePath.split('.').pop();
-            const langObj = languages.find(l => l.extension.replace('.', '') === ext) || languages[0];
+            const ext = mainFile.filePath.split('.').pop() || '';
+            const langObj = languages.find(l => l.ext.replace('.', '') === ext) || languages[0];
 
             const resp = await submitMutation.mutateAsync({
                 language: langObj?.name || 'python',
-                mainFile: mainFile.filePath,
+                entryFile: mainFile.filePath,
                 files: files.map(f => ({
-                    filename: f.filePath,
+                    filePath: f.filePath,
                     content: f.content
                 }))
             });
             setExecStatus("QUEUED");
-            listenForExecution(resp.submissionId);
+            listenForExecution(resp.submissionId, 'SUBMIT');
         } catch (err) {
             setExecStatus("ERROR");
         }

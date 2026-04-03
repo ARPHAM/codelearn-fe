@@ -6,5 +6,5 @@ const URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 export const socket: Socket = io(URL, {
     autoConnect: false, // connect explicitly when needed
     withCredentials: true,
-    transports: ['websocket', 'polling'], // Prioritize websocket for better performance
+    transports: ['websocket'], // Use only websocket to avoid Session ID issues
 });

@@ -41,7 +41,7 @@ const FALLBACK_LANGUAGES: Language[] = [
 export const getLanguages = async (): Promise<Language[]> => {
   try {
     const response = await axios.get('/languages');
-    return response.data || FALLBACK_LANGUAGES;
+    return response.data.data || FALLBACK_LANGUAGES;
   } catch (error) {
     console.warn('Backend /languages API is missing, using fallback data.');
     return FALLBACK_LANGUAGES;

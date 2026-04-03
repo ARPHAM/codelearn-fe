@@ -5,7 +5,11 @@ import { toast } from '@/components/ui/Toast';
 export interface RunCodeRequest {
     problemVersionId?: string;
     languageId: number;
-    code: string;
+    entryFile: string;
+    files: {
+        filePath: string;
+        content: string;
+    }[];
     input?: string;
 }
 
@@ -17,9 +21,9 @@ export interface RunCodeResponse {
 export interface SubmitCodeRequest {
     problemVersionId?: string;
     language: string;
-    mainFile: string;
+    entryFile: string;
     files: {
-        filename: string;
+        filePath: string;
         content: string;
     }[];
 }
@@ -42,6 +46,12 @@ export const useRunCode = () => {
     });
 };
 
+export const getRunResult = async (id: string) => {
+    console.log("getRunResult", id);
+    const { data } = await axios.get(`/runs/${id}`);
+    return data;
+}
+
 export const useSubmitCode = () => {
     return useMutation({
         mutationFn: async (payload: SubmitCodeRequest) => {
@@ -56,3 +66,8 @@ export const useSubmitCode = () => {
         },
     });
 };
+
+export const getSubmissionResult = async (id: string) => {
+    const { data } = await axios.get(`/submissions/${id}/result`);
+    return data;
+}
