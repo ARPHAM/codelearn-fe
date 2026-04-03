@@ -1,17 +1,21 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useRoom, useParticipants } from '@/features/room/queries';
 import { useJoinRoom } from '@/features/room/mutations';
-import { ParticipantData } from '@/features/room/api';
+import { ParticipantData, WorkspaceFile, getWorkspaceFiles } from '@/features/room/api';
 import { useRoomSocket } from '@/features/realtime/useRoomSocket';
 import CodeEditor from '@/components/editor/CodeEditor';
 import Participants from '@/components/room/Participants';
-import { Copy, Check, AlertTriangle, WifiOff, PlusCircle, ArrowLeft } from 'lucide-react';
+import { Copy, Check, AlertTriangle, WifiOff, PlusCircle, ArrowLeft, Play, Send } from 'lucide-react';
 import { useCurrentUserInfo } from '@/app/components/_api/queries';
+import { useRunCode, useSubmitCode } from '@/features/problems/mutations';
+import { useLanguages } from '@/src/hooks/useLanguages';
+import { socket } from '@/features/realtime/socket';
+import { toast } from '@/components/ui/Toast';
 
 interface PageProps {
     params: Promise<{ roomId: string }>;
@@ -44,7 +48,7 @@ export default function RoomPage({ params }: PageProps) {
 
     const shouldEnableSocket = !!room && (sessionRest !== null || currentUserRole === 'HOST');
 
-    const { isConnected, sessionStatus, closingTimeLeft } = useRoomSocket({ 
+    const { isConnected, sessionStatus, closingTimeLeft } = useRoomSocket({
         roomId,
         enabled: shouldEnableSocket
     });
@@ -58,7 +62,19 @@ export default function RoomPage({ params }: PageProps) {
         return currentUser?.id && String(p.userId) === String(currentUser?.id);
     });
     const workspaceId = currentUserParticipant?.workspaceId;
-    
+
+    // Core Logic for Run/Submit
+    const { data: languages = [] } = useLanguages();
+    const runMutation = useRunCode();
+    const submitMutation = useSubmitCode();
+
+    const [execStatus, setExecStatus] = useState<"IDLE" | "RUNNING" | "QUEUED" | "COMPLETED" | "ERROR">("IDLE");
+    const [runResult, setRunResult] = useState<any>(null);
+    const [submitResult, setSubmitResult] = useState<any>(null);
+    const [showResult, setShowResult] = useState(false);
+
+    const currentEventRef = useRef<string | null>(null);
+
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
@@ -84,6 +100,79 @@ export default function RoomPage({ params }: PageProps) {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleRunSubmitResult = (data: any) => {
+        setExecStatus("COMPLETED");
+        if (data.score !== undefined) {
+            setSubmitResult(data);
+            setRunResult(null);
+        } else {
+            setRunResult(data);
+            setSubmitResult(null);
+        }
+        setShowResult(true);
+    };
+
+    const listenForExecution = (id: string) => {
+        if (currentEventRef.current) socket.off(currentEventRef.current);
+        const eventName = `submission-${id}`;
+        currentEventRef.current = eventName;
+        socket.on(eventName, handleRunSubmitResult);
+
+        setTimeout(() => {
+            if (execStatus === "QUEUED" || execStatus === "RUNNING") {
+                setExecStatus("ERROR");
+            }
+        }, 30000); // 30s timeout
+    };
+
+    const handleRun = async () => {
+        if (!workspaceId) return;
+        setExecStatus("RUNNING");
+        setShowResult(false);
+        try {
+            // In room mode, we might need to fetch the local main file content
+            const files = await getWorkspaceFiles(workspaceId);
+            const mainFile = files.find(f => f.filePath === 'main.ts' || f.filePath === 'main.py' || f.filePath.includes('main')) || files[0];
+            const ext = mainFile.filePath.split('.').pop();
+            const langObj = languages.find(l => l.extension.replace('.', '') === ext) || languages[0];
+
+            const resp = await runMutation.mutateAsync({
+                languageId: langObj?.id || 1,
+                code: mainFile.content,
+                input: ""
+            });
+            setExecStatus("QUEUED");
+            listenForExecution(resp.id);
+        } catch (err) {
+            setExecStatus("ERROR");
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!workspaceId) return;
+        setExecStatus("RUNNING");
+        setShowResult(false);
+        try {
+            const files = await getWorkspaceFiles(workspaceId);
+            const mainFile = files.find(f => f.filePath === 'main.ts' || f.filePath === 'main.py' || f.filePath.includes('main')) || files[0];
+            const ext = mainFile.filePath.split('.').pop();
+            const langObj = languages.find(l => l.extension.replace('.', '') === ext) || languages[0];
+
+            const resp = await submitMutation.mutateAsync({
+                language: langObj?.name || 'python',
+                mainFile: mainFile.filePath,
+                files: files.map(f => ({
+                    filename: f.filePath,
+                    content: f.content
+                }))
+            });
+            setExecStatus("QUEUED");
+            listenForExecution(resp.submissionId);
+        } catch (err) {
+            setExecStatus("ERROR");
+        }
+    };
+
     const isLoading = isRoomLoading || isJoining;
 
     if (isLoading) {
@@ -105,30 +194,9 @@ export default function RoomPage({ params }: PageProps) {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 120px)', textAlign: 'center', padding: 24 }}>
                     <AlertTriangle size={40} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
                     <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>Phòng không tồn tại</h2>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 13, maxWidth: 340, marginBottom: 24 }}>
-                        Phòng này đã đóng hoặc bạn không có quyền truy cập. Hãy tạo phòng mới để tiếp tục.
-                    </p>
                     <div style={{ display: 'flex', gap: 10 }}>
                         <button className="btn btn-ghost" onClick={() => router.push('/dashboard')}>← Dashboard</button>
-                        <button className="btn btn-primary" onClick={() => router.push('/rooms/create')}>
-                            <PlusCircle size={16} /> Tạo phòng mới
-                        </button>
                     </div>
-                </div>
-            </DashboardLayout>
-        );
-    }
-
-    if (!shouldEnableSocket && currentUserRole === 'GUEST') {
-        return (
-            <DashboardLayout>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 120px)', textAlign: 'center' }}>
-                    <div className="spin" style={{ width: 40, height: 40, border: '3px solid var(--border)', borderTopColor: 'var(--accent-cyan)', borderRadius: '50%', marginBottom: 20 }} />
-                    <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Đang đợi Chủ phòng...</h2>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 13, maxWidth: 320, marginBottom: 20 }}>
-                        Phiên học chưa được bắt đầu. Vui lòng chờ Host mở phòng.
-                    </p>
-                    <button className="btn btn-ghost" onClick={() => window.location.reload()}>🔄 Tải lại trang</button>
                 </div>
             </DashboardLayout>
         );
@@ -136,30 +204,8 @@ export default function RoomPage({ params }: PageProps) {
 
     return (
         <DashboardLayout>
-            {sessionStatus === 'CLOSED' && (
-                <div className="modal-backdrop">
-                    <div className="modal-box" style={{ width: 380 }}>
-                        <div style={{ padding: 24, textAlign: 'center' }}>
-                            <div style={{ height: 3, background: 'var(--gradient-fire)', marginTop: -24, marginLeft: -1, marginRight: -1, borderRadius: '16px 16px 0 0' }} />
-                            <AlertTriangle size={48} style={{ color: 'var(--accent-red)', margin: '24px auto 12px' }} />
-                            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Phiên kết thúc</h3>
-                            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24 }}>
-                                Phòng mã này đã bị đóng. Thay đổi chưa lưu đã tự động lưu cục bộ vào thiết bị.
-                            </p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => router.push('/rooms/create')}>
-                                    <PlusCircle size={16} /> Tạo phòng mới
-                                </button>
-                                <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }} onClick={() => router.push('/dashboard')}>
-                                    <ArrowLeft size={16} /> Về Dashboard
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 14 }}>
+                {/* HEADER */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                         <div style={{
@@ -175,39 +221,19 @@ export default function RoomPage({ params }: PageProps) {
                                 <span className={`badge ${sessionStatus === 'ACTIVE' ? 'badge-green' : 'badge-red'}`} style={{ fontSize: 10 }}>
                                     {sessionStatus}
                                 </span>
-                                <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>•</span>
-                                <span style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>
-                                    {room.description || 'Collaborative Workspace'}
-                                </span>
                             </div>
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                        {!isConnected && (
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 8,
-                                background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                                borderRadius: 'var(--radius-md)', padding: '8px 16px', fontSize: 12, fontWeight: 700, color: '#f87171',
-                            }}>
-                                <WifiOff size={16} /> Mất kết nối
-                            </div>
-                        )}
-
-                        {sessionStatus === 'CLOSING' && closingTimeLeft !== null && (
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 10,
-                                background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                                borderRadius: 'var(--radius-md)', padding: '8px 16px',
-                            }}>
-                                <span style={{ fontSize: 18 }}>⏱</span>
-                                <div>
-                                    <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Sắp đóng</div>
-                                    <div style={{ fontSize: 15, fontWeight: 800, color: '#f87171', lineHeight: 1 }}>{formatTime(closingTimeLeft)}</div>
-                                </div>
-                            </div>
-                        )}
-
+                        <button className="btn btn-ghost" onClick={handleRun} disabled={execStatus === "RUNNING" || execStatus === "QUEUED" || !!viewingUser}>
+                            <Play size={16} />
+                            <span>Run</span>
+                        </button>
+                        <button className="btn btn-primary" onClick={handleSubmit} disabled={execStatus === "RUNNING" || execStatus === "QUEUED" || !!viewingUser}>
+                            <Send size={16} />
+                            <span>Submit</span>
+                        </button>
                         <button className="btn btn-ghost" onClick={handleCopyLink} style={{ borderRadius: 'var(--radius-md)', padding: '10px 16px' }}>
                             {copied ? <Check size={16} style={{ color: 'var(--accent-green)' }} /> : <Copy size={16} />}
                             <span style={{ fontSize: 13 }}>{copied ? 'Đã copy' : 'Mời bạn bè'}</span>
@@ -215,44 +241,59 @@ export default function RoomPage({ params }: PageProps) {
                     </div>
                 </div>
 
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 260px',
-                        gap: 14,
-                        flex: 1,
-                        minHeight: 0,
-                    }}
-                >
-                    <div
-                        className="card"
-                        style={{
-                            padding: 0,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden',
-                            background: '#0b0f1a',
-                            border: '1px solid var(--border)',
-                            boxShadow: 'var(--shadow-card)',
-                        }}
-                    >
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 14, flex: 1, minHeight: 0 }}>
+                    <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#0b0f1a', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)', position: 'relative' }}>
                         <div style={{ flex: 1 }}>
                             <CodeEditor roomId={roomId} viewingUser={viewingUser} workspaceId={workspaceId} />
                         </div>
+
+                        {/* EXECUTION RESULTS OVERLAY */}
+                        {showResult && (
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: '#0b0f1a', borderTop: '2px solid var(--accent-purple)', zIndex: 100, padding: 16, overflowY: 'auto' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                                    <h3 style={{ fontWeight: 'bold' }}>Kết quả thực thi</h3>
+                                    <button onClick={() => setShowResult(false)} className="btn btn-ghost" style={{ padding: '2px 8px' }}>Đóng</button>
+                                </div>
+
+                                {runResult && (
+                                    <div style={{ fontSize: 13 }}>
+                                        <div style={{ color: runResult.status === 'ACCEPTED' ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 'bold', marginBottom: 4 }}>
+                                            Trạng thái: {runResult.status}
+                                        </div>
+                                        <pre style={{ background: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8, fontSize: 12 }}>
+                                            {runResult.compileOutput || runResult.output || 'No output.'}
+                                        </pre>
+                                    </div>
+                                )}
+
+                                {submitResult && (
+                                    <div>
+                                        <div style={{ fontSize: 24, fontWeight: 'bold', color: 'var(--accent-purple)' }}>{submitResult.score}%</div>
+                                        <div style={{ marginBottom: 12 }}>Vượt qua: {submitResult.testcasesPassed} / {submitResult.testcasesTotal} cases</div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 10 }}>
+                                            {submitResult.results?.map((r: any, i: number) => (
+                                                <div key={i} style={{
+                                                    padding: 8, borderRadius: 6, textAlign: 'center', fontSize: 11,
+                                                    background: r.passed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                                                    border: `1px solid ${r.passed ? 'var(--accent-green)' : 'var(--accent-red)'}`
+                                                }}>
+                                                    TC {i + 1}: {r.status}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {execStatus === "QUEUED" && (
+                            <div style={{ position: 'absolute', bottom: 16, right: 16, background: 'var(--accent-cyan)', padding: '4px 12px', borderRadius: 4, fontSize: 12, color: 'white', fontWeight: 'bold' }} className="blink">
+                                Đang chấm bài...
+                            </div>
+                        )}
                     </div>
 
-                    <div
-                        className="card"
-                        style={{
-                            padding: 0,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden',
-                            background: '#0b0f1a',
-                            border: '1px solid var(--border)',
-                            boxShadow: 'var(--shadow-card)',
-                        }}
-                    >
+                    <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#0b0f1a', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
                         <Participants roomId={roomId} currentUserId={currentUser?.id} viewingUser={viewingUser} onSelectUser={setViewingUser} />
                     </div>
                 </div>
