@@ -4,6 +4,12 @@ export interface RoomData {
     id: string;
     name: string;
     description?: string;
+    type: 'MEETING' | 'CODE';
+    problemId?: number | null;
+    status: 'OPEN' | 'CLOSED';
+    createdBy: string;
+    maxParticipants: number;
+    createdAt: string;
 }
 
 export interface ParticipantUser {
@@ -88,6 +94,22 @@ export const joinRoomApi = async (roomId: string): Promise<void> => {
  */
 export const leaveRoomApi = async (roomId: string): Promise<void> => {
     await axios.post(`/rooms/${roomId}/leave`);
+};
+
+/**
+ * Fetch my rooms
+ */
+export const getMyRoomsApi = async (): Promise<RoomData[]> => {
+    const res = await axios.get('/rooms/my-rooms');
+    return res.data.data;
+};
+
+/**
+ * Update room info
+ */
+export const updateRoomApi = async (id: string, data: Partial<RoomData>): Promise<RoomData> => {
+    const res = await axios.patch(`/rooms/${id}`, data);
+    return res.data.data;
 };
 
 /**

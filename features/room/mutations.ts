@@ -1,9 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { joinRoomApi, leaveRoomApi, createRoomApi } from './api';
+import { joinRoomApi, leaveRoomApi, createRoomApi, updateRoomApi, RoomData } from './api';
 
 export const useCreateRoom = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: createRoomApi,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['my_rooms'] });
+        }
     });
 };
 
@@ -25,6 +29,17 @@ export const useLeaveRoom = () => {
         mutationFn: (roomId: string) => leaveRoomApi(roomId),
         onSuccess: (_, roomId) => {
             queryClient.invalidateQueries({ queryKey: ['room_participants', roomId] });
+        },
+    });
+};
+
+export const useUpdateRoom = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string, data: Partial<RoomData> }) => updateRoomApi(id, data),
+        onSuccess: (updatedRoom) => {
+            queryClient.invalidateQueries({ queryKey: ['my_rooms'] });
+            queryClient.invalidateQueries({ queryKey: ['room', updatedRoom.id] });
         },
     });
 };

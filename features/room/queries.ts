@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getRoom, getParticipants, getWorkspaceFiles } from './api';
+import { getRoom, getParticipants, getWorkspaceFiles, getMyRoomsApi } from './api';
 
 export const useRoom = (roomId: string) => {
     return useQuery({
@@ -22,5 +22,12 @@ export const useWorkspaceFiles = (workspaceId?: string) => {
         queryKey: ['workspace_files', workspaceId],
         queryFn: () => getWorkspaceFiles(workspaceId!),
         enabled: !!workspaceId,
+    });
+};
+
+export const useMyRooms = () => {
+    return useQuery({
+        queryKey: ['my_rooms'],
+        queryFn: getMyRoomsApi,
     });
 };

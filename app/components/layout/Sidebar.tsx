@@ -25,6 +25,7 @@ const navGroups = [
       { href: '/student/code-battle', icon: '⚔️', label: 'Code Battle' },
       { href: '/student/learning-path', icon: '🗺️', label: 'Lộ trình Học tập' },
       { href: '/student/leaderboard', icon: '🏆', label: 'Leaderboard' },
+      { href: '/rooms', icon: '🏠', label: 'Phòng học trực tuyến' },
     ],
   },
   {
@@ -35,6 +36,8 @@ const navGroups = [
       { href: '/admin/sandbox', icon: '🐳', label: 'Sandbox Resources' },
       { href: '/admin/audit-log', icon: '📋', label: 'Log & Audit' },
       { href: '/admin/system-config', icon: '🔧', label: 'Cấu hình Hệ thống' },
+      { href: '/admin/languages', icon: '🌐', label: 'Quản lý Ngôn ngữ' },
+      { href: '/admin/rooms', icon: '🏠', label: 'Quản lý Phòng học' },
     ],
   },
 ];

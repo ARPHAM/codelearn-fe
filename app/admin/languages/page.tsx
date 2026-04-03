@@ -20,7 +20,6 @@ export default function LanguageManagementPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLang, setEditingLang] = useState<Language | null>(null);
-  console.log(languages)
 
   // Polling for PULLING status
   useEffect(() => {
