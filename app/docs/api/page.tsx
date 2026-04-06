@@ -426,26 +426,58 @@ const apiGroups: ApiGroup[] = [
     group: 'Admin — System Config', icon: '🔧', color: '#f59e0b',
     endpoints: [
       {
-        method: 'GET', path: `${API_BASE}/admin/languages`,
-        desc: 'Danh sách ngôn ngữ lập trình hỗ trợ',
+        method: 'GET', path: `${API_BASE}/admin/settings`,
+        desc: 'Lấy toàn bộ cấu hình hệ thống (Sandbox, Plagiarism)',
         auth: 'Admin',
-        success: { languages: [{ id: 1, name: 'Python', version: 'CPython 3.11', dockerImage: 'python:3.11-slim', enabled: true, allowedLibs: ['math', 'collections'] }] },
+        success: {
+          sandbox: { maxConcurrent: 20, defaultTimeout: 5000, defaultMemoryLimit: 256, cpuLimit: 0.5, enableNetwork: false },
+          plagiarism: { algorithm: 'AST + Token', warningThreshold: 40, dangerThreshold: 70, autoFlag: true }
+        },
+        error: { code: 403, message: 'Chỉ Admin mới có quyền' },
+      },
+      {
+        method: 'PATCH', path: `${API_BASE}/admin/settings`,
+        desc: 'Cập nhật tham số cấu hình (Partial update)',
+        auth: 'Admin',
+        payload: { sandbox: { maxConcurrent: 25 }, plagiarism: { warningThreshold: 45 } },
+        success: {
+          sandbox: { maxConcurrent: 25, defaultTimeout: 5000, defaultMemoryLimit: 256, cpuLimit: 0.5, enableNetwork: false },
+          plagiarism: { algorithm: 'AST + Token', warningThreshold: 45, dangerThreshold: 70, autoFlag: true }
+        },
+        error: { code: 400, message: 'Dữ liệu không hợp lệ' },
+      },
+      {
+        method: 'GET', path: `${API_BASE}/admin/health/infrastructure`,
+        desc: 'Kiểm tra trạng thái Docker và tài nguyên Server',
+        auth: 'Admin',
+        success: {
+          docker: { version: '24.0.7', status: 'running', imageCount: 12, containerCount: 5 },
+          nodes: [{ id: 'node-master', cpuUsage: 15, memoryUsage: 45, diskUsage: 20, status: 'healthy' }],
+          registry: 'localhost:5000'
+        },
+        error: { code: 403, message: 'Không có quyền' },
+      },
+      {
+        method: 'GET', path: `${API_BASE}/admin/languages`,
+        desc: 'Danh sách ngôn ngữ lập trình hỗ trợ (Admin)',
+        auth: 'Admin',
+        success: [{ id: 1, name: 'Python 3', version: '3.10', dockerImage: 'python:3.10-alpine', defaultMemoryLimit: 256, defaultCpuLimit: 0.5, defaultTimeout: 5000, imageStatus: 'READY' }],
         error: { code: 403, message: 'Không có quyền' },
       },
       {
         method: 'POST', path: `${API_BASE}/admin/languages`,
         desc: 'Thêm ngôn ngữ lập trình mới',
         auth: 'Admin',
-        payload: { name: 'string', version: 'string', dockerImage: 'string', allowedLibs: ['string'], timeout: 'number', memoryMb: 'number' },
-        success: { id: 6, message: 'Đã thêm Go 1.22 thành công' },
+        payload: { name: 'string', version: 'string', dockerImage: 'string', defaultMemoryLimit: 'number', defaultCpuLimit: 'number', defaultTimeout: 'number' },
+        success: { id: 7, message: 'Đã thêm Java 21 thành công' },
         error: { code: 409, message: 'Ngôn ngữ này đã tồn tại' },
       },
       {
         method: 'PATCH', path: `${API_BASE}/admin/languages/:id`,
-        desc: 'Bật/tắt hoặc cập nhật cấu hình ngôn ngữ',
+        desc: 'Cập nhật cấu hình ngôn ngữ',
         auth: 'Admin',
-        payload: { enabled: 'boolean?', allowedLibs: '[]?', timeout: 'number?', memoryMb: 'number?' },
-        success: { message: 'Đã cập nhật Go 1.22', updatedAt: '2026-03-07T08:00:00Z' },
+        payload: { defaultMemoryLimit: 'number?', defaultCpuLimit: 'number?', defaultTimeout: 'number?' },
+        success: { message: 'Đã cập nhật cấu hình', updatedAt: '2026-04-06T11:00:00Z' },
         error: { code: 404, message: 'Ngôn ngữ không tồn tại' },
       },
     ],

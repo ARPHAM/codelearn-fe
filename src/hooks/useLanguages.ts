@@ -37,8 +37,8 @@ export const useCreateLanguage = () => {
 export const useUpdateLanguage = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Language> }) =>
-      updateLanguage(id, data),
+    mutationFn: (params: { id: number; data: Partial<Language> }) =>
+      updateLanguage(params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-languages'] });
       queryClient.invalidateQueries({ queryKey: ['languages'] });

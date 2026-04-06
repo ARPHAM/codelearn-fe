@@ -27,6 +27,9 @@ export default function LanguageModal({
     template: '',
     compileCmd: '',
     runCmd: '',
+    defaultMemoryLimit: 256,
+    defaultCpuLimit: 0.5,
+    defaultTimeout: 5000,
   });
 
   useEffect(() => {
@@ -41,6 +44,9 @@ export default function LanguageModal({
         template: '',
         compileCmd: '',
         runCmd: '',
+        defaultMemoryLimit: 256,
+        defaultCpuLimit: 0.5,
+        defaultTimeout: 5000,
       });
     }
   }, [initialData, open]);
@@ -48,8 +54,9 @@ export default function LanguageModal({
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const val = type === 'number' ? parseFloat(value) : value;
+    setFormData((prev) => ({ ...prev, [name]: val }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -120,6 +127,44 @@ export default function LanguageModal({
               value={formData.ext}
               onChange={handleChange}
               placeholder="VD: .py"
+              required
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, background: 'var(--bg-secondary)', padding: 12, borderRadius: 8 }}>
+          <div>
+            <label className="form-label">RAM Limit (MB)</label>
+            <input
+              name="defaultMemoryLimit"
+              type="number"
+              className="input"
+              value={formData.defaultMemoryLimit}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label className="form-label">CPU Limit (vCPU)</label>
+            <input
+              name="defaultCpuLimit"
+              type="number"
+              step="0.1"
+              className="input"
+              value={formData.defaultCpuLimit}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label className="form-label">Timeout (ms)</label>
+            <input
+              name="defaultTimeout"
+              type="number"
+              step="100"
+              className="input"
+              value={formData.defaultTimeout}
+              onChange={handleChange}
               required
             />
           </div>

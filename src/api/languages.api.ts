@@ -11,41 +11,14 @@ export interface Language {
   lastError?: string | null;
   compileCmd?: string | null;
   runCmd: string;
+  defaultMemoryLimit: number; // MB
+  defaultCpuLimit: number;    // vCPU
+  defaultTimeout: number;     // ms
 }
 
-// Temporary fallback since Backend /languages API is not ready
-const FALLBACK_LANGUAGES: Language[] = [
-  {
-    id: 1,
-    name: 'Python',
-    version: '3.10',
-    dockerImage: 'python:3.10-slim',
-    ext: '.py',
-    template: 'print("Hello, World!")',
-    imageStatus: 'READY',
-    runCmd: 'python3 {file}',
-  },
-  {
-    id: 2,
-    name: 'C++',
-    version: '17',
-    dockerImage: 'gcc:latest',
-    ext: '.cpp',
-    template: '#include <iostream>\nint main() { std::cout << "Hello"; return 0; }',
-    imageStatus: 'READY',
-    compileCmd: 'g++ {file} -o {bin}',
-    runCmd: './{bin}',
-  },
-];
-
 export const getLanguages = async (): Promise<Language[]> => {
-  try {
-    const response = await axios.get('/languages');
-    return response.data.data || FALLBACK_LANGUAGES;
-  } catch (error) {
-    console.warn('Backend /languages API is missing, using fallback data.');
-    return FALLBACK_LANGUAGES;
-  }
+  const response = await axios.get('/languages');
+  return response.data.data;
 };
 
 export const getLanguage = async (id: number): Promise<Language> => {
@@ -53,7 +26,6 @@ export const getLanguage = async (id: number): Promise<Language> => {
   return response.data;
 };
 
-// Admin APIs
 export const getAdminLanguages = async (): Promise<Language[]> => {
   const response = await axios.get('/admin/languages');
   return response.data.data;
@@ -64,8 +36,8 @@ export const createLanguage = async (data: Partial<Language>): Promise<Language>
   return response.data;
 };
 
-export const updateLanguage = async (id: number, data: Partial<Language>): Promise<Language> => {
-  const response = await axios.patch(`/admin/languages/${id}`, data);
+export const updateLanguage = async (data: { id: number; data: Partial<Language> }): Promise<Language> => {
+  const response = await axios.patch(`/admin/languages/${data.id}`, data.data);
   return response.data;
 };
 
