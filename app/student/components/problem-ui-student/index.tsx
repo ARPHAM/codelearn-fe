@@ -19,6 +19,26 @@ type Block = {
     content: string
 }
 
+interface TestCase {
+    input: string
+    expectedOutput: string
+    order: number
+}
+
+interface ProblemUiStudentProps {
+    title?: string
+    description?: Block[]
+    difficulty?: 'EASY' | 'MEDIUM' | 'HARD'
+    stats?: {
+        totalSubmissions: number
+        acceptanceRate: number
+    }
+    testcases?: TestCase[]
+    
+    // Fallback cho UI cũ
+    blocks?: Block[]
+}
+
 // ---------------- TOGGLE NODE (Read-only) ----------------
 const ToggleComponent = () => {
     return (
@@ -69,26 +89,65 @@ function StudentEditorBlock({ content }: { content: string }) {
 }
 
 // ---------------- MAIN COMPONENT ----------------
-interface ProblemUiStudentProps {
-    blocks: Block[]
-    title?: string
-}
 
-export default function ProblemUiStudent({ blocks, title }: ProblemUiStudentProps) {
+export default function ProblemUiStudent({ blocks, title, description, difficulty, stats, testcases }: ProblemUiStudentProps) {
+
     return (
         <div className="page-container student-view">
             {title && (
-                <div className="header-section">
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                <div className="header-section" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                         {title}
                     </h2>
+                    <div className="problem-meta">
+                        {difficulty && (
+                            <span className={`badge difficulty-${difficulty.toLowerCase()}`}>
+                                {difficulty === 'EASY' ? 'Dễ' : difficulty === 'MEDIUM' ? 'Trung bình' : 'Khó'}
+                            </span>
+                        )}
+                        {stats && (
+                            <span className="stats-text" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                Lượt nộp: <strong>{stats.totalSubmissions}</strong> &nbsp;|&nbsp; Tỷ lệ đỗ: <strong>{stats.acceptanceRate}%</strong>
+                            </span>
+                        )}
+                    </div>
                 </div>
             )}
             
-            <div className="card">
-                {blocks.map((block) => (
-                    <StudentEditorBlock key={block.id} content={block.content} />
-                ))}
+            <div className="card read-only-wrapper" style={{ padding: 16 }}>
+                {description && description.length > 0 ? (
+                    description.map((block, idx) => (
+                        <StudentEditorBlock key={block.id || idx} content={block.content} />
+                    ))
+                ) : blocks && blocks.length > 0 ? (
+                    blocks.map((block, idx) => (
+                        <StudentEditorBlock key={block.id || idx} content={block.content} />
+                    ))
+                ) : null}
+
+                {testcases && testcases.length > 0 && (
+                    <div className="public-testcases" style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                        <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary)', marginBottom: 12 }}>Testcases / Ví dụ:</h3>
+                        {testcases.map((tc, idx) => (
+                            <div key={idx} className="testcase-example" style={{
+                                background: 'var(--bg-secondary)', 
+                                padding: 12, 
+                                borderRadius: 8, 
+                                marginBottom: 12,
+                                border: '1px solid var(--border)'
+                            }}>
+                                <div style={{ marginBottom: 6 }}>
+                                    <strong style={{ color: 'var(--text-secondary)' }}>Input:</strong>
+                                    <pre style={{ margin: '4px 0 0', padding: 8, background: '#1e1e1e', borderRadius: 4, color: '#a5d6ff' }}>{tc.input}</pre>
+                                </div>
+                                <div>
+                                    <strong style={{ color: 'var(--text-secondary)' }}>Output:</strong>
+                                    <pre style={{ margin: '4px 0 0', padding: 8, background: '#1e1e1e', borderRadius: 4, color: '#79c0ff' }}>{tc.expectedOutput}</pre>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     )

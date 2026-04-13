@@ -13,6 +13,7 @@ const navGroups = [
       { href: '/lecturer/analytics', icon: '📊', label: 'Analytics Dashboard' },
       { href: '/lecturer/auto-grader', icon: '⚡', label: 'Auto-Grader' },
       { href: '/lecturer/plagiarism', icon: '🔍', label: 'Phát hiện Đạo văn' },
+      { href: '/lecturer/problems', icon: '📂', label: 'Quản lý Bài tập' },
       { href: '/lecturer/question-bank', icon: '🗃️', label: 'Ngân hàng Câu hỏi' },
     ],
   },
@@ -20,7 +21,7 @@ const navGroups = [
     label: '🎮 Sinh viên',
     color: '#06b6d4',
     items: [
-      { href: '/student/code-editor', icon: '💻', label: 'Code Editor + AI' },
+      { href: '/student/problems', icon: '🎯', label: 'Luyện Tập (Bài Tập)' },
       { href: '/student/pair-programming', icon: '👥', label: 'Pair Programming' },
       { href: '/student/code-battle', icon: '⚔️', label: 'Code Battle' },
       { href: '/student/learning-path', icon: '🗺️', label: 'Lộ trình Học tập' },
@@ -33,6 +34,7 @@ const navGroups = [
     color: '#f59e0b',
     items: [
       { href: '/admin/users', icon: '👥', label: 'Quản lý người dùng' },
+      { href: '/admin/problems', icon: '🛡️', label: 'Duyệt bài tập' },
       { href: '/admin/sandbox', icon: '🐳', label: 'Sandbox Resources' },
       { href: '/admin/audit-log', icon: '📋', label: 'Log & Audit' },
       { href: '/admin/system-config', icon: '🔧', label: 'Cấu hình Hệ thống' },

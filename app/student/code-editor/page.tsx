@@ -9,7 +9,11 @@ import { io, Socket } from 'socket.io-client'
 import { useSubmitCode, useRunCode } from './_api/mutations'
 import { getRunResult, getSubmissionResult } from '@/features/problems/mutations'
 import { useLanguages } from '@/src/hooks/useLanguages'
+import { useStudentProblemDetail } from '@/src/hooks/useProblems'
+import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
 import { toast } from '@/components/ui/Toast'
+import { useSearchParams } from 'next/navigation'
+import ProblemUiStudent from '../components/problem-ui-student'
 
 const mono = JetBrains_Mono({
     subsets: ['latin'],
@@ -72,6 +76,10 @@ const aiMessages = [
 ]
 
 export default function CodeEditorPage() {
+    const searchParams = useSearchParams()
+    const slug = searchParams.get('slug')
+    const { data: problemData, isLoading: isLoadingProblem } = useStudentProblemDetail(slug || '', !!slug)
+
     const editorRef = useRef<any>(null)
     const socketRef = useRef<Socket | null>(null)
     const handlerRef = useRef<((data: any) => void) | null>(null)
@@ -82,6 +90,32 @@ export default function CodeEditorPage() {
     const stuckMinutes = 32
 
     const { data: languages = [] } = useLanguages()
+
+    // ---------------- Tự động cập nhật file khởi tạo khi load đề ----------------
+    useEffect(() => {
+        if (problemData && problemData.languageFiles && problemData.languageFiles.length > 0) {
+            const templateFile = problemData.languageFiles.find(f => f.type === 'TEMPLATE') || problemData.languageFiles[0]
+            if (templateFile) {
+                const langObj = languages.find(l => l.id === templateFile.languageId)
+                if (langObj) {
+                    setLanguage(langObj.name.toLowerCase())
+                    const mappedFiles = problemData.languageFiles.filter(f => f.type === 'TEMPLATE').map(f => {
+                        const l = languages.find(lx => lx.id === f.languageId)
+                        return {
+                            filename: f.path,
+                            language: l ? l.name.toLowerCase() : 'text',
+                            content: f.content
+                        }
+                    })
+                    if (mappedFiles.length > 0) {
+                        setFiles(mappedFiles)
+                        setActiveFileName(mappedFiles[0].filename)
+                        setMainFileName(mappedFiles[0].filename)
+                    }
+                }
+            }
+        }
+    }, [problemData, languages])
 
     const [language, setLanguage] = useState('python')
     const [files, setFiles] = useState([
@@ -393,8 +427,8 @@ export default function CodeEditorPage() {
                 {/* HEADER */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                     <div>
-                        <h1 className="page-title">💻 Code Editor + 🤖 AI Assistant</h1>
-                        <p className="page-subtitle">Bài: Find Peak Element · {currentFile?.language} · CS101</p>
+                        <h1 className="page-title">💻 Code Editor + {slug ? '🎯 Giải thuật' : '🤖 AI Assistant'}</h1>
+                        <p className="page-subtitle">{problemData?.title ? `Bài: ${problemData.title}` : 'Chế độ Code Tự Do'} · {currentFile?.language}</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                         <select
@@ -411,22 +445,40 @@ export default function CodeEditorPage() {
                         <button className="btn btn-ghost" onClick={handleRun} disabled={status === "RUNNING" || status === "QUEUED"}>
                             {status === "RUNNING" || status === "QUEUED" ? "..." : "▶ Chạy code"}
                         </button>
-                        <button className="btn btn-primary" onClick={handleSubmit} disabled={status === "RUNNING" || status === "QUEUED"}>
-                            {status === "RUNNING" || status === "QUEUED" ? "Đang xử lý..." : "📤 Nộp bài"}
-                        </button>
+                        {slug && (
+                            <button className="btn btn-primary" onClick={handleSubmit} disabled={status === "RUNNING" || status === "QUEUED"}>
+                                {status === "RUNNING" || status === "QUEUED" ? "Đang xử lý..." : "📤 Nộp bài"}
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 340px', gap: 14, flex: 1 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: slug ? '280px 1fr 340px' : '1fr 340px', gap: 14, flex: 1 }}>
                     {/* LEFT PROBLEM */}
-                    <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-                            <div style={{ fontWeight: 700, fontSize: 13 }}>📋 Đề bài</div>
+                    {slug && (
+                        <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                                <div style={{ fontWeight: 700, fontSize: 13 }}>📋 Đề bài</div>
+                            </div>
+                            <div style={{ flex: 1, overflowY: 'auto', padding: 0, fontSize: 12 }}>
+                                {isLoadingProblem && <div style={{ padding: 16 }}>Đang tải đề bài...</div>}
+                                
+                                {!isLoadingProblem && problemData && (
+                                    <ProblemUiStudent 
+                                        title={problemData.title}
+                                        description={problemData.version?.description}
+                                        testcases={problemData.testcases}
+                                        difficulty={problemData.difficulty as any}
+                                        stats={problemData.stats as any}
+                                    />
+                                )}
+                                
+                                {!isLoadingProblem && !problemData && (
+                                    <div style={{ padding: 16, color: 'red' }}>Lỗi không tải được đề bài!</div>
+                                )}
+                            </div>
                         </div>
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '14px', fontSize: 12 }}>
-                            <p style={{ lineHeight: 1.6, color: 'var(--text-secondary)' }}>Tiện ích chấm bài đang hoạt động. Vui lòng code và nhấn Nộp bài để nhận điểm.</p>
-                        </div>
-                    </div>
+                    )}
 
                     {/* CENTER EDITOR */}
                     <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -507,16 +559,31 @@ export default function CodeEditorPage() {
                                 </button>
                             </div>
                         </div>
-                        <div className={mono.className} style={{ flex: 1 }}>
-                            <Editor
-                                height="100%"
-                                language={getMonacoLanguage(getExt(currentFile?.filename || ''))}
-                                value={currentFile?.content}
-                                onChange={handleEditorChange}
-                                onMount={handleMount}
-                                theme="aiDark"
-                                options={{ fontSize: 13, minimap: { enabled: false } }}
-                            />
+                        <div className={mono.className} style={{ flex: 1, position: 'relative' }}>
+                            {currentFile ? (
+                                <FillInTheBlankEditor 
+                                    file={{
+                                        id: currentFile.filename,
+                                        path: currentFile.filename,
+                                        content: currentFile.content,
+                                        type: 'TEMPLATE', 
+                                    }}
+                                    updateFile={(id: string, field: string, value: any) => {
+                                        setFiles(prev => prev.map(f => f.filename === id ? { ...f, [field === 'path' ? 'filename' : field]: value } : f));
+                                    }}
+                                    languages={languages}
+                                    isStudent={true}
+                                    height="100%"
+                                    onMount={(editor: any, monaco: any) => {
+                                        editorRef.current = editor;
+                                        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                                            if (submitRef.current) submitRef.current()
+                                        })
+                                    }}
+                                />
+                            ) : (
+                                <div style={{ padding: 20, color: 'var(--text-muted)' }}>Vui lòng chọn hoặc tạo file để bắt đầu...</div>
+                            )}
                         </div>
 
                         {/* TERMINAL / RESULTS */}
