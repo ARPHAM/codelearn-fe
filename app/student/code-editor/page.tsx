@@ -14,6 +14,8 @@ import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
 import { toast } from '@/components/ui/Toast'
 import { useSearchParams } from 'next/navigation'
 import ProblemUiStudent from '../components/problem-ui-student'
+import { Bot, Send } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 
 const mono = JetBrains_Mono({
     subsets: ['latin'],
@@ -59,20 +61,11 @@ const getUniqueFilename = (name: string, files: any[]) => {
     return newName;
 }
 
-const aiMessages = [
+const initialAiMessages = [
     {
         role: 'assistant',
-        msg: '👋 Xin chào! Tôi là AI Assistant. Tôi thấy code của bạn gặp lỗi **IndexError** tại dòng 8.',
-    },
-    {
-        role: 'assistant',
-        msg: '**Nguyên nhân:** Bạn đang truy cập `arr[i+1]` nhưng khi `i = len(arr)-1` thì `i+1` vượt ra ngoài phạm vi mảng.',
-    },
-    { role: 'user', msg: 'Nếu mảng rỗng thì sao?' },
-    {
-        role: 'assistant',
-        msg: 'Nếu mảng rỗng (`len(arr)==0`) nên kiểm tra đầu hàm và return sớm.',
-    },
+        msg: '👋 Xin chào! Tôi là AI Assistant. Tôi đã sẵn sàng hỗ trợ bạn giải quyết bài tập này. Bạn cần giúp đỡ gì không?',
+    }
 ]
 
 export default function CodeEditorPage() {
@@ -235,6 +228,56 @@ export default function CodeEditorPage() {
     const [submitResult, setSubmitResult] = useState<any>(null)
     const [customInput, setCustomInput] = useState<string>("")
     const [resultTab, setResultTab] = useState<'output' | 'input'>('output')
+
+    // --- AI CHAT STATE ---
+    const [chatMessages, setChatMessages] = useState<any[]>(initialAiMessages)
+    const [userMsg, setUserMsg] = useState("")
+    const [isAiLoading, setIsAiLoading] = useState(false)
+    const chatEndRef = useRef<HTMLDivElement>(null)
+
+    const scrollToBottom = () => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+
+    useEffect(() => {
+        scrollToBottom()
+    }, [chatMessages])
+
+    const handleSendMessage = async () => {
+        if (!userMsg.trim() || isAiLoading) return
+
+        const newMsg = { role: 'user', msg: userMsg }
+        const updatedHistory = [...chatMessages, newMsg]
+        setChatMessages(updatedHistory)
+        setUserMsg("")
+        setIsAiLoading(true)
+
+        try {
+            const resp = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: updatedHistory,
+                    codeContext: files.map(f => `${f.filename}:\n${f.content}`).join('\n\n'),
+                    problemContext: {
+                        title: problemData?.title,
+                        description: problemData?.version?.description
+                    }
+                })
+            })
+
+            const data = await resp.json()
+            if (data.text) {
+                setChatMessages(prev => [...prev, { role: 'assistant', msg: data.text }])
+            } else {
+                toast({ type: 'error', title: 'Lỗi AI', message: data.error || 'Không thể nhận phản hồi từ AI' })
+            }
+        } catch (err) {
+            toast({ type: 'error', title: 'Lỗi kết nối', message: 'Không thể kết nối với AI Assistant' })
+        } finally {
+            setIsAiLoading(false)
+        }
+    }
 
     const runMutation = useRunCode()
     const submitMutation = useSubmitCode()
@@ -681,10 +724,105 @@ export default function CodeEditorPage() {
                     </div>
 
                     {/* RIGHT AI */}
-                    <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <div style={{ padding: '14px', borderBottom: '1px solid var(--border)' }}>🤖 AI Code Assistant</div>
-                        <div style={{ flex: 1, padding: '14px', fontSize: 12, color: 'var(--text-secondary)' }}>
-                            Tính năng AI đang được nâng cấp...
+                    <div className="card" style={{ 
+                        padding: 0, 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        overflow: 'hidden',
+                        background: 'rgba(30, 35, 48, 0.4)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.05)'
+                    }}>
+                        <div style={{ 
+                            padding: '14px 18px', 
+                            borderBottom: '1px solid var(--border)', 
+                            background: 'rgba(255, 255, 255, 0.02)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10
+                        }}>
+                            <div style={{ 
+                                width: 32, height: 32, borderRadius: 10, 
+                                background: 'var(--gradient-purple)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                boxShadow: 'var(--shadow-glow-purple)'
+                            }}>
+                                <Bot size={18} color="white" />
+                            </div>
+                            <span style={{ fontWeight: 700, fontSize: 13, letterSpacing: '0.01em' }}>🤖 AI Code Assistant</span>
+                        </div>
+                        
+                        <div style={{ flex: 1, padding: '10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            {chatMessages.map((m, i) => (
+                                <div key={i} style={{ 
+                                    display: 'flex', 
+                                    flexDirection: 'column',
+                                    alignItems: m.role === 'user' ? 'flex-end' : 'flex-start',
+                                    gap: 4
+                                }}>
+                                    <div style={{ 
+                                        maxWidth: '90%',
+                                        padding: '10px 14px',
+                                        borderRadius: m.role === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                                        background: m.role === 'user' ? 'var(--accent-purple)' : 'rgba(255, 255, 255, 0.05)',
+                                        color: 'var(--text-primary)',
+                                        fontSize: 13,
+                                        lineHeight: 1.6,
+                                        boxShadow: m.role === 'user' ? '0 4px 12px rgba(139, 92, 246, 0.2)' : 'none'
+                                    }}>
+                                        {m.role === 'assistant' ? (
+                                            <div className="markdown-body" style={{ fontSize: 13 }}>
+                                                <ReactMarkdown>{m.msg}</ReactMarkdown>
+                                            </div>
+                                        ) : (
+                                            m.msg
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            {isAiLoading && (
+                                <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px', color: 'var(--text-muted)' }}>
+                                    <div className="pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-purple)' }} />
+                                    <span style={{ fontSize: 12, fontWeight: 500 }}>AI đang suy nghĩ...</span>
+                                </div>
+                            )}
+                            <div ref={chatEndRef} />
+                        </div>
+
+                        <div style={{ 
+                            padding: '14px', 
+                            borderTop: '1px solid var(--border)',
+                            background: 'rgba(0, 0, 0, 0.2)',
+                            display: 'flex',
+                            gap: 8
+                        }}>
+                            <input 
+                                className="input"
+                                value={userMsg}
+                                onChange={(e) => setUserMsg(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                placeholder="Hỏi AI về code hoặc bài tập..."
+                                style={{ 
+                                    flex: 1, 
+                                    borderRadius: 12, 
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    fontSize: 13,
+                                    height: 40,
+                                    paddingLeft: 12
+                                }}
+                                disabled={isAiLoading}
+                            />
+                            <button 
+                                className="btn btn-primary"
+                                onClick={handleSendMessage}
+                                style={{ 
+                                    width: 40, height: 40, padding: 0, borderRadius: 12,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}
+                                disabled={isAiLoading || !userMsg.trim()}
+                            >
+                                <Send size={18} />
+                            </button>
                         </div>
                     </div>
                 </div>
