@@ -4,41 +4,64 @@ import { redirect, usePathname } from 'next/navigation';
 import { useCurrentUserInfo } from '../_api/queries';
 import { useState } from 'react';
 import { useLogout } from '../_api/mutations';
+import { 
+  LayoutDashboard, 
+  Zap, 
+  Search, 
+  FolderLock, 
+  Database, 
+  Target, 
+  Users, 
+  Swords, 
+  Map, 
+  Trophy, 
+  Home, 
+  Settings, 
+  ShieldCheck, 
+  Box, 
+  ClipboardList,
+  LogOut,
+  User as UserIcon,
+  ChevronRight
+} from 'lucide-react';
 
 const navGroups = [
   {
-    label: '🎓 Giảng viên',
-    color: '#7c3aed',
+    label: 'Giảng viên',
+    role: 'LECTURER',
+    color: '#a78bfa',
     items: [
-      { href: '/lecturer/analytics', icon: '📊', label: 'Analytics Dashboard' },
-      { href: '/lecturer/auto-grader', icon: '⚡', label: 'Auto-Grader' },
-      { href: '/lecturer/plagiarism', icon: '🔍', label: 'Phát hiện Đạo văn' },
-      { href: '/lecturer/problems', icon: '📂', label: 'Quản lý Bài tập' },
-      { href: '/lecturer/question-bank', icon: '🗃️', label: 'Ngân hàng Câu hỏi' },
+      { href: '/lecturer/analytics', icon: LayoutDashboard, label: 'Thống kê & Phân tích' },
+      { href: '/lecturer/auto-grader', icon: Zap, label: 'Chấm điểm Tự động' },
+      { href: '/lecturer/plagiarism', icon: Search, label: 'Kiểm tra Đạo văn' },
+      { href: '/lecturer/problems', icon: FolderLock, label: 'Quản lý Bài tập' },
+      { href: '/lecturer/question-bank', icon: Database, label: 'Ngân hàng Câu hỏi' },
     ],
   },
   {
-    label: '🎮 Sinh viên',
-    color: '#06b6d4',
+    label: 'Sinh viên',
+    role: 'STUDENT',
+    color: '#22d3ee',
     items: [
-      { href: '/student/problems', icon: '🎯', label: 'Luyện Tập (Bài Tập)' },
-      { href: '/student/pair-programming', icon: '👥', label: 'Pair Programming' },
-      { href: '/student/code-battle', icon: '⚔️', label: 'Code Battle' },
-      { href: '/student/learning-path', icon: '🗺️', label: 'Lộ trình Học tập' },
-      { href: '/student/leaderboard', icon: '🏆', label: 'Leaderboard' },
-      { href: '/rooms', icon: '🏠', label: 'Phòng học trực tuyến' },
+      { href: '/student/problems', icon: Target, label: 'Luyện tập (Bài tập)' },
+      { href: '/student/pair-programming', icon: Users, label: 'Lập trình Cặp' },
+      { href: '/student/code-battle', icon: Swords, label: 'Code Battle' },
+      { href: '/student/learning-path', icon: Map, label: 'Lộ trình Học tập' },
+      { href: '/student/leaderboard', icon: Trophy, label: 'Bảng xếp hạng' },
+      { href: '/student/rooms', icon: Home, label: 'Phòng học trực tuyến' },
     ],
   },
   {
-    label: '⚙️ Admin',
-    color: '#f59e0b',
+    label: 'Quản trị viên',
+    role: 'ADMIN',
+    color: '#fbbf24',
     items: [
-      { href: '/admin/users', icon: '👥', label: 'Quản lý người dùng' },
-      { href: '/admin/problems', icon: '🛡️', label: 'Duyệt bài tập' },
-      { href: '/admin/sandbox', icon: '🐳', label: 'Sandbox Resources' },
-      { href: '/admin/audit-log', icon: '📋', label: 'Log & Audit' },
-      { href: '/admin/system-config', icon: '🔧', label: 'Cấu hình Hệ thống' },
-      { href: '/admin/rooms', icon: '🏠', label: 'Quản lý Phòng học' },
+      { href: '/admin/users', icon: Users, label: 'Quản lý Người dùng' },
+      { href: '/admin/problems', icon: ShieldCheck, label: 'Phê duyệt Bài tập' },
+      { href: '/admin/sandbox', icon: Box, label: 'Tài nguyên Sandbox' },
+      { href: '/admin/audit-log', icon: ClipboardList, label: 'Nhật ký hệ thống' },
+      { href: '/admin/system-config', icon: Settings, label: 'Cấu hình Hệ thống' },
+      { href: '/admin/rooms', icon: Home, label: 'Quản lý Phòng học' },
     ],
   },
 ];
@@ -48,98 +71,113 @@ export default function Sidebar() {
   const [isDropdownHovered, setIsDropdownHovered] = useState(false);
   const [isDropdownClicked, setIsDropdownClicked] = useState(false);
 
-  const { data: user, isPending } = useCurrentUserInfo()
-  const { mutate: logout } = useLogout()
+  const { data: user, isPending } = useCurrentUserInfo();
+  const { mutate: logout } = useLogout();
 
-  if (isPending) {
-    return null
-  }
+  if (isPending) return null;
+  if (!user) redirect('/login');
 
-  if (!user) {
-    redirect('/login')
-  }
+  const userRole = user.role?.toUpperCase(); // Chuẩn hóa về chữ hoa: STUDENT, LECTURER, ADMIN
+  const filteredGroups = navGroups.filter(g => g.role === userRole);
 
   return (
     <aside style={{
       width: 'var(--sidebar-width)',
       minWidth: 'var(--sidebar-width)',
       height: '100vh',
-      background: 'var(--bg-secondary)',
-      borderRight: '1px solid var(--border)',
+      background: 'rgba(13, 17, 23, 0.95)',
+      backdropFilter: 'blur(20px)',
+      borderRight: '1px solid rgba(255, 255, 255, 0.05)',
       display: 'flex',
       flexDirection: 'column',
       position: 'sticky',
       top: 0,
       overflow: 'hidden',
+      zIndex: 100,
     }}>
-      {/* Logo */}
+      {/* Logo Section */}
       <div style={{
-        padding: '20px 20px 16px',
-        borderBottom: '1px solid var(--border)',
+        padding: '24px 20px',
         display: 'flex',
         alignItems: 'center',
-        gap: 10,
+        gap: 12,
+        marginBottom: 10
       }}>
         <div style={{
-          width: 36, height: 36,
-          background: 'var(--gradient-purple)',
-          borderRadius: 10,
+          width: 40, height: 40,
+          background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
+          borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 18,
-          boxShadow: 'var(--shadow-glow-purple)',
+          fontSize: 20,
+          boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
           flexShrink: 0,
+          color: 'white',
+          fontWeight: 'bold'
         }}>{'</>'}</div>
         <div>
-          <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>CodeLearn</div>
-          <div style={{ fontSize: 10, color: 'var(--accent-purple-light)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Platform</div>
+          <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>CodeLearn</div>
+          <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Platform</div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 0' }}>
-        {navGroups.map((group) => (
-          <div key={group.label} style={{ marginBottom: 8 }}>
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }} className="custom-scrollbar">
+        {filteredGroups.map((group) => (
+          <div key={group.label} style={{ marginBottom: 24 }}>
             <div style={{
-              padding: '8px 20px 4px',
-              fontSize: 10,
+              padding: '0 12px 10px',
+              fontSize: 11,
               fontWeight: 700,
-              letterSpacing: '0.08em',
+              letterSpacing: '0.1em',
               textTransform: 'uppercase',
-              color: group.color,
+              color: '#64748b',
             }}>{group.label}</div>
             {group.items.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + '/');
+              const Icon = item.icon;
               return (
-                <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
+                <Link key={item.href} href={item.href} style={{ textDecoration: 'none', display: 'block' }}>
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 10,
-                    padding: '8px 20px',
-                    marginBottom: 1,
-                    borderRadius: 0,
-                    background: active ? 'rgba(124,58,237,0.12)' : 'transparent',
-                    borderLeft: active ? `3px solid ${group.color}` : '3px solid transparent',
-                    color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    fontSize: 13,
-                    fontWeight: active ? 600 : 400,
+                    gap: 12,
+                    padding: '10px 12px',
+                    marginBottom: 4,
+                    borderRadius: 10,
+                    background: active ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
+                    color: active ? '#a78bfa' : '#94a3b8',
+                    fontSize: 14,
+                    fontWeight: active ? 600 : 500,
                     cursor: 'pointer',
-                    transition: 'all 0.15s',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
                   }}
+                    className="sidebar-item"
                     onMouseEnter={e => {
                       if (!active) {
-                        (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)';
-                        (e.currentTarget as HTMLDivElement).style.color = 'var(--text-primary)';
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                        e.currentTarget.style.color = 'var(--text-primary)';
                       }
                     }}
                     onMouseLeave={e => {
                       if (!active) {
-                        (e.currentTarget as HTMLDivElement).style.background = 'transparent';
-                        (e.currentTarget as HTMLDivElement).style.color = 'var(--text-secondary)';
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#94a3b8';
                       }
                     }}>
-                    <span style={{ fontSize: 15 }}>{item.icon}</span>
-                    <span>{item.label}</span>
+                    <Icon size={18} strokeWidth={active ? 2.5 : 2} style={{ transition: 'transform 0.2s' }} />
+                    <span style={{ flex: 1 }}>{item.label}</span>
+                    {active && (
+                      <div style={{
+                        position: 'absolute',
+                        left: -4,
+                        width: 4,
+                        height: 20,
+                        background: '#8b5cf6',
+                        borderRadius: 2,
+                        boxShadow: '0 0 10px #8b5cf6'
+                      }} />
+                    )}
                   </div>
                 </Link>
               );
@@ -151,21 +189,52 @@ export default function Sidebar() {
       {/* User info */}
       <div
         style={{
-          padding: '16px 20px',
-          borderTop: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '16px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+          background: 'rgba(0, 0, 0, 0.2)',
           position: 'relative',
         }}
         onMouseEnter={() => setIsDropdownHovered(true)}
         onMouseLeave={() => setIsDropdownHovered(false)}
-        onClick={() => setIsDropdownClicked(!isDropdownClicked)}
       >
-        <div className="avatar" style={{ background: 'var(--gradient-purple)', color: 'white' }}>{user?.avatar ? user?.avatar?.charAt(0).toUpperCase() : user?.role?.slice(0, 2).toUpperCase()}</div>
-        <div style={{ flex: 1, cursor: 'pointer' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{user.name || 'Hi'}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{user.role || 'User'}</div>
+        <div 
+          onClick={() => setIsDropdownClicked(!isDropdownClicked)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '8px',
+            borderRadius: 12,
+            cursor: 'pointer',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <div className="avatar" style={{ 
+            background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)', 
+            color: 'white',
+            width: 36, height: 36,
+            fontSize: 14,
+            fontWeight: 'bold',
+            borderRadius: 10
+          }}>
+            {user?.avatar ? user?.avatar?.charAt(0).toUpperCase() : user?.role?.slice(0, 2).toUpperCase()}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ 
+              fontSize: 13, 
+              fontWeight: 600, 
+              color: 'var(--text-primary)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis' 
+            }}>{user.name || 'Người dùng'}</div>
+            <div style={{ fontSize: 11, color: '#64748b' }}>{user.role}</div>
+          </div>
+          <ChevronRight size={16} color="#64748b" style={{ 
+            transform: isDropdownClicked ? 'rotate(-90deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s'
+          }} />
         </div>
-        <div style={{ fontSize: 16, cursor: 'pointer', color: 'var(--text-muted)' }}>⚙</div>
 
         {/* Dropdown menu */}
         {(isDropdownHovered || isDropdownClicked) && (
@@ -173,41 +242,62 @@ export default function Sidebar() {
             style={{
               position: 'absolute',
               bottom: '100%',
-              left: 10,
-              right: 10,
-              paddingBottom: 8,
+              left: 16,
+              right: 16,
+              marginBottom: 8,
               zIndex: 50,
-              cursor: 'default',
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div style={{
-              background: 'var(--bg-primary, #fff)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              padding: '6px 0',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              background: '#161b22',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 12,
+              padding: '6px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
               display: 'flex',
               flexDirection: 'column',
+              gap: 2
             }}>
               <div
-                style={{ padding: '8px 16px', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', transition: 'background 0.2s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover, rgba(0,0,0,0.05))'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                style={{ 
+                  padding: '10px 12px', 
+                  fontSize: 13, 
+                  color: '#e6edf3', 
+                  cursor: 'pointer', 
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  transition: 'background 0.2s' 
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 onClick={() => { setIsDropdownClicked(false); setIsDropdownHovered(false); }}
               >
+                <UserIcon size={16} />
                 Thông tin cá nhân
               </div>
               <div
-                style={{ padding: '8px 16px', fontSize: 13, color: '#ef4444', cursor: 'pointer', transition: 'background 0.2s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover, rgba(0,0,0,0.05))'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                style={{ 
+                  padding: '10px 12px', 
+                  fontSize: 13, 
+                  color: '#f87171', 
+                  cursor: 'pointer', 
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  transition: 'background 0.2s' 
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 onClick={() => {
                   setIsDropdownClicked(false);
                   setIsDropdownHovered(false);
                   logout();
                 }}
               >
+                <LogOut size={16} />
                 Đăng xuất
               </div>
             </div>
