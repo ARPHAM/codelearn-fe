@@ -1,113 +1,159 @@
+'use client';
 
-
-const logs = [
-  { id: 'LOG-0091', time: '22:41:02', user: 'GV. Nguyễn Văn A', role: 'Lecturer', action: 'UPDATE_SCORE', target: 'SV001 - Bài BFS - 8.5 → 9.0', ip: '192.168.1.12', severity: 'warning' },
-  { id: 'LOG-0090', time: '22:38:55', user: 'GV. Trần Thị B', role: 'Lecturer', action: 'DELETE_EXAM', target: 'Đề thi: "Kiểm tra giữa kỳ HK1"', ip: '192.168.1.45', severity: 'danger' },
-  { id: 'LOG-0089', time: '22:35:10', user: 'GV. Lê Văn C', role: 'Lecturer', action: 'CREATE_EXAM', target: 'Đề thi: "Kiểm tra cuối kỳ HK2"', ip: '192.168.1.78', severity: 'info' },
-  { id: 'LOG-0088', time: '22:30:47', user: 'Admin System', role: 'Admin', action: 'CONFIG_UPDATE', target: 'Python timeout: 5s → 10s', ip: '127.0.0.1', severity: 'warning' },
-  { id: 'LOG-0087', time: '22:28:31', user: 'GV. Nguyễn Văn A', role: 'Lecturer', action: 'UPDATE_SCORE', target: 'SV005 - Bài DP - 5.0 → 7.5', ip: '192.168.1.12', severity: 'warning' },
-  { id: 'LOG-0086', time: '22:20:15', user: 'Admin System', role: 'Admin', action: 'USER_LOGIN', target: 'Admin dashboard', ip: '203.113.1.5', severity: 'info' },
-  { id: 'LOG-0085', time: '22:15:03', user: 'GV. Phạm Thị D', role: 'Lecturer', action: 'CREATE_EXERCISE', target: 'Bài: Maximum Subarray (Medium)', ip: '192.168.1.99', severity: 'info' },
-  { id: 'LOG-0084', time: '21:58:42', user: 'GV. Trần Thị B', role: 'Lecturer', action: 'KICK_STUDENT', target: 'SV012 - Phòng #A3F2', ip: '192.168.1.45', severity: 'danger' },
-];
+import { useQuery } from '@tanstack/react-query';
+import { auditApi, AuditLog } from '@/api/audit.api';
+import { useState } from 'react';
+import { Loader2, Search, Filter, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const actionMeta: Record<string, { label: string; cls: string; icon: string }> = {
-  UPDATE_SCORE: { label: 'Sửa điểm', cls: 'badge-yellow', icon: '✏️' },
-  DELETE_EXAM: { label: 'Xóa đề thi', cls: 'badge-red', icon: '🗑' },
-  CREATE_EXAM: { label: 'Tạo đề thi', cls: 'badge-green', icon: '➕' },
-  CONFIG_UPDATE: { label: 'Cấu hình', cls: 'badge-orange', icon: '⚙' },
-  USER_LOGIN: { label: 'Đăng nhập', cls: 'badge-cyan', icon: '🔑' },
-  CREATE_EXERCISE: { label: 'Tạo bài tập', cls: 'badge-green', icon: '📝' },
-  KICK_STUDENT: { label: 'Kick sinh viên', cls: 'badge-red', icon: '⛔' },
+  'POST /api/v1/admin/settings': { label: 'Cập nhật cấu hình', cls: 'badge-orange', icon: '⚙' },
+  'PATCH /api/v1/admin/settings': { label: 'Cập nhật cấu hình', cls: 'badge-orange', icon: '⚙' },
+  'POST /api/v1/admin/languages': { label: 'Thêm ngôn ngữ', cls: 'badge-green', icon: '➕' },
+  'PATCH /api/v1/admin/languages': { label: 'Sửa ngôn ngữ', cls: 'badge-yellow', icon: '✏️' },
+  'DELETE /api/v1/admin/languages': { label: 'Xóa ngôn ngữ', cls: 'badge-red', icon: '🗑' },
+  'POST /api/v1/banks': { label: 'Tạo ngân hàng', cls: 'badge-purple', icon: '🗃️' },
 };
 
 const severityLeft: Record<string, string> = { info: '#06b6d4', warning: '#f59e0b', danger: '#ef4444' };
 
 export default function AuditLogPage() {
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-audit-logs', page, search],
+    queryFn: async () => {
+      const resp = await auditApi.getLogs({ page, limit: 15, search });
+      return resp.data.data;
+    },
+  });
+
+  const logs = data?.items || [];
+  const total = data?.total || 0;
+
+  const parseAction = (action: string) => {
+    const meta = actionMeta[action];
+    if (meta) return meta;
+    
+    // Fallback parsing
+    const [method, url] = action.split(' ');
+    if (method === 'DELETE') return { label: 'Xóa dữ liệu', cls: 'badge-red', icon: '🗑' };
+    if (method === 'POST') return { label: 'Tạo mới', cls: 'badge-green', icon: '➕' };
+    if (method === 'PATCH' || method === 'PUT') return { label: 'Cập nhật', cls: 'badge-yellow', icon: '✏️' };
+    
+    return { label: action, cls: 'badge-gray', icon: '•' };
+  };
+
   return (
-    <>
-      <div className="page-container animate-in">
-        <div className="page-header">
-          <div>
-            <h1 className="page-title">📋 Log & Audit Trail</h1>
-            <p className="page-subtitle">Lịch sử thao tác hệ thống — Bảo đảm tính minh bạch</p>
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button className="btn btn-ghost">📤 Export CSV</button>
-            <button className="btn btn-ghost">📤 Export PDF</button>
-          </div>
+    <div className="page-container animate-in">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">📋 Nhật ký hệ thống</h1>
+          <p className="page-subtitle">Lịch sử thao tác của các quản trị viên và giảng viên</p>
         </div>
-
-        <div className="grid-4">
-          {[
-            { label: 'Hôm nay', value: '91', icon: '📋', color: '#7c3aed' },
-            { label: 'Cảnh báo', value: '12', icon: '⚠️', color: '#f59e0b' },
-            { label: 'Nguy hiểm', value: '3', icon: '🚨', color: '#ef4444' },
-            { label: 'Người dùng', value: '8', icon: '👤', color: '#06b6d4' },
-          ].map(s => (
-            <div key={s.label} className="stat-card" style={{ borderLeft: `3px solid ${s.color}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-secondary)' }}>{s.label}</div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: s.color, lineHeight: 1, marginTop: 4 }}>{s.value}</div>
-                </div>
-                <span style={{ fontSize: 26 }}>{s.icon}</span>
-              </div>
-            </div>
-          ))}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-ghost">📤 Xuất báo cáo</button>
         </div>
+      </div>
 
-        <div className="card" style={{ padding: '14px 16px', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <input className="input" placeholder="🔍 Tìm theo user, action, target..." style={{ flex: 1, minWidth: 260 }} />
-          <select className="select"><option>Tất cả loại</option><option>Sửa điểm</option><option>Xóa đề thi</option><option>Cấu hình</option></select>
-          <select className="select"><option>Tất cả mức độ</option><option>Info</option><option>Cảnh báo</option><option>Nguy hiểm</option></select>
-          <select className="select"><option>Tất cả user</option><option>GV. Nguyễn Văn A</option><option>GV. Trần Thị B</option></select>
-          <input type="date" className="select" defaultValue="2026-03-06" style={{ width: 140 }} />
-          <button className="btn btn-primary">🔍 Lọc</button>
+      <div className="card" style={{ padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'center', marginBottom: 20 }}>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <input 
+            className="input" 
+            placeholder="Tìm theo hành động hoặc ID người dùng..." 
+            style={{ paddingLeft: 36, width: '100%' }} 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
+        <button className="btn btn-ghost"><Filter size={16} /> Lọc nâng cao</button>
+      </div>
 
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+          <Loader2 className="animate-spin" size={40} color="var(--accent-purple)" />
+        </div>
+      ) : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <table className="table">
             <thead>
-              <tr><th>Log ID</th><th>Thời gian</th><th>Người dùng</th><th>Hành động</th><th>Mục tiêu</th><th>IP Address</th><th>Mức độ</th><th></th></tr>
+              <tr>
+                <th>Hành động</th>
+                <th>Người dùng</th>
+                <th>Thông tin bổ sung</th>
+                <th>Thời gian</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
+              </tr>
             </thead>
             <tbody>
-              {logs.map(log => {
-                const meta = actionMeta[log.action] || { label: log.action, cls: 'badge-purple', icon: '•' };
+              {logs.map((log: AuditLog) => {
+                const meta = parseAction(log.action);
                 return (
-                  <tr key={log.id} style={{ borderLeft: `3px solid ${severityLeft[log.severity]}` }}>
-                    <td><code style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)' }}>{log.id}</code></td>
-                    <td style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{log.time}</td>
+                  <tr key={log.id}>
                     <td>
-                      <div style={{ fontSize: 12, fontWeight: 600 }}>{log.user}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{log.role}</div>
-                    </td>
-                    <td><span className={`badge ${meta.cls}`}>{meta.icon} {meta.label}</span></td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 240 }}>{log.target}</td>
-                    <td><code style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)' }}>{log.ip}</code></td>
-                    <td>
-                      <span className={`badge ${log.severity === 'danger' ? 'badge-red' : log.severity === 'warning' ? 'badge-yellow' : 'badge-cyan'}`}>
-                        {log.severity === 'danger' ? '🚨 Nguy hiểm' : log.severity === 'warning' ? '⚠️ Cảnh báo' : 'ℹ️ Info'}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span className={`badge ${meta.cls}`} style={{ width: 'fit-content' }}>
+                          {meta.icon} {meta.label}
+                        </span>
+                        <code style={{ fontSize: 10, color: 'var(--text-muted)' }}>{log.action}</code>
+                      </div>
                     </td>
                     <td>
-                      <button className="btn btn-ghost" style={{ padding: '3px 8px', fontSize: 11 }}>Chi tiết</button>
+                       <div style={{ fontSize: 13, fontWeight: 600 }}>{log.userId || 'Hệ thống'}</div>
+                    </td>
+                    <td>
+                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                         IP: {log.metadata?.ip || 'N/A'} • {JSON.stringify(log.metadata?.body || {})}
+                      </div>
+                    </td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--text-secondary)' }}>
+                      {new Date(log.createdAt).toLocaleString('vi-VN')}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button className="btn btn-ghost" style={{ padding: '6px' }} title="Xem chi tiết">
+                        <FileText size={16} />
+                      </button>
                     </td>
                   </tr>
                 );
               })}
+              {logs.length === 0 && (
+                <tr>
+                   <td colSpan={5} style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                      Chưa có ghi chép nào trong hệ thống.
+                   </td>
+                </tr>
+              )}
             </tbody>
           </table>
-          <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: 'var(--text-secondary)' }}>
-            <span>Hiển thị 8 / 91 logs hôm nay</span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {['‹‹', '‹', '1', '2', '3', '...', '12', '›', '››'].map((p, i) => (
-                <button key={i} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: 11, background: p === '1' ? 'rgba(124,58,237,0.15)' : 'transparent', borderColor: p === '1' ? 'var(--accent-purple)' : 'var(--border)', color: p === '1' ? 'var(--accent-purple-light)' : '' }}>{p}</button>
-              ))}
+          
+          <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              Tổng cộng: <strong>{total}</strong> ghi chép
+            </span>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+               <button 
+                 className="btn btn-ghost" 
+                 style={{ padding: 8 }} 
+                 disabled={page === 1}
+                 onClick={() => setPage(p => p - 1)}
+               >
+                 <ChevronLeft size={18} />
+               </button>
+               <span style={{ fontSize: 13, fontWeight: 600 }}>Trang {page}</span>
+               <button 
+                 className="btn btn-ghost" 
+                 style={{ padding: 8 }}
+                 disabled={logs.length < 15}
+                 onClick={() => setPage(p => p + 1)}
+               >
+                 <ChevronRight size={18} />
+               </button>
             </div>
           </div>
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

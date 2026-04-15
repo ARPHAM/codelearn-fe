@@ -10,17 +10,28 @@ export default function Home() {
     return null
   }
 
+  const roleRedirects: Record<string, string> = {
+    admin: '/admin/users',
+    lecturer: '/lecturer/analytics',
+    student: '/student/problems', // Chuyển về danh sách bài tập là hợp lý nhất cho sinh viên
+  };
+
   if (!user) {
-    redirect('/login')
+    redirect('/login');
   }
-  if (user.role === 'admin') {
-    redirect('/admin/users')
+
+  const userRole = user.role?.toLowerCase();
+  
+  if (userRole && roleRedirects[userRole]) {
+    redirect(roleRedirects[userRole]);
   }
-  if (user.role === 'lecturer') {
-    redirect('/lecturer/analytics')
-  }
-  if (user.role === 'student') {
-    redirect('/student/code-editor')
-  }
-  return null
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: 12 }}>Vui lòng đợi...</h2>
+        <div className="spin" style={{ width: 32, height: 32, border: '3px solid var(--border)', borderTopColor: 'var(--accent-purple)', borderRadius: '50%', margin: '0 auto' }} />
+      </div>
+    </div>
+  );
 }

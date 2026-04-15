@@ -64,6 +64,14 @@ const navGroups = [
       { href: '/admin/rooms', icon: Home, label: 'Quản lý Phòng học' },
     ],
   },
+  {
+    label: 'Chỉ dẫn',
+    role: 'ALL',
+    color: '#94a3b8',
+    items: [
+      { href: '/', icon: Home, label: 'Trang chủ hệ thống' },
+    ],
+  },
 ];
 
 export default function Sidebar() {
@@ -77,8 +85,13 @@ export default function Sidebar() {
   if (isPending) return null;
   if (!user) redirect('/login');
 
-  const userRole = user.role?.toUpperCase(); // Chuẩn hóa về chữ hoa: STUDENT, LECTURER, ADMIN
-  const filteredGroups = navGroups.filter(g => g.role === userRole);
+  const rawRole = user.role;
+  const userRole = typeof rawRole === 'string' ? rawRole.toUpperCase() : '';
+  const filteredGroups = navGroups.filter(g => 
+    g.role === 'ALL' || 
+    g.role === userRole || 
+    (Array.isArray(rawRole) && rawRole.some(r => r.toUpperCase() === g.role))
+  );
 
   return (
     <aside style={{

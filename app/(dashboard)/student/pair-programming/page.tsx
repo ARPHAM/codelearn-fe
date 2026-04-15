@@ -1,169 +1,152 @@
+'use client';
 
+import { useQuery } from '@tanstack/react-query';
+import { roomApi, Room } from '@/api/room.api';
+import { useRouter } from 'next/navigation';
+import { Loader2, Users, Plus, Play, Sparkles } from 'lucide-react';
 
-const codeLines = [
-  { num: 1, code: 'def pair_sum(arr, target):', user: null },
-  { num: 2, code: '    seen = {}', user: null },
-  { num: 3, code: '    result = []', user: null },
-  { num: 4, code: '    for i, num in enumerate(arr):', user: 'A' },
-  { num: 5, code: '        complement = target - num', user: 'A' },
-  { num: 6, code: '        if complement in seen:', user: null },
-  { num: 7, code: '            result.append((seen[complement], i))', user: null },
-  { num: 8, code: '        seen[num] = i', user: 'B' },
-  { num: 9, code: '    return result', user: null },
-  { num: 10, code: '', user: null },
-  { num: 11, code: '# Test', user: 'B' },
-  { num: 12, code: 'print(pair_sum([2,7,11,15], 9))', user: null },
-];
+export default function PairProgrammingLobbyPage() {
+  const router = useRouter();
 
-const messages = [
-  { user: 'A', name: 'Bạn (Minh Khoa)', msg: 'line 8: dùng seen[num] = i hay seen[i] = num nhỉ?', time: '10:42' },
-  { user: 'B', name: 'Trần Thị Lan', msg: 'seen[num] = i đúng rồi! vì key là giá trị, value là index', time: '10:43' },
-  { user: 'A', name: 'Bạn (Minh Khoa)', msg: 'ok hiểu rồi 👍', time: '10:43' },
-  { user: 'B', name: 'Trần Thị Lan', msg: 'chạy test case thử đi', time: '10:44' },
-];
+  const { data: roomsData, isLoading } = useQuery({
+    queryKey: ['pair-rooms-lobby'],
+    queryFn: async () => {
+      const resp = await roomApi.getRooms();
+      // Chỉ lấy các phòng loại PAIR
+      const allRooms = resp.data.data as Room[];
+      return allRooms.filter(r => r.type === 'PAIR');
+    },
+    refetchInterval: 10000, // Cập nhật mỗi 10 giây
+  });
 
-export default function PairProgrammingPage() {
+  const rooms = roomsData || [];
+
   return (
-    <>
-      <div className="page-container animate-in" style={{ gap: 16 }}>
-        {/* Header */}
-        <div className="page-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div>
-              <h1 className="page-title">👥 Pair Programming</h1>
-              <p className="page-subtitle">Bài: Two Sum — CS101 · Phòng #A3F2</p>
-            </div>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-green)', boxShadow: '0 0 6px var(--accent-green)' }} />
-              <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600 }}>Live</span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            {/* Active users */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: -4 }}>
-              {['#7c3aed', '#06b6d4'].map((c, i) => (
-                <div key={i} className="avatar" style={{ background: c, color: 'white', width: 30, height: 30, fontSize: 11, marginLeft: i > 0 ? -8 : 0, border: '2px solid var(--bg-primary)' }}>
-                  {i === 0 ? 'A' : 'B'}
-                </div>
-              ))}
-              <span style={{ marginLeft: 10, fontSize: 12, color: 'var(--text-secondary)' }}>2 người đang code</span>
-            </div>
-            <button className="btn btn-ghost">🔗 Mời thêm</button>
-            <button className="btn btn-primary">▶ Chạy code</button>
-          </div>
+    <div className="page-container animate-in">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">🤝 Lập trình Cặp (Pair Programming)</h1>
+          <p className="page-subtitle">Tìm kiếm cộng sự, cùng nhau giải quyết các thử thách thuật toán khó</p>
         </div>
+        <button 
+          className="btn btn-primary"
+          onClick={() => router.push('/student/rooms/create?type=PAIR')}
+        >
+          <Plus size={16} /> Tạo phòng Pair mới
+        </button>
+      </div>
 
-        {/* Main layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 300px', gap: 14, flex: 1, minHeight: 0 }}>
-          {/* Code editor */}
-          <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', gridColumn: 'span 2' }}>
-            {/* Editor tabs */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 0, borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-              {['solution.py', 'test.py'].map((tab, i) => (
-                <div key={tab} style={{
-                  padding: '10px 18px', fontSize: 12, fontWeight: i === 0 ? 600 : 400,
-                  color: i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  borderBottom: i === 0 ? '2px solid var(--accent-purple)' : '2px solid transparent',
-                  cursor: 'pointer',
-                }}>{tab}</div>
-              ))}
-              <div style={{ marginLeft: 'auto', padding: '0 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
-                <select className="select" style={{ padding: '4px 10px', fontSize: 12 }}>
-                  <option>Python 3.11</option><option>C++ 17</option>
-                </select>
-              </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Hero section for finding partners */}
+          <div className="card" style={{ 
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.1))',
+            border: '1px solid rgba(139, 92, 246, 0.3)',
+            padding: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div>
+              <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>Bạn đang tìm kiếm cộng sự?</h2>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 450 }}>
+                Học tập cùng nhau giúp bạn tiến bộ nhanh gấp 2 lần. Tham gia vào các phòng đang mở hoặc tạo phòng riêng để mời bạn bè.
+              </p>
             </div>
-
-            {/* Code area */}
-            <div style={{ flex: 1, overflow: 'auto', padding: '10px 0', background: 'var(--bg-primary)' }}>
-              {codeLines.map((line) => (
-                <div key={line.num} style={{
-                  display: 'flex', alignItems: 'center',
-                  padding: '1px 16px',
-                  background: line.user ? (line.user === 'A' ? 'rgba(124,58,237,0.07)' : 'rgba(6,182,212,0.07)') : 'transparent',
-                  position: 'relative',
-                }}>
-                  <span className="code-line-number">{line.num}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: 'var(--text-primary)', flex: 1 }}>
-                    {line.code}
-                  </span>
-                  {line.user && (
-                    <div style={{
-                      width: 18, height: 18, borderRadius: '50%',
-                      background: line.user === 'A' ? 'var(--accent-purple)' : 'var(--accent-cyan)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 9, fontWeight: 800, color: 'white', flexShrink: 0,
-                    }}>{line.user}</div>
-                  )}
-                </div>
-              ))}
-              {/* Cursor B */}
-              <div style={{ display: 'flex', padding: '2px 16px', alignItems: 'center' }}>
-                <span className="code-line-number">13</span>
-                <span style={{ display: 'inline-block', width: 2, height: 16, background: 'var(--accent-cyan)' }} className="blink" />
-                <span style={{ fontSize: 10, color: 'var(--accent-cyan)', marginLeft: 6, fontWeight: 600 }}>Trần T. Lan đang gõ...</span>
-              </div>
-            </div>
-
-            {/* Output */}
-            <div style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)', padding: '10px 16px' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Output</div>
-              <div className="code-block" style={{ padding: '8px 12px', fontSize: 12 }}>
-                <span className="code-string">[(0, 1)]</span>
-                <br /><span style={{ color: 'var(--accent-green)', fontSize: 11 }}>✓ Chạy thành công · 0.02s</span>
-              </div>
+            <div style={{ 
+                width: 64, height: 64, borderRadius: 20, 
+                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+                <Sparkles size={32} color="var(--accent-purple)" className="animate-pulse" />
             </div>
           </div>
 
-          {/* Chat panel */}
-          <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-              💬 Chat nhóm
-              <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-green)', boxShadow: '0 0 6px var(--accent-green)' }} />
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700 }}>🌐 Các phiên đang chờ cộng sự</h3>
+            <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600 }}>● {rooms.length} phòng đang online</span>
+          </div>
 
-            {/* Users */}
-            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[
-                { name: 'Minh Khoa (Bạn)', color: '#7c3aed', role: 'Driver' },
-                { name: 'Trần Thị Lan', color: '#06b6d4', role: 'Navigator' },
-              ].map(u => (
-                <div key={u.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div className="avatar" style={{ background: u.color, color: 'white', width: 26, height: 26, fontSize: 10 }}>{u.name.charAt(0)}</div>
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 600 }}>{u.name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{u.role}</div>
-                  </div>
-                  <div style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-green)' }} />
-                </div>
-              ))}
+          {isLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+              <Loader2 className="animate-spin" size={32} color="var(--accent-purple)" />
             </div>
-
-            {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {messages.map((msg, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                  <div className="avatar" style={{ background: msg.user === 'A' ? '#7c3aed' : '#06b6d4', color: 'white', width: 24, height: 24, fontSize: 9, flexShrink: 0, marginTop: 2 }}>
-                    {msg.user}
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {rooms.map((room) => (
+                <div key={room.id} className="card card-hover" style={{ padding: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{room.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>ID: {room.id.substring(0, 8)}</div>
+                    </div>
+                    <span className="badge badge-cyan">PAIR</span>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>{msg.name} · {msg.time}</div>
-                    <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '0 8px 8px 8px', padding: '8px 10px', fontSize: 12, color: 'var(--text-primary)' }}>
-                      {msg.msg}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <div className="avatar" style={{ width: 28, height: 28, fontSize: 11, background: 'var(--bg-secondary)' }}>
+                      {room.createdBy?.fullName?.charAt(0)}
+                    </div>
+                    <div style={{ fontSize: 13 }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Chủ phòng:</span>{' '}
+                      <span style={{ fontWeight: 600 }}>{room.createdBy?.fullName}</span>
                     </div>
                   </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                      <Users size={14} color="var(--text-muted)" />
+                      <span>{room.participantsCount}/2 thành viên</span>
+                    </div>
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ padding: '6px 14px', fontSize: 12 }}
+                      onClick={() => router.push(`/student/rooms/${room.id}`)}
+                      disabled={room.participantsCount >= 2}
+                    >
+                      {room.participantsCount >= 2 ? 'Đã đầy' : 'Tham gia ngay'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {rooms.length === 0 && (
+                <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '60px 20px', border: '1px dashed var(--border)', borderRadius: 16, color: 'var(--text-muted)' }}>
+                  Chưa có phòng PAIR nào đang mở. Hãy là người đầu tiên tạo phòng!
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar info */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="card">
+            <h4 style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}>🥇 Lợi ích của Pair Programming</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { title: 'Tối ưu thuật toán', desc: 'Có thêm một góc nhìn giúp code sạch và tối ưu hơn.', icon: '🧠' },
+                { title: 'Học hỏi lẫn nhau', desc: 'Chia sẻ kiến thức về cú pháp và các mẹo lập trình.', icon: '🤝' },
+                { title: 'Giải quyết lỗi nhanh', desc: 'Phát hiện lỗi logic ngay khi đang gõ.', icon: '🐛' },
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', gap: 12 }}>
+                  <span style={{ fontSize: 20 }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>{item.title}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{item.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* Input */}
-            <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border)', display: 'flex', gap: 8 }}>
-              <input className="input" placeholder="Nhắn tin..." style={{ flex: 1, fontSize: 12 }} />
-              <button className="btn btn-primary" style={{ padding: '8px 12px', fontSize: 16 }}>➤</button>
-            </div>
+          <div className="card" style={{ background: 'rgba(6, 182, 212, 0.05)', borderColor: 'rgba(6, 182, 212, 0.2)' }}>
+            <h4 style={{ fontWeight: 700, fontSize: 13, color: 'var(--accent-cyan)', marginBottom: 12 }}>🛡️ Quy tắc cộng tác</h4>
+            <ul style={{ paddingLeft: 16, fontSize: 11, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <li>Luôn tôn trọng ý kiến của cộng sự.</li>
+              <li>Thay đổi vai trò (Driver - Navigator) thường xuyên.</li>
+              <li>Sử dụng chatbox hoặc voice để giao tiếp.</li>
+            </ul>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

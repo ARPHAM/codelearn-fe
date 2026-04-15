@@ -1,175 +1,217 @@
 
+'use client';
 
-const students = ['Nguyễn M. Khoa', 'Trần T. Lan', 'Lê V. Hùng', 'Phạm T. Hà', 'Đỗ Q. Vinh', 'Hoàng T. Mai', 'Vũ Đức Nam', 'Bùi T. Thúy'];
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useLecturerProblems } from '@/hooks/useProblems';
+import { plagiarismApi, PlagiarismPair } from '@/api/plagiarism.api';
+import { 
+  Loader2, 
+  Search, 
+  RefreshCcw,
+  AlertTriangle,
+  Users,
+  FileCode,
+  ShieldAlert
+} from 'lucide-react';
 
-const matrix = [
-  [100, 82, 5, 3, 78, 12, 8, 4],
-  [82, 100, 6, 2, 75, 10, 7, 3],
-  [5, 6, 100, 15, 4, 9, 22, 11],
-  [3, 2, 15, 100, 3, 8, 19, 14],
-  [78, 75, 4, 3, 100, 11, 6, 2],
-  [12, 10, 9, 8, 11, 100, 18, 27],
-  [8, 7, 22, 19, 6, 18, 100, 35],
-  [4, 3, 11, 14, 2, 27, 35, 100],
-];
+function RiskBadge({ similarity }: { similarity: number }) {
+  let color = 'var(--accent-green)';
+  let label = 'Thấp';
+  
+  if (similarity >= 70) {
+    color = 'var(--accent-red)';
+    label = 'Cao';
+  } else if (similarity >= 40) {
+    color = 'var(--accent-yellow)';
+    label = 'Trung bình';
+  }
 
-const detectedPairs = [
-  { a: 'Nguyễn M. Khoa', b: 'Đỗ Q. Vinh', sim: 82, risk: 'high', lines: '42–67, 88–102' },
-  { a: 'Trần T. Lan', b: 'Đỗ Q. Vinh', sim: 75, risk: 'high', lines: '15–38, 55–71' },
-  { a: 'Vũ Đức Nam', b: 'Bùi T. Thúy', sim: 35, risk: 'medium', lines: '22–29' },
-  { a: 'Hoàng T. Mai', b: 'Bùi T. Thúy', sim: 27, risk: 'medium', lines: '78–84' },
-];
-
-function simColor(v: number): string {
-  if (v >= 70) return '#ef4444';
-  if (v >= 40) return '#f59e0b';
-  if (v >= 20) return '#7c3aed';
-  if (v === 100) return '#374151';
-  return 'transparent';
-}
-function simTextColor(v: number): string {
-  if (v === 100) return '#6b7280';
-  if (v >= 70) return '#fff';
-  if (v >= 20) return '#fff';
-  return 'var(--text-muted)';
+  return (
+    <span className="badge" style={{ 
+      background: 'rgba(255,255,255,0.03)', 
+      color: color, 
+      border: `1px solid ${color}33`,
+      fontSize: 10,
+      fontWeight: 700
+    }}>
+      {label} ({similarity}%)
+    </span>
+  );
 }
 
 export default function PlagiarismPage() {
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
+  const [threshold, setThreshold] = useState(70);
+
+  // 1. Fetch lecturer's problems
+  const { data: problemsData } = useLecturerProblems();
+
+  // 2. Fetch plagiarism results
+  const { data: resultsData, isLoading: loadingResults, refetch } = useQuery({
+    queryKey: ['plagiarism-results', selectedExerciseId],
+    queryFn: async () => {
+      const resp = await plagiarismApi.getResults(selectedExerciseId);
+      return resp.data.data;
+    },
+    enabled: !!selectedExerciseId,
+  });
+
+  const pairs: PlagiarismPair[] = resultsData?.pairs || [];
+
+  const handleStartCheck = async () => {
+    if (!selectedExerciseId) return;
+    try {
+      await plagiarismApi.check(selectedExerciseId, threshold);
+      refetch();
+    } catch (err) {
+      console.error('Lỗi khi chạy phân tích:', err);
+    }
+  };
+
   return (
-    <>
-      <div className="page-container animate-in">
-        <div className="page-header">
-          <div>
-            <h1 className="page-title">🔍 Phát hiện Đạo văn</h1>
-            <p className="page-subtitle">Phân tích tương đồng mã nguồn (AST Similarity) — Bài: BFS Graph Traversal</p>
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <select className="select">
-              <option>BFS Graph Traversal</option>
-              <option>Dynamic Programming</option>
-            </select>
-            <button className="btn btn-primary">🔄 Phân tích lại</button>
-            <button className="btn btn-ghost">📤 Xuất báo cáo</button>
-          </div>
+    <div className="page-container animate-in">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">🔍 Phát hiện Đạo văn</h1>
+          <p className="page-subtitle">Phân tích tương đồng mã nguồn giữa các sinh viên trên cùng một bài tập</p>
         </div>
-
-        {/* Legend + stats */}
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>Mức độ tương đồng:</span>
-          {[
-            { color: '#ef4444', label: '≥70% Nguy hiểm' },
-            { color: '#f59e0b', label: '40–69% Cảnh báo' },
-            { color: '#7c3aed', label: '20–39% Chú ý' },
-            { color: 'var(--bg-hover)', label: '<20% Bình thường' },
-          ].map(l => (
-            <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 14, height: 14, borderRadius: 3, background: l.color }} />
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{l.label}</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
-          {/* Similarity Matrix */}
-          <div className="card" style={{ padding: 0, overflow: 'auto' }}>
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 14 }}>
-              📊 Ma trận tương đồng
-            </div>
-            <div style={{ padding: 20, overflowX: 'auto' }}>
-              <table style={{ borderCollapse: 'separate', borderSpacing: 3 }}>
-                <thead>
-                  <tr>
-                    <th style={{ width: 100, padding: '4px 8px', textAlign: 'left', fontSize: 10, color: 'var(--text-muted)' }}></th>
-                    {students.map(s => (
-                      <th key={s} style={{ padding: '4px 6px', fontSize: 9, color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'center', maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {s.split(' ').slice(-1)[0]}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map((rowStudent, i) => (
-                    <tr key={rowStudent}>
-                      <td style={{ padding: '4px 8px', fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                        {rowStudent.split(' ').slice(0, 2).join(' ')}
-                      </td>
-                      {matrix[i].map((val, j) => (
-                        <td key={j} style={{
-                          width: 44, height: 38, textAlign: 'center',
-                          background: i === j ? 'var(--bg-secondary)' : simColor(val),
-                          borderRadius: 4,
-                          fontSize: 11, fontWeight: 700,
-                          color: i === j ? 'var(--text-muted)' : simTextColor(val),
-                          position: 'relative',
-                          cursor: val >= 40 && i !== j ? 'pointer' : 'default',
-                        }}>
-                          {i === j ? '—' : val}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Detected pairs */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 14 }}>
-                🚨 Cặp bị phát hiện ({detectedPairs.length})
-              </div>
-              {detectedPairs.map((pair, i) => (
-                <div key={i} style={{
-                  padding: '14px 16px', borderBottom: '1px solid var(--border-light)',
-                  borderLeft: `3px solid ${pair.risk === 'high' ? '#ef4444' : '#f59e0b'}`,
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700 }}>
-                      {pair.a} ↔ {pair.b}
-                    </div>
-                    <span className={`badge ${pair.risk === 'high' ? 'badge-red' : 'badge-yellow'}`}>
-                      {pair.sim}%
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                    📌 Dòng trùng: <span style={{ fontFamily: 'monospace', color: 'var(--accent-cyan-light)' }}>{pair.lines}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-                    <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }}>👁 Xem chi tiết</button>
-                    <button className="btn btn-danger" style={{ padding: '4px 10px', fontSize: 11 }}>⚠️ Đánh dấu</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Code diff sample */}
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 13, color: 'var(--accent-red)' }}>
-                📎 Đoạn code trùng khớp
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                {['Nguyễn M. Khoa', 'Đỗ Q. Vinh'].map((name, idx) => (
-                  <div key={name} style={{ padding: 12, borderRight: idx === 0 ? '1px solid var(--border)' : 'none' }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6 }}>{name}</div>
-                    <div className="code-block" style={{ padding: '8px 10px', fontSize: 10.5 }}>
-                      {['def bfs(graph, start):', '    visited = set()', '    queue = [start]', '    while queue:', '        node = queue.pop(0)', '        visited.add(node)'].map((line, li) => (
-                        <div key={li} style={{
-                          background: li >= 2 && li <= 4 ? 'rgba(239,68,68,0.12)' : 'transparent',
-                          margin: '0 -8px', padding: '1px 8px', borderRadius: 2,
-                        }}>
-                          <span className="code-line-number">{li + 42}</span>
-                          <span className={li === 0 ? 'code-keyword' : li === 1 || li === 2 ? 'code-func' : ''}>{line}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <select 
+            className="select" 
+            value={selectedExerciseId}
+            onChange={(e) => setSelectedExerciseId(e.target.value)}
+            style={{ minWidth: 260, height: 44, borderRadius: 12 }}
+          >
+            <option value="">-- Chọn bài tập để phân tích --</option>
+            {problemsData?.items?.map((p: any) => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
+          <button 
+            className="btn btn-primary" 
+            onClick={handleStartCheck}
+            disabled={!selectedExerciseId || loadingResults}
+            style={{ gap: 8 }}
+          >
+            <RefreshCcw size={18} className={loadingResults ? 'spin' : ''} />
+            <span>Phân tích lại</span>
+          </button>
         </div>
       </div>
-    </>
+
+      {!selectedExerciseId ? (
+        <div className="card" style={{ padding: '80px 0', textAlign: 'center', opacity: 0.7 }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>🎯</div>
+          <p style={{ color: 'var(--text-secondary)' }}>Vui lòng chọn một bài tập để xem kết quả kiểm tra đạo văn.</p>
+        </div>
+      ) : loadingResults ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+          <Loader2 className="animate-spin" size={40} color="var(--accent-purple)" />
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24 }}>
+          {/* Left: Results Summary & Table */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div className="grid-3" style={{ gap: 16 }}>
+               {[
+                 { label: 'Tổng bài nộp', value: resultsData?.summary?.totalSubmissions || 0, color: 'var(--accent-purple)', icon: Users },
+                 { label: 'Cặp trùng khớp', value: pairs.length, color: 'var(--accent-yellow)', icon: ShieldAlert },
+                 { label: 'Nguy cơ cao', value: pairs.filter(p => p.similarity >= 70).length, color: 'var(--accent-red)', icon: AlertTriangle },
+               ].map((s, i) => (
+                 <div key={i} className="stat-card" style={{ padding: '16px 20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <div>
+                          <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, margin: 0, textTransform: 'uppercase' }}>{s.label}</p>
+                          <h3 style={{ fontSize: 24, fontWeight: 800, color: s.color, margin: '4px 0 0' }}>{s.value}</h3>
+                       </div>
+                       <s.icon size={24} color={s.color} style={{ opacity: 0.4 }} />
+                    </div>
+                 </div>
+               ))}
+            </div>
+
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: 700, fontSize: 14 }}>Các cặp tương đồng phát hiện được</span>
+              </div>
+              
+              {pairs.length === 0 ? (
+                <div style={{ padding: '60px 0', textAlign: 'center' }}>
+                  <CheckCircle2 size={40} color="var(--accent-green)" style={{ opacity: 0.5, marginBottom: 12 }} />
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Không phát hiện cặp bài làm nào có sự tương đồng đáng ngờ.</p>
+                </div>
+              ) : (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Cặp sinh viên</th>
+                      <th>Mức độ</th>
+                      <th>Dòng trùng</th>
+                      <th style={{ textAlign: 'right' }}>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pairs.map((pair) => (
+                      <tr key={pair.id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                             <div style={{ fontSize: 13, fontWeight: 600 }}>{pair.studentA}</div>
+                             <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>↔</span>
+                             <div style={{ fontSize: 13, fontWeight: 600 }}>{pair.studentB}</div>
+                          </div>
+                        </td>
+                        <td>
+                          <RiskBadge similarity={pair.similarity} />
+                        </td>
+                        <td>
+                           <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-cyan-light)' }}>
+                              {pair.matchingLines || '--'}
+                           </span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                           <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }}>Xem mã nguồn</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+          {/* Right Panel: AST Analysis Info */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+             <div className="card" style={{ background: 'rgba(139, 92, 246, 0.05)', borderColor: 'rgba(139, 92, 246, 0.2)' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                   <FileCode size={18} color="var(--accent-purple-light)" />
+                   Cơ chế phân tích AST
+                </h3>
+                <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--text-secondary)', margin: 0 }}>
+                   Hệ thống không chỉ so sánh văn bản đơn thuần mà sử dụng **Abstract Syntax Tree (AST)** để phát hiện các hành vi đổi tên biến, thay đổi cấu trúc vòng lặp nhưng giữ nguyên logic thuật toán.
+                </p>
+                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                   {['Bỏ qua khoảng trắng', 'Chuẩn hóa tên biến', 'Nhận diện hoán đổi câu lệnh'].map((f, i) => (
+                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--text-primary)' }}>
+                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent-purple-light)' }} />
+                        {f}
+                     </div>
+                   ))}
+                </div>
+             </div>
+
+             <div className="card" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: '#f87171', margin: '0 0 8px' }}>⚠️ Lưu ý về ngưỡng (Threshold)</h3>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                   Các bài tập đơn giản có thể có độ tương đồng cao một cách tự nhiên. Giảng viên nên cân nhắc kỹ trước khi đánh dấu vi phạm đối với các tỷ lệ dưới 70%.
+                </p>
+             </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
+
+// Helper icons missing from earlier import if needed
+import { CheckCircle2 } from 'lucide-react';

@@ -89,7 +89,7 @@ export default function ProblemsListPage() {
                                     </div>
                                     <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                                         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                                            <button className="btn" style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => router.push(`/student/problem-test`)}>
+                                            <button className="btn" style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => router.push(`/student/code-editor?slug=${p.slug}`)}>
                                                 👁 Xem thử
                                             </button>
                                             <button className="btn" style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: 'var(--accent-purple-light)', color: 'white', border: 'none', cursor: 'pointer' }} onClick={() => router.push(`/lecturer/problems/${p.id}/edit`)}>

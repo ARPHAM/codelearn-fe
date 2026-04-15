@@ -1,22 +1,36 @@
 'use client';
 
-
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '@/api/analytics.api';
-import { Loader2, TrendingUp, Users, CheckCircle, AlertTriangle } from 'lucide-react';
+import {
+  Loader2,
+  TrendingUp,
+  Users,
+  CheckCircle,
+  AlertTriangle,
+  ArrowUpRight,
+  Target,
+  BarChart3,
+  Calendar,
+  Bell
+} from 'lucide-react';
 
 function MiniBarChart({ data, days }: { data: number[]; days: string[] }) {
   const max = Math.max(...data, 1);
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 60 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 100, padding: '10px 0' }}>
       {data.map((val, i) => (
-        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
           <div style={{
-            width: '100%', height: `${(val / max) * 48}px`,
-            background: val > 80 ? 'var(--accent-purple)' : 'rgba(124,58,237,0.4)',
-            borderRadius: '3px 3px 0 0', minHeight: 4, transition: 'height 0.5s ease',
+            width: '100%',
+            height: `${(val / max) * 80}px`,
+            background: 'linear-gradient(to top, var(--accent-purple), var(--accent-purple-light))',
+            borderRadius: '6px 6px 2px 2px',
+            minHeight: 4,
+            transition: 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)'
           }} />
-          <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>{days[i]}</span>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{days[i]}</span>
         </div>
       ))}
     </div>
@@ -24,108 +38,177 @@ function MiniBarChart({ data, days }: { data: number[]; days: string[] }) {
 }
 
 export default function AnalyticsPage() {
-  const { data: dashboard, isLoading } = useQuery({
+  const { data: dashboard, isLoading: loadingDash } = useQuery({
     queryKey: ['lecturer-dashboard'],
     queryFn: async () => {
       const resp = await analyticsApi.getLecturerDashboard();
-      return resp.data;
+      return resp.data.data;
     },
   });
 
-  // Mock course ID for now
-  const { data: courseData } = useQuery({
-    queryKey: ['course-analytics'],
+  const { data: courseData, isLoading: loadingCourse } = useQuery({
+    queryKey: ['course-analytics', 'all'],
     queryFn: async () => {
       const resp = await analyticsApi.getCourseAnalytics('all');
-      return resp.data;
+      return resp.data.data;
     },
   });
 
+  const isLoading = loadingDash || loadingCourse;
+
   const stats = [
-    { label: 'Sinh viên', value: courseData?.totalStudents || 0, icon: <Users size={20} />, color: '#7c3aed', trend: '+5 tuần này' },
-    { label: 'Tỷ lệ hoàn thành', value: `${courseData?.avgCompletion || 0}%`, icon: <CheckCircle size={20} />, color: '#10b981', trend: 'Dựa trên bài tập' },
-    { label: 'Đang gặp khó', value: courseData?.stuckStudents || 0, icon: <AlertTriangle size={20} />, color: '#f59e0b', trend: 'Cần chú ý' },
-    { label: 'Tổng số bài tập', value: dashboard?.totalProblems || 0, icon: <TrendingUp size={20} />, color: '#ef4444', trend: 'Đang hoạt động' },
+    { label: 'Tổng sinh viên', value: courseData?.totalStudents || 0, icon: Users, color: '#8b5cf6', trend: '+12% tháng này' },
+    { label: 'Tỷ lệ hoàn thành', value: `${courseData?.avgCompletion || 0}%`, icon: CheckCircle, color: '#10b981', trend: 'Tăng 5% so với kỳ trước' },
+    { label: 'Sinh viên gặp khó', value: courseData?.stuckStudents || 0, icon: AlertTriangle, color: '#f59e0b', trend: 'Cần hỗ trợ sớm' },
+    { label: 'Tổng bài tập', value: dashboard?.totalProblems || 0, icon: Target, color: '#3b82f6', trend: 'Đang hoạt động' },
   ];
 
-  const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+  const days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
   const weeklyData = courseData?.weeklySubmissions || [0, 0, 0, 0, 0, 0, 0];
 
   return (
-    <>
-      <div className="page-container animate-in">
-        <div className="page-header">
-          <div>
-            <h1 className="page-title">📊 Analytics Dashboard</h1>
-            <p className="page-subtitle">Dữ liệu thực tế từ hệ thống — Theo dõi tiến độ lớp học</p>
+    <div className="page-container animate-in">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">📊 Báo cáo & Thống kê</h1>
+          <p className="page-subtitle">Theo dõi hiệu suất học tập và mức độ tương tác của sinh viên</p>
+        </div>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <div className="card" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8, height: 44, borderRadius: 12 }}>
+            <Calendar size={16} color="var(--text-muted)" />
+            <span style={{ fontSize: 13, fontWeight: 600 }}>Học kỳ 2 - 2026</span>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <select className="select"><option>Tất cả lớp</option></select>
-            <button className="btn btn-ghost">📤 Xuất báo cáo</button>
+          <button className="btn btn-primary" style={{ height: 44 }}>
+            Xuất báo cáo PDF
+          </button>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+          <Loader2 className="animate-spin" size={40} color="var(--accent-purple)" />
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Top stats */}
+          <div className="grid-4">
+            {stats.map((s, i) => (
+              <div key={i} className="stat-card" style={{ position: 'relative', overflow: 'hidden' }}>
+                <div style={{
+                  position: 'absolute', top: -10, right: -10,
+                  width: 80, height: 80,
+                  background: `${s.color}08`,
+                  borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <s.icon size={40} color={s.color} style={{ opacity: 0.1 }} />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <div style={{
+                    width: 36, height: 36,
+                    background: `${s.color}15`,
+                    borderRadius: 10,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: s.color
+                  }}>
+                    <s.icon size={18} />
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <h2 style={{ fontSize: 32, fontWeight: 800, margin: 0 }}>{s.value}</h2>
+                  <span style={{ fontSize: 11, color: s.color === '#ef4444' || s.color === '#f59e0b' ? s.color : 'var(--accent-green)', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                    <ArrowUpRight size={12} /> {s.trend}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24 }}>
+            {/* Chart Section */}
+            <div className="card" style={{ padding: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 4, height: 18, background: 'var(--accent-purple)', borderRadius: 2 }} />
+                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Tương tác hàng tuần</h3>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 10px' }}>Tuần này</button>
+                  <button className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 10px', opacity: 0.5 }}>Tuần trước</button>
+                </div>
+              </div>
+
+              <MiniBarChart data={weeklyData} days={days} />
+
+              <div style={{
+                marginTop: 24, padding: '16px', background: 'var(--bg-secondary)',
+                borderRadius: 12, display: 'flex', justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ display: 'flex', gap: 16 }}>
+                  <div>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase' }}>Ngày cao điểm</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Thứ 5 (25 bài nộp)</p>
+                  </div>
+                  <div style={{ width: 1, background: 'var(--border)', height: 32 }} />
+                  <div>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase' }}>Trung bình/ngày</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>18.4 bài</p>
+                  </div>
+                </div>
+                <BarChart3 size={24} color="var(--accent-purple)" style={{ opacity: 0.4 }} />
+              </div>
+            </div>
+
+            {/* Sidebar info */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div className="card" style={{ padding: 24 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertTriangle size={18} color="#f59e0b" />
+                  Kỹ năng học viên còn yếu
+                </h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {dashboard?.topWeakSkills?.map((skill: string, i: number) => (
+                    <div key={i} className="badge" style={{
+                      background: 'rgba(239, 68, 68, 0.08)',
+                      color: '#f87171',
+                      border: '1px solid rgba(239, 68, 68, 0.15)',
+                      padding: '6px 12px',
+                      fontSize: 12,
+                      fontWeight: 600
+                    }}>
+                      {skill}
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 16, lineHeight: 1.5 }}>
+                  * Dữ liệu được phân tích dựa trên các lỗi logic lặp lại và thời gian giải bài quá trung bình.
+                </p>
+              </div>
+
+              <div className="card" style={{
+                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)',
+                borderColor: 'rgba(139, 92, 246, 0.2)',
+                padding: 24
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <Bell size={20} color="var(--accent-purple-light)" />
+                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Gửi thông báo nhanh</h3>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
+                  Bạn có muốn gửi lời nhắn khích lệ hoặc tài liệu bổ trợ cho các sinh viên đang gặp khó khăn không?
+                </p>
+                <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                  Gửi Broadcast ngay
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-
-        {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
-            <Loader2 className="animate-spin" size={40} color="var(--accent-purple)" />
-          </div>
-        ) : (
-          <>
-            {/* Top stats */}
-            <div className="grid-4">
-              {stats.map(s => (
-                <div key={s.label} className="stat-card" style={{ borderTop: `2px solid ${s.color}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: s.color, lineHeight: 1, marginTop: 4 }}>{s.value}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>{s.trend}</div>
-                    </div>
-                    <span style={{ color: s.color }}>{s.icon}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
-              {/* Exercise progress & Weekly activity */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div className="card">
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}>📈 Hoạt động nộp bài trong tuần</div>
-                  <MiniBarChart data={weeklyData} days={days} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, fontSize: 11, color: 'var(--text-secondary)' }}>
-                    <span>Tổng lượt nộp bài theo ngày</span>
-                    <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>Dữ liệu thời gian thực</span>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 20 }}>🎯 Kỹ năng sinh viên còn yếu (AI phân tích)</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                    {dashboard?.topWeakSkills?.map((skill: string) => (
-                      <span key={skill} className="badge badge-red" style={{ padding: '8px 12px', fontSize: 12 }}>{skill}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Alerts placeholder */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div className="card" style={{ background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.3)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: '#f87171', marginBottom: 12 }}>🚨 Cảnh báo hệ thống</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                    Hệ thống sẽ tự động cảnh báo khi có nhiều sinh viên bị kẹt ở cùng một bài tập.
-                  </div>
-                  <button className="btn btn-danger" style={{ width: '100%', justifyContent: 'center', marginTop: 16 }}>
-                    📣 Gửi thông báo nhắc nhở
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+      )}
+    </div>
   );
 }
-

@@ -293,7 +293,15 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
     const { data: languagesData } = useLanguages()
     const languages = languagesData || []
 
-    const [blocks, setBlocks] = useState<Block[]>(initialData?.description || [])
+    const [blocks, setBlocks] = useState<Block[]>(() => {
+        const rawDescription = initialData?.description;
+        if (Array.isArray(rawDescription)) return rawDescription;
+        if (rawDescription && typeof rawDescription === 'object') {
+            // Trường hợp dữ liệu cũ hoặc dữ liệu Seed là Tiptap JSON
+            return [{ id: 'legacy-doc', content: rawDescription as any }];
+        }
+        return [];
+    })
     const [activeTab, setActiveTab] = useState<'CODE' | 'SETTINGS'>('CODE')
     const [problemState, setProblemState] = useState({
         title: initialData?.title || '',

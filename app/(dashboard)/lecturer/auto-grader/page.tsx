@@ -1,174 +1,246 @@
 
+'use client';
 
-const submissions = [
-  { id: 'SV001', name: 'Nguyễn Minh Khoa', exercise: 'BFS Graph Traversal', lang: 'C++', time: '2 phút trước', score: 95, pass: 19, total: 20, mem: '4.2MB', cpu: '0.18s', status: 'pass' },
-  { id: 'SV002', name: 'Trần Thị Lan', exercise: 'Dynamic Programming', lang: 'Python', time: '5 phút trước', score: 70, pass: 14, total: 20, mem: '8.1MB', cpu: '0.42s', status: 'partial' },
-  { id: 'SV003', name: 'Lê Văn Hùng', exercise: 'BFS Graph Traversal', lang: 'Java', time: '8 phút trước', score: 0, pass: 0, total: 20, mem: '-', cpu: '-', status: 'fail' },
-  { id: 'SV004', name: 'Phạm Thu Hà', exercise: 'Sorting Algorithms', lang: 'C++', time: '12 phút trước', score: 100, pass: 20, total: 20, mem: '2.8MB', cpu: '0.09s', status: 'pass' },
-  { id: 'SV005', name: 'Đỗ Quang Vinh', exercise: 'Dynamic Programming', lang: 'C++', time: '15 phút trước', score: 55, pass: 11, total: 20, mem: '6.3MB', cpu: '1.21s', status: 'partial' },
-  { id: 'SV006', name: 'Hoàng Thị Mai', exercise: 'Sorting Algorithms', lang: 'Python', time: '18 phút trước', score: 100, pass: 20, total: 20, mem: '3.1MB', cpu: '0.15s', status: 'pass' },
-];
-
-const testCases = [
-  { id: 1, input: 'n=5, edges=[(0,1),(1,2)]', expected: '[0,1,2]', got: '[0,1,2]', time: '12ms', status: 'pass' },
-  { id: 2, input: 'n=3, edges=[(0,2),(2,1)]', expected: '[0,2,1]', got: '[0,2,1]', time: '8ms', status: 'pass' },
-  { id: 3, input: 'n=6 (disconnected)', expected: '[0,1,3]', got: '[0,1]', time: '15ms', status: 'fail' },
-  { id: 4, input: 'n=100, complete graph', expected: 'BFS order', got: 'BFS order', time: '45ms', status: 'pass' },
-  { id: 5, input: 'Empty graph n=0', expected: '[]', got: '[]', time: '2ms', status: 'pass' },
-];
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useLecturerProblems } from '@/hooks/useProblems';
+import { submissionsApi, Submission } from '@/api/submissions.api';
+import { 
+  Loader2, 
+  CheckCircle2, 
+  XCircle, 
+  AlertCircle, 
+  Search, 
+  Filter, 
+  RefreshCcw,
+  Clock,
+  Cpu,
+  Database as MemoryIcon
+} from 'lucide-react';
 
 function StatusBadge({ status }: { status: string }) {
-  const cfg: Record<string, { cls: string; label: string; icon: string }> = {
-    pass: { cls: 'badge-green', label: 'Passed', icon: '✅' },
-    fail: { cls: 'badge-red', label: 'Failed', icon: '❌' },
-    partial: { cls: 'badge-yellow', label: 'Partial', icon: '⚠️' },
+  const cfg: Record<string, { color: string; label: string; icon: any }> = {
+    PASS: { color: 'var(--accent-green)', label: 'Đạt', icon: CheckCircle2 },
+    FAIL: { color: 'var(--accent-red)', label: 'Thất bại', icon: XCircle },
+    PARTIAL: { color: 'var(--accent-yellow)', label: 'Một phần', icon: AlertCircle },
+    PENDING: { color: 'var(--text-muted)', label: 'Đang chờ', icon: RefreshCcw },
   };
-  const c = cfg[status] || cfg.fail;
-  return <span className={`badge ${c.cls}`}>{c.icon} {c.label}</span>;
+  const c = cfg[status] || cfg.FAIL;
+  const Icon = c.icon;
+  return (
+    <span className="badge" style={{ 
+      background: 'rgba(255,255,255,0.03)', 
+      color: c.color, 
+      border: `1px solid ${c.color}33`,
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 6,
+      padding: '4px 10px'
+    }}>
+      <Icon size={14} className={status === 'PENDING' ? 'spin' : ''} />
+      {c.label}
+    </span>
+  );
 }
 
 export default function AutoGraderPage() {
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
+
+  // 1. Fetch lecturer's problems
+  const { data: problemsData, isLoading: loadingProblems } = useLecturerProblems();
+
+  // 2. Fetch submissions for selected exercise
+  const { data: submissionsData, isLoading: loadingSubmissions, refetch } = useQuery({
+    queryKey: ['exercise-submissions', selectedExerciseId],
+    queryFn: async () => {
+      const resp = await submissionsApi.getExerciseSubmissions(selectedExerciseId);
+      return resp.data.data;
+    },
+    enabled: !!selectedExerciseId,
+  });
+
+  const activeSubmissions: Submission[] = submissionsData || [];
+
   return (
-    <>
-      <div className="page-container animate-in">
-        {/* Header */}
-        <div className="page-header">
-          <div>
-            <h1 className="page-title">⚡ Auto-Grader</h1>
-            <p className="page-subtitle">Chấm bài tự động qua Docker sandbox — Kết quả tức thì</p>
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <select className="select" style={{ fontSize: 13 }}>
-              <option>BFS Graph Traversal</option>
-              <option>Dynamic Programming</option>
-              <option>Sorting Algorithms</option>
-            </select>
-            <button className="btn btn-primary">▶ Chạy lại tất cả</button>
-          </div>
+    <div className="page-container animate-in">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">⚡ Auto-Grader</h1>
+          <p className="page-subtitle">Quản lý và theo dõi kết quả nộp bài tự động của sinh viên</p>
         </div>
-
-        {/* Stat cards */}
-        <div className="grid-4">
-          {[
-            { label: 'Tổng nộp bài', value: '148', icon: '📥', color: '#7c3aed', sub: 'Hôm nay' },
-            { label: 'Passed', value: '89', icon: '✅', color: '#10b981', sub: '60.1%' },
-            { label: 'Partial', value: '34', icon: '⚠️', color: '#f59e0b', sub: '23.0%' },
-            { label: 'Failed', value: '25', icon: '❌', color: '#ef4444', sub: '16.9%' },
-          ].map(s => (
-            <div key={s.label} className="stat-card" style={{ borderLeft: `3px solid ${s.color}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: s.color, marginTop: 4, lineHeight: 1 }}>{s.value}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>{s.sub}</div>
-                </div>
-                <span style={{ fontSize: 28 }}>{s.icon}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Submissions table + test cases panel */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20 }}>
-          {/* Left: Submission list */}
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 700, fontSize: 14 }}>Danh sách nộp bài</span>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input className="input" placeholder="Tìm sinh viên..." style={{ width: 200 }} />
-                <select className="select">
-                  <option>Tất cả</option><option>Passed</option><option>Failed</option>
-                </select>
-              </div>
-            </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Sinh viên</th><th>Bài tập</th><th>Ngôn ngữ</th>
-                  <th>Điểm</th><th>Test cases</th><th>CPU</th><th>Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map(s => (
-                  <tr key={s.id} style={{ cursor: 'pointer' }}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div className="avatar" style={{ background: 'var(--gradient-purple)', color: 'white', width: 28, height: 28, fontSize: 10 }}>
-                          {s.name.split(' ').pop()?.charAt(0)}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: 12.5 }}>{s.name}</div>
-                          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{s.id} · {s.time}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ fontSize: 12, maxWidth: 140 }}>{s.exercise}</td>
-                    <td>
-                      <span className={`badge ${s.lang === 'Python' ? 'badge-cyan' : s.lang === 'Java' ? 'badge-orange' : 'badge-purple'}`}>{s.lang}</span>
-                    </td>
-                    <td>
-                      <span style={{ fontWeight: 700, color: s.score >= 100 ? 'var(--accent-green)' : s.score === 0 ? 'var(--accent-red)' : 'var(--accent-yellow)', fontSize: 14 }}>{s.score}</span>
-                    </td>
-                    <td>
-                      <div style={{ fontSize: 12 }}>{s.pass}/{s.total}</div>
-                      <div className="progress-bar" style={{ marginTop: 4, width: 60 }}>
-                        <div className="progress-fill" style={{ width: `${(s.pass / s.total) * 100}%`, background: s.pass === s.total ? 'var(--accent-green)' : s.pass === 0 ? 'var(--accent-red)' : 'var(--accent-yellow)' }} />
-                      </div>
-                    </td>
-                    <td style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{s.cpu}</td>
-                    <td><StatusBadge status={s.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Right: Test case panel */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'rgba(124,58,237,0.06)' }}>
-                <div style={{ fontWeight: 700, fontSize: 13 }}>📋 Test Cases — Trần Thị Lan</div>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>Dynamic Programming · Python</div>
-              </div>
-              {testCases.map(tc => (
-                <div key={tc.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                  <span style={{ fontSize: 14, marginTop: 1 }}>{tc.status === 'pass' ? '✅' : '❌'}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 2 }}>Test #{tc.id} · {tc.time}</div>
-                    <div className="code-block" style={{ padding: '6px 10px', fontSize: 10.5 }}>
-                      <div><span className="code-comment">// Input</span></div>
-                      <div>{tc.input}</div>
-                      {tc.status === 'fail' && (
-                        <>
-                          <div style={{ marginTop: 4 }}><span className="code-keyword">Expected:</span> <span className="code-string">{tc.expected}</span></div>
-                          <div><span className="code-keyword">Got:</span> <span style={{ color: 'var(--accent-red)' }}>{tc.got}</span></div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Docker sandbox info */}
-            <div className="card" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.2)' }}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--accent-cyan-light)', marginBottom: 12 }}>🐳 Docker Sandbox</div>
-              {[
-                { label: 'Image', value: 'python:3.11-slim' },
-                { label: 'CPU Limit', value: '0.5 vCPU' },
-                { label: 'RAM Limit', value: '128 MB' },
-                { label: 'Timeout', value: '5 giây' },
-                { label: 'Network', value: 'Disabled' },
-              ].map(r => (
-                <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12 }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>{r.label}</span>
-                  <span style={{ fontFamily: 'monospace', color: 'var(--text-primary)', fontWeight: 600 }}>{r.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <select 
+            className="select" 
+            value={selectedExerciseId}
+            onChange={(e) => setSelectedExerciseId(e.target.value)}
+            style={{ minWidth: 260, height: 44, borderRadius: 12 }}
+          >
+            <option value="">-- Chọn bài tập để xem --</option>
+            {problemsData?.items?.map((p: any) => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => refetch()}
+            disabled={!selectedExerciseId || loadingSubmissions}
+            style={{ gap: 8 }}
+          >
+            <RefreshCcw size={18} className={loadingSubmissions ? 'spin' : ''} />
+            <span>Cập nhật</span>
+          </button>
         </div>
       </div>
-    </>
+
+      {!selectedExerciseId ? (
+        <div className="card" style={{ padding: '80px 0', textAlign: 'center', opacity: 0.7 }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>☝️</div>
+          <p style={{ color: 'var(--text-secondary)' }}>Vui lòng chọn một bài tập ở trên để xem lịch sử nộp bài.</p>
+        </div>
+      ) : loadingSubmissions ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+          <Loader2 className="animate-spin" size={40} color="var(--accent-purple)" />
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 24 }}>
+          {/* Left: Submissions Table */}
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontWeight: 700, fontSize: 14 }}>Danh sách nộp bài</span>
+                <span className="badge" style={{ fontSize: 10, background: 'var(--bg-tertiary)' }}>{activeSubmissions.length} kết quả</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                 <div style={{ position: 'relative' }}>
+                    <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    <input className="input" placeholder="Tìm sinh viên..." style={{ width: 180, paddingLeft: 32, height: 36, fontSize: 12 }} />
+                 </div>
+              </div>
+            </div>
+            
+            {activeSubmissions.length === 0 ? (
+              <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
+                Chưa có sinh viên nào nộp bài cho thử thách này.
+              </div>
+            ) : (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Sinh viên</th>
+                    <th>Ngôn ngữ</th>
+                    <th>Điểm</th>
+                    <th>Thời gian</th>
+                    <th style={{ textAlign: 'right' }}>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeSubmissions.map(s => {
+                    const isSelected = selectedSubmissionId === s.id;
+                    return (
+                      <tr 
+                        key={s.id} 
+                        style={{ 
+                          cursor: 'pointer',
+                          background: isSelected ? 'rgba(139, 92, 246, 0.05)' : 'transparent'
+                        }}
+                        onClick={() => setSelectedSubmissionId(s.id)}
+                      >
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div className="avatar" style={{ background: 'var(--gradient-purple)', width: 32, height: 32, fontSize: 11 }}>
+                              {s.user.fullName.split(' ').pop()?.charAt(0)}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: 13 }}>{s.user.fullName}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(s.createdAt).toLocaleString('vi-VN')}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="badge" style={{ background: 'var(--bg-tertiary)', fontSize: 11 }}>{s.language}</span>
+                        </td>
+                        <td>
+                          <span style={{ 
+                            fontWeight: 800, 
+                            fontSize: 15,
+                            color: s.score >= 80 ? 'var(--accent-green)' : s.score >= 50 ? 'var(--accent-yellow)' : 'var(--accent-red)'
+                          }}>
+                            {s.score}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)' }}>
+                            <Clock size={12} />
+                            {s.executionTime || 0}ms
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <StatusBadge status={s.status} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Right Panel: Detail or Stats */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {selectedSubmissionId ? (
+              <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--accent-purple-light)22' }}>
+                <div style={{ padding: '16px', background: 'rgba(139, 92, 246, 0.05)', borderBottom: '1px solid var(--border)' }}>
+                   <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>📋 Chi tiết thực thi</h3>
+                   <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '4px 0 0' }}>Mã nộp bài: {selectedSubmissionId.substring(0, 13)}...</p>
+                </div>
+                
+                <div style={{ padding: 20 }}>
+                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+                      <div style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12 }}>
+                         <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase' }}>CPU Time</div>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
+                            <Cpu size={16} color="var(--accent-cyan)" />
+                            <span>--ms</span>
+                         </div>
+                      </div>
+                      <div style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12 }}>
+                         <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase' }}>Memory</div>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
+                            <MemoryIcon size={16} color="var(--accent-purple)" />
+                            <span>--MB</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <p style={{ fontSize: 12, textAlign: 'center', color: 'var(--text-muted)', padding: '20px 0' }}>
+                      (Chi tiết kết quả test case và mã nguồn đang được tải...)
+                   </p>
+                </div>
+              </div>
+            ) : (
+              <div className="card" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.2)' }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--accent-cyan-light)', marginBottom: 16 }}>🐳 Docker Sandbox Stats</div>
+                {[
+                  { label: 'Uptime', value: '99.9%' },
+                  { label: 'Container Active', value: '4/10' },
+                  { label: 'Avg Execution', value: '420ms' },
+                  { label: 'Peak Memory', value: '512MB' },
+                ].map(r => (
+                  <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 13 }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>{r.label}</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{r.value}</span>
+                  </div>
+                ))}
+                <div className="divider" style={{ margin: '16px 0' }} />
+                <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-muted)' }}>
+                  Hệ thống sử dụng gVisor để cô lập hoàn toàn môi trường thực thi, đảm bảo an toàn tuyệt đối cho hệ thống chủ.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
