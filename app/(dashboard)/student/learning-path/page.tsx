@@ -29,7 +29,7 @@ export default function LearningPathPage() {
     queryKey: ['learning-path'],
     queryFn: async () => {
       const resp = await learningPathApi.getMyPath();
-      return resp.data.data.nodes as SkillNode[];
+      return resp.nodes as SkillNode[];
     },
   });
 
@@ -39,7 +39,7 @@ export default function LearningPathPage() {
     queryKey: ['ai-suggestions'],
     queryFn: async () => {
       const resp = await learningPathApi.getSuggestions(3);
-      return resp.data.data.suggestions;
+      return resp.suggestions;
     },
   });
 

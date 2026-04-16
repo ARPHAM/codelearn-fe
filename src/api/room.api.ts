@@ -16,11 +16,32 @@ export interface Room {
 }
 
 export const roomApi = {
-  getRooms: () => axios.get('/rooms'),
-  getMyRooms: () => axios.get('/rooms/my-rooms'),
-  getRoomDetail: (id: string) => axios.get(`/rooms/${id}`),
-  createRoom: (data: any) => axios.post('/rooms', data),
-  joinRoom: (id: string, data: any) => axios.post(`/rooms/${id}/join`, data),
-  leaveRoom: (id: string) => axios.post(`/rooms/${id}/leave`, {}),
-  getParticipants: (id: string) => axios.get(`/rooms/${id}/participants`),
+  getRooms: async () => {
+    const response = await axios.get('/room');
+    return response.data.data;
+  },
+  getMyRooms: async () => {
+    const response = await axios.get('/room/my-rooms');
+    return response.data.data;
+  },
+  getRoomDetail: async (id: string) => {
+    const response = await axios.get(`/room/${id}`);
+    return response.data.data;
+  },
+  createRoom: async (data: any) => {
+    const response = await axios.post('/room', data);
+    return response.data.data;
+  },
+  joinRoom: async (id: string, data: any) => {
+    const response = await axios.post(`/room/${id}/join`, data);
+    return response.data.data;
+  },
+  leaveRoom: async (id: string) => {
+    const response = await axios.post(`/room/${id}/leave`, {});
+    return response.data.data;
+  },
+  getParticipants: async (id: string) => {
+    const response = await axios.get(`/room/${id}/participants`);
+    return response.data.data;
+  },
 };

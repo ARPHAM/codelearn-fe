@@ -16,6 +16,7 @@ import { useSearchParams } from 'next/navigation'
 import ProblemUiStudent from '../components/problem-ui-student'
 import { Bot, Send } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import { aiApi } from '@/src/api/ai.api';
 
 const mono = JetBrains_Mono({
     subsets: ['latin'],
@@ -253,27 +254,28 @@ export default function CodeEditorPage() {
         setIsAiLoading(true)
 
         try {
-            const resp = await fetch('/api/ai/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messages: updatedHistory,
-                    codeContext: files.map(f => `${f.filename}:\n${f.content}`).join('\n\n'),
-                    problemContext: {
-                        title: problemData?.title,
-                        description: problemData?.version?.description
-                    }
-                })
+            const resp = await aiApi.chat({
+                messages: updatedHistory.map(m => ({
+                    role: m.role === 'user' ? 'user' : 'model',
+                    content: m.msg
+                })),
+                codeContext: files.map(f => `${f.filename}:\n${f.content}`).join('\n\n'),
+                problemContext: {
+                    title: problemData?.title || 'Chưa rõ',
+                    description: Array.isArray(problemData?.version?.description) 
+                        ? problemData.version.description.map((b: any) => b.content).join('\n')
+                        : 'Chưa rõ'
+                }
             })
 
-            const data = await resp.json()
+            const data = resp.data
             if (data.text) {
                 setChatMessages(prev => [...prev, { role: 'assistant', msg: data.text }])
             } else {
                 toast({ type: 'error', title: 'Lỗi AI', message: data.error || 'Không thể nhận phản hồi từ AI' })
             }
-        } catch (err) {
-            toast({ type: 'error', title: 'Lỗi kết nối', message: 'Không thể kết nối với AI Assistant' })
+        } catch (err: any) {
+            toast({ type: 'error', title: 'Lỗi kết nối', message: err.response?.data?.message || 'Không thể kết nối với AI Assistant' })
         } finally {
             setIsAiLoading(false)
         }

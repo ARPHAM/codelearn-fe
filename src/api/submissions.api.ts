@@ -21,12 +21,18 @@ export interface Submission {
 }
 
 export const submissionsApi = {
-  getExerciseSubmissions: (exerciseId: string, params?: any) => 
-    axios.get(`/exercises/${exerciseId}/submissions`, { params }),
+  getExerciseSubmissions: async (exerciseId: string, params?: any) => {
+    const response = await axios.get(`/exercise/${exerciseId}/submission`, { params });
+    return response.data.data;
+  },
   
-  getSubmissionDetail: (id: string) => 
-    axios.get(`/submissions/${id}/result`),
+  getSubmissionDetail: async (id: string) => {
+    const response = await axios.get(`/submission/${id}/result`);
+    return response.data.data;
+  },
 
-  updateScore: (id: string, score: number) =>
-    axios.patch(`/submissions/${id}/score`, { score }),
+  updateScore: async (id: string, score: number) => {
+    const response = await axios.patch(`/submission/${id}/score`, { score });
+    return response.data.data;
+  },
 };

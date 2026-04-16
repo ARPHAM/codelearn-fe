@@ -1,22 +1,33 @@
 import axios from '@/config/axios';
 
 export const battlesApi = {
-  getActiveBattles: () => 
-    axios.get(`/battles/active`),
+  getActiveBattles: async () => {
+    const response = await axios.get(`/battle/active`);
+    return response.data.data;
+  },
 
+  challenge: async (opponentId: string, duration: number = 300, topic: string = 'All') => {
+    const response = await axios.post(`/battle/challenge`, { opponentId, duration, topic });
+    return response.data.data;
+  },
   
-  challenge: (opponentId: string, duration: number = 300, topic: string = 'All') => 
-    axios.post(`/battles/challenge`, { opponentId, duration, topic }),
+  accept: async (id: string) => {
+    const response = await axios.post(`/battle/${id}/accept`);
+    return response.data.data;
+  },
   
-  accept: (id: string) => 
-    axios.post(`/battles/${id}/accept`),
+  cancel: async (id: string) => {
+    const response = await axios.post(`/battle/${id}/cancel`);
+    return response.data.data;
+  },
     
-  cancel: (id: string) =>
-    axios.post(`/battles/${id}/cancel`),
-    
-  submitCode: (id: string, code: string) =>
-    axios.post(`/battles/${id}/submit`, { code }),
+  submitCode: async (id: string, code: string) => {
+    const response = await axios.post(`/battle/${id}/submit`, { code });
+    return response.data.data;
+  },
 
-  getResult: (id: string) =>
-    axios.get(`/battles/${id}/result`),
+  getResult: async (id: string) => {
+    const response = await axios.get(`/battle/${id}/result`);
+    return response.data.data;
+  },
 };

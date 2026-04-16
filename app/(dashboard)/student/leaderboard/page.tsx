@@ -22,7 +22,7 @@ export default function LeaderboardPage() {
     queryKey: ['leaderboard', period],
     queryFn: async () => {
       const resp = await leaderboardApi.getLeaderboard(period, 20);
-      return resp.data.data;
+      return resp;
     },
   });
 

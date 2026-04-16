@@ -9,7 +9,7 @@ export default function AdminRoomsPage() {
     queryKey: ['admin-all-rooms'],
     queryFn: async () => {
       const resp = await roomApi.getRooms();
-      return resp.data.data as Room[];
+      return resp as Room[];
     },
   });
 

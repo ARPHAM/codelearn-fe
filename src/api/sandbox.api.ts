@@ -21,6 +21,12 @@ export interface SandboxJob {
 }
 
 export const sandboxApi = {
-  getJobs: () => axios.get('/admin/sandbox/jobs'),
-  killJob: (jobId: string) => axios.delete(`/admin/sandbox/jobs/${jobId}`),
+  getJobs: async () => {
+    const response = await axios.get('/admin/sandbox/jobs');
+    return response.data.data;
+  },
+  killJob: async (jobId: string) => {
+    const response = await axios.delete(`/admin/sandbox/jobs/${jobId}`);
+    return response.data.data;
+  },
 };

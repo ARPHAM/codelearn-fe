@@ -21,18 +21,28 @@ export interface BankItem {
 }
 
 export const bankApi = {
-  createBank: (data: { name: string; type: string; description?: string }) =>
-    axios.post(`/banks`, data),
+  createBank: async (data: { name: string; type: string; description?: string }) => {
+    const response = await axios.post(`/bank`, data);
+    return response.data.data;
+  },
 
-  getBanks: () =>
-    axios.get(`/banks`),
+  getBanks: async () => {
+    const response = await axios.get(`/bank`);
+    return response.data.data;
+  },
 
-  getBankDetail: (id: string) =>
-    axios.get(`/banks/${id}`),
+  getBankDetail: async (id: string) => {
+    const response = await axios.get(`/bank/${id}`);
+    return response.data.data;
+  },
 
-  addItem: (bankId: string, problemId: number, note?: string) =>
-    axios.post(`/banks/${bankId}/items`, { problemId, note }),
+  addItem: async (bankId: string, problemId: number, note?: string) => {
+    const response = await axios.post(`/bank/${bankId}/items`, { problemId, note });
+    return response.data.data;
+  },
 
-  deleteItem: (itemId: number) =>
-    axios.delete(`/banks/items/${itemId}`),
+  deleteItem: async (itemId: number) => {
+    const response = await axios.delete(`/bank/items/${itemId}`);
+    return response.data.data;
+  },
 };

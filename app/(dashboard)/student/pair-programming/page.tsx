@@ -13,7 +13,7 @@ export default function PairProgrammingLobbyPage() {
     queryFn: async () => {
       const resp = await roomApi.getRooms();
       // Chỉ lấy các phòng loại PAIR
-      const allRooms = resp.data.data as Room[];
+      const allRooms = resp as Room[];
       return allRooms.filter(r => r.type === 'PAIR');
     },
     refetchInterval: 10000, // Cập nhật mỗi 10 giây

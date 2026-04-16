@@ -40,9 +40,8 @@ export const useSubmitCode = () => {
                 files: mappedFiles
             };
 
-            const { data } = await axios.post('/submissions', submitPayload);
-            // Trả về .data.data như yêu cầu để lấy dữ liệu "sâu" bên trong
-            return data.data || data;
+            const response = await axios.post('/submission', submitPayload);
+            return response.data.data;
         },
         onSuccess: (res) => {
             toast({ type: 'success', title: 'Đã nhận bài!', message: res.message || 'Hệ thống đang chấm bài của bạn.' });
@@ -86,8 +85,8 @@ export const useRunCode = () => {
                 input
             };
 
-            const { data } = await axios.post('/runs', runPayload);
-            return data.data || data;
+            const response = await axios.post('/run', runPayload);
+            return response.data.data;
         },
         onError: (error: any) => {
             toast({ 
@@ -102,8 +101,8 @@ export const useRunCode = () => {
 export const useGetSubmissionDetails = () => {
     return useMutation({
         mutationFn: async (submissionId: string | number) => {
-            const { data } = await axios.get(`/submissions/${submissionId}/result`);
-            return data.data || data;
+            const response = await axios.get(`/submission/${submissionId}/result`);
+            return response.data.data;
         },
         onSuccess: (res) => {
             toast({ type: 'success', title: 'Lấy thông tin nộp bài thành công!', message: res.message });

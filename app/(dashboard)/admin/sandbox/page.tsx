@@ -13,7 +13,7 @@ export default function SandboxPage() {
     queryKey: ['admin-sandbox-jobs'],
     queryFn: async () => {
       const resp = await sandboxApi.getJobs();
-      return resp.data.data.jobs as SandboxJob[];
+      return resp.jobs as SandboxJob[];
     },
     refetchInterval: 5000, // Tự động làm mới mỗi 5 giây
   });

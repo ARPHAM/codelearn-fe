@@ -24,7 +24,7 @@ export default function AuditLogPage() {
     queryKey: ['admin-audit-logs', page, search],
     queryFn: async () => {
       const resp = await auditApi.getLogs({ page, limit: 15, search });
-      return resp.data.data;
+      return resp;
     },
   });
 

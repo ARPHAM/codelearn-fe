@@ -52,7 +52,7 @@ export default function PlagiarismPage() {
     queryKey: ['plagiarism-results', selectedExerciseId],
     queryFn: async () => {
       const resp = await plagiarismApi.getResults(selectedExerciseId);
-      return resp.data.data;
+      return resp;
     },
     enabled: !!selectedExerciseId,
   });

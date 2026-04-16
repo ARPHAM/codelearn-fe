@@ -26,7 +26,7 @@ export default function QuestionBankPage() {
     queryKey: ['question-banks'],
     queryFn: async () => {
       const resp = await bankApi.getBanks();
-      return resp.data.data as QuestionBank[];
+      return resp as QuestionBank[];
     },
   });
 

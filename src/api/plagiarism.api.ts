@@ -22,12 +22,20 @@ export interface PlagiarismPair {
 }
 
 export const plagiarismApi = {
-  check: (exerciseId: string, threshold: number = 70) =>
-    axios.post(`/plagiarism/check/${exerciseId}`, { threshold }),
+  check: async (exerciseId: string, threshold: number = 70) => {
+    const response = await axios.post(`/plagiarism/check/${exerciseId}`, {
+      threshold,
+    });
+    return response.data.data;
+  },
 
-  getResults: (exerciseId: string) =>
-    axios.get(`/plagiarism/${exerciseId}/results`),
+  getResults: async (exerciseId: string) => {
+    const response = await axios.get(`/plagiarism/${exerciseId}/results`);
+    return response.data.data;
+  },
 
-  flag: (id: string, reason: string) =>
-    axios.post(`/plagiarism/flag`, { id, reason }),
+  flag: async (id: string, reason: string) => {
+    const response = await axios.post(`/plagiarism/flag`, { id, reason });
+    return response.data.data;
+  },
 };

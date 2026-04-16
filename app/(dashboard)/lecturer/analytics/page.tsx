@@ -42,7 +42,7 @@ export default function AnalyticsPage() {
     queryKey: ['lecturer-dashboard'],
     queryFn: async () => {
       const resp = await analyticsApi.getLecturerDashboard();
-      return resp.data.data;
+      return resp;
     },
   });
 
@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
     queryKey: ['course-analytics', 'all'],
     queryFn: async () => {
       const resp = await analyticsApi.getCourseAnalytics('all');
-      return resp.data.data;
+      return resp;
     },
   });
 

@@ -11,10 +11,15 @@ export interface LeaderboardItem {
 }
 
 export const leaderboardApi = {
-  getLeaderboard: (period: string = 'ALL_TIME', limit: number = 10) =>
-    axios.get(`/leaderboard?period=${period}&limit=${limit}`),
+  getLeaderboard: async (period: string = 'ALL_TIME', limit: number = 10) => {
+    const response = await axios.get(
+      `/leaderboard?period=${period}&limit=${limit}`,
+    );
+    return response.data.data;
+  },
 
-  
-  getMyRank: () =>
-    axios.get(`/leaderboard/me`),
+  getMyRank: async () => {
+    const response = await axios.get(`/leaderboard/me`);
+    return response.data.data;
+  },
 };

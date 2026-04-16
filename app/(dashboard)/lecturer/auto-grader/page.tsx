@@ -55,7 +55,7 @@ export default function AutoGraderPage() {
     queryKey: ['exercise-submissions', selectedExerciseId],
     queryFn: async () => {
       const resp = await submissionsApi.getExerciseSubmissions(selectedExerciseId);
-      return resp.data.data;
+      return resp;
     },
     enabled: !!selectedExerciseId,
   });

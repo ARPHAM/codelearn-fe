@@ -9,9 +9,13 @@ export interface AuditLog {
 }
 
 export const auditApi = {
-  getLogs: (params?: { page?: number; limit?: number; search?: string }) =>
-    axios.get('/admin/audit-logs', { params }),
-  
-  getLogDetail: (id: number) =>
-    axios.get(`/admin/audit-logs/${id}`),
+  getLogs: async (params?: { page?: number; limit?: number; search?: string }) => {
+    const response = await axios.get('/admin/audit-logs', { params });
+    return response.data.data;
+  },
+
+  getLogDetail: async (id: number) => {
+    const response = await axios.get(`/admin/audit-logs/${id}`);
+    return response.data.data;
+  },
 };

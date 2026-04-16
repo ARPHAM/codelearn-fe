@@ -17,7 +17,7 @@ export default function StudentRoomsLobbyPage() {
         queryKey: ['my-rooms'],
         queryFn: async () => {
             const resp = await roomApi.getMyRooms();
-            return resp.data.data as Room[];
+            return resp as Room[];
         },
     });
 
@@ -26,7 +26,7 @@ export default function StudentRoomsLobbyPage() {
         queryKey: ['public-rooms'],
         queryFn: async () => {
             const resp = await roomApi.getRooms();
-            return resp.data.data as Room[];
+            return resp as Room[];
         },
     });
 

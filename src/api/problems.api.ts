@@ -82,40 +82,40 @@ export type StudentProblemDetailResponse = {
 };
 
 export const getLecturerProblems = async (params?: { page?: number; limit?: number; search?: string; filter?: string }): Promise<{items: ProblemSummary[], total: number, page: number, limit: number}> => {
-  const response = await axios.get('/problems/lecturer/list', { params });
+  const response = await axios.get('/problem/lecturer/list', { params });
   return response.data.data;
 };
 
 export const getStudentProblems = async (params?: { page?: number; limit?: number; search?: string; filter?: string; difficulty?: string }): Promise<{items: ProblemSummary[], total: number, page: number, limit: number}> => {
-  const response = await axios.get('/problems', { params });
+  const response = await axios.get('/problem', { params });
   return response.data.data;
 };
 
 export const createProblem = async (data: CreateProblemDto): Promise<any> => {
-  const response = await axios.post('/problems', data);
+  const response = await axios.post('/problem', data);
   return response.data.data;
 };
 
 export const updateProblem = async (params: { id: string, data: CreateProblemDto }): Promise<any> => {
-  const response = await axios.put(`/problems/${params.id}`, params.data);
+  const response = await axios.put(`/problem/${params.id}`, params.data);
   return response.data.data;
 };
 
 export const getProblemDetail = async (id: string): Promise<ProblemDetailResponse> => {
-  const response = await axios.get(`/problems/${id}/edit`);
+  const response = await axios.get(`/problem/${id}/edit`);
   return response.data.data;
 };
 
 export const getStudentProblemDetail = async (slug: string): Promise<StudentProblemDetailResponse> => {
-  const response = await axios.get(`/problems/${slug}`);
+  const response = await axios.get(`/problem/${slug}`);
   return response.data.data;
 };
 export const getAdminProblems = async (params?: { page?: number; limit?: number; search?: string }): Promise<{items: ProblemSummary[], total: number, page: number, limit: number}> => {
-  const response = await axios.get('/problems/admin/list', { params });
+  const response = await axios.get('/problem/admin/list', { params });
   return response.data.data;
 };
 
 export const approveProblemVersion = async (versionId: string): Promise<any> => {
-  const response = await axios.patch(`/problems/admin/versions/${versionId}/approve`);
+  const response = await axios.patch(`/problem/admin/versions/${versionId}/approve`);
   return response.data.data;
 };

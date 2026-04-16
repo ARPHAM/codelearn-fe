@@ -28,7 +28,7 @@ export default function CodeBattlePage() {
     queryKey: ['opponents-lobby'],
     queryFn: async () => {
       const resp = await leaderboardApi.getLeaderboard('ALL_TIME', 10);
-      return resp.data.data;
+      return resp;
     },
   });
 
@@ -46,7 +46,7 @@ export default function CodeBattlePage() {
     setIsFinding(true);
     try {
       const resp = await battlesApi.challenge(opponentId, 15, 'Random');
-      setActiveBattleId(resp.data.data.id);
+      setActiveBattleId(resp.id);
     } catch (e: any) {
 
       const msg = e.response?.data?.message || 'Không thể thách đấu lúc này';
