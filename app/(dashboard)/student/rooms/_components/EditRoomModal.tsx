@@ -5,7 +5,7 @@ import Modal from '@/components/ui/Modal';
 import { RoomData } from '@/features/room/api';
 import { useUpdateRoom } from '@/features/room/mutations';
 import { toast } from '@/components/ui/Toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileText, Code2, Mic } from 'lucide-react';
 
 interface EditRoomModalProps {
     open: boolean;
@@ -55,7 +55,12 @@ export default function EditRoomModal({ open, onClose, room }: EditRoomModalProp
         <Modal
             open={open}
             onClose={onClose}
-            title="📝 Chỉnh sửa phòng học"
+            title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <FileText size={20} color="var(--accent-purple)" />
+                    Chỉnh sửa phòng học
+                </div>
+            }
             size="md"
             footer={
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
@@ -100,8 +105,8 @@ export default function EditRoomModal({ open, onClose, room }: EditRoomModalProp
                             onChange={(e) => setType(e.target.value as 'MEETING' | 'CODE')}
                             style={{ width: '100%' }}
                         >
-                            <option value="CODE">💻 Coding Session</option>
-                            <option value="MEETING">🎙️ Meeting</option>
+                            <option value="CODE">Code Session</option>
+                            <option value="MEETING">Meeting</option>
                         </select>
                     </div>
                     <div>

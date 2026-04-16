@@ -1,6 +1,7 @@
 'use client';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { ClipboardList, AlertTriangle, Trash2, Package, History, Copy, Check } from 'lucide-react';
 
 interface AuditDetailModalProps {
   open: boolean;
@@ -26,17 +27,19 @@ export default function AuditDetailModal({ open, onClose }: AuditDetailModalProp
   const payload = JSON.stringify({ action: logEntry.action, target: logEntry.target, before: logEntry.before, after: logEntry.after }, null, 2);
 
   return (
-    <Modal open={open} onClose={onClose} title="📋 Chi tiết Log" subtitle={`${logEntry.id} · ${logEntry.time}`} size="md"
+    <Modal open={open} onClose={onClose} title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={20} /> Chi tiết Log</div>} subtitle={`${logEntry.id} · ${logEntry.time}`} size="md"
       footer={
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-          <button className="btn btn-ghost" onClick={() => { navigator.clipboard?.writeText(payload); toast({ type: 'success', title: 'Đã copy JSON!' }); }}>📋 Copy JSON</button>
+          <button className="btn btn-ghost" onClick={() => { navigator.clipboard?.writeText(payload); toast({ type: 'success', title: 'Đã copy JSON!' }); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Copy size={16} /> Copy JSON
+          </button>
           <button className="btn btn-ghost" onClick={onClose}>Đóng</button>
         </div>
       }
     >
       {/* Severity banner */}
-      <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '12px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 22 }}>🚨</span>
+      <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '12px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <AlertTriangle size={24} color="#f87171" />
         <div>
           <div style={{ fontWeight: 700, fontSize: 13, color: '#f87171' }}>Hành động nguy hiểm: Xóa đề thi</div>
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>Không thể hoàn tác — Đề thi đã bị xóa vĩnh viễn</div>
@@ -61,7 +64,9 @@ export default function AuditDetailModal({ open, onClose }: AuditDetailModalProp
       </div>
 
       {/* Before / After */}
-      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>🔄 Trạng thái thay đổi</div>
+      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <History size={18} /> Trạng thái thay đổi
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
         <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, padding: '12px' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-red)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Trước</div>
@@ -74,7 +79,7 @@ export default function AuditDetailModal({ open, onClose }: AuditDetailModalProp
         </div>
         <div style={{ background: 'rgba(107,114,128,0.06)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-            <div style={{ fontSize: 28, marginBottom: 6 }}>🗑</div>
+            <div style={{ marginBottom: 6 }}><Trash2 size={28} /></div>
             <div>Đã xóa</div>
             <div style={{ fontSize: 11, marginTop: 4 }}>(Null)</div>
           </div>
@@ -82,7 +87,9 @@ export default function AuditDetailModal({ open, onClose }: AuditDetailModalProp
       </div>
 
       {/* JSON payload */}
-      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>📦 Raw Payload</div>
+      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Package size={18} /> Raw Payload
+      </div>
       <div className="code-block" style={{ fontSize: 11, maxHeight: 140, overflowY: 'auto' }}>
         {payload.split('\n').map((line, i) => (
           <div key={i} style={{ color: line.includes('"action"') || line.includes('"DELETE') ? '#ff7b72' : line.includes('null') ? '#f87171' : 'var(--text-secondary)' }}>

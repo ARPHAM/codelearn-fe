@@ -1,7 +1,7 @@
-'use client';
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Swords, Timer, Dices } from 'lucide-react';
 
 interface ChallengeModalProps {
   open: boolean;
@@ -18,16 +18,16 @@ export default function ChallengeModal({ open, onClose, opponent }: ChallengeMod
 
   const handleStart = () => {
     setLoading(true);
-    setTimeout(() => { setLoading(false); toast({ type: 'success', title: '⚔️ Trận đấu bắt đầu!', message: `vs ${op.name} · ${duration} phút · ${topic === 'random' ? 'Chủ đề ngẫu nhiên' : topic}` }); onClose(); }, 1200);
+    setTimeout(() => { setLoading(false); toast({ type: 'success', title: 'Trận đấu bắt đầu!', message: `vs ${op.name} · ${duration} phút · ${topic === 'random' ? 'Chủ đề ngẫu nhiên' : topic}` }); onClose(); }, 1200);
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="⚔️ Thách đấu" subtitle="Code Battle 1vs1" size="sm"
+    <Modal open={open} onClose={onClose} title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Swords size={20} /> Thách đấu</div>} subtitle="Code Battle 1vs1" size="sm"
       footer={
         <div style={{ display: 'flex', gap: 8, width: '100%' }}>
           <button className="btn btn-ghost" onClick={onClose} style={{ flex: 1, justifyContent: 'center' }}>Hủy</button>
-          <button className="btn btn-primary" onClick={handleStart} disabled={loading} style={{ flex: 2, justifyContent: 'center' }}>
-            {loading ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%' }} /> : '⚔️ Bắt đầu trận đấu!'}
+          <button className="btn btn-primary" onClick={handleStart} disabled={loading} style={{ flex: 2, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8 }}>
+            {loading ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%' }} /> : <><Swords size={18} /> Bắt đầu trận đấu!</>}
           </button>
         </div>
       }
@@ -60,14 +60,15 @@ export default function ChallengeModal({ open, onClose, opponent }: ChallengeMod
                 background: duration === d ? 'rgba(124,58,237,0.15)' : 'var(--bg-tertiary)',
                 color: duration === d ? 'var(--accent-purple-light)' : 'var(--text-secondary)',
                 fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'all 0.15s',
-              }}>⏱ {d} phút</button>
+                display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center'
+              }}><Timer size={14} /> {d} phút</button>
             ))}
           </div>
         </div>
         <div>
           <label className="form-label">Chủ đề bài</label>
           <select className="select" style={{ width: '100%' }} value={topic} onChange={e => setTopic(e.target.value)}>
-            <option value="random">🎲 Ngẫu nhiên</option>
+            <option value="random">Ngẫu nhiên</option>
             <option value="Graph">Graph</option>
             <option value="Dynamic Programming">Dynamic Programming</option>
             <option value="Sorting">Sorting</option>

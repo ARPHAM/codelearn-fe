@@ -1,6 +1,7 @@
 'use client';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Eye, Dices, FileDown, CheckCircle2, Info } from 'lucide-react';
 
 interface PreviewExamModalProps {
   open: boolean;
@@ -23,7 +24,7 @@ export default function PreviewExamModal({ open, onClose }: PreviewExamModalProp
     <Modal
       open={open}
       onClose={onClose}
-      title="👁 Preview Đề thi"
+      title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Eye size={20} /> Preview Đề thi</div>}
       subtitle="Kiểm tra HK2 2025-2026 · 90 phút · CS101"
       size="xl"
       footer={
@@ -33,10 +34,14 @@ export default function PreviewExamModal({ open, onClose }: PreviewExamModalProp
             <span className="badge badge-cyan">90 phút</span>
             <span className="badge badge-yellow">{totalScore} điểm</span>
           </div>
-          <button className="btn btn-ghost" onClick={() => toast({ type: 'info', title: 'Shuffle lại đề thi...' })}>🎲 Shuffle lại</button>
-          <button className="btn btn-ghost" onClick={() => toast({ type: 'info', title: 'Đang xuất PDF...' })}>📄 Xuất PDF</button>
-          <button className="btn btn-primary" onClick={() => { toast({ type: 'success', title: 'Đề thi đã được lưu!', message: 'Kiểm tra HK2 2025-2026 · 5 câu · 45 điểm' }); onClose(); }}>
-            ✅ Tạo đề này
+          <button className="btn btn-ghost" onClick={() => toast({ type: 'info', title: 'Shuffle lại đề thi...' })} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Dices size={16} /> Shuffle lại
+          </button>
+          <button className="btn btn-ghost" onClick={() => toast({ type: 'info', title: 'Đang xuất PDF...' })} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <FileDown size={16} /> Xuất PDF
+          </button>
+          <button className="btn btn-primary" onClick={() => { toast({ type: 'success', title: 'Đề thi đã được lưu!', message: 'Kiểm tra HK2 2025-2026 · 5 câu · 45 điểm' }); onClose(); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <CheckCircle2 size={16} /> Tạo đề này
           </button>
         </div>
       }
@@ -90,8 +95,9 @@ export default function PreviewExamModal({ open, onClose }: PreviewExamModalProp
         ))}
       </div>
 
-      <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(6,182,212,0.06)', borderRadius: 8, border: '1px solid rgba(6,182,212,0.2)', fontSize: 12, color: 'var(--text-secondary)' }}>
-        ℹ️ Đây là preview trước khi lưu. Thứ tự câu hỏi sẽ được xáo trộn ngẫu nhiên cho từng sinh viên khi vào thi.
+      <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(6,182,212,0.06)', borderRadius: 8, border: '1px solid rgba(6,182,212,0.2)', fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Info size={16} color="var(--accent-cyan-light)" />
+        <span>Đây là preview trước khi lưu. Thứ tự câu hỏi sẽ được xáo trộn ngẫu nhiên cho từng sinh viên khi vào thi.</span>
       </div>
     </Modal>
   );

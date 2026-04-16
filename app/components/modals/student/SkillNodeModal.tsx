@@ -1,6 +1,7 @@
 'use client';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Target, Play, Unlock, CheckCircle2, Lock, List, ArrowRight } from 'lucide-react';
 
 interface SkillNodeModalProps {
   open: boolean;
@@ -16,18 +17,18 @@ const exercises = [
 ];
 
 const diffColors: Record<string, string> = { easy: 'badge-green', medium: 'badge-yellow', hard: 'badge-red' };
-const statusIcons: Record<string, string> = { done: '✅', active: '▶', locked: '🔒' };
+const statusIcons: Record<string, any> = { done: CheckCircle2, active: Play, locked: Lock };
 
 export default function SkillNodeModal({ open, onClose }: SkillNodeModalProps) {
   const done = exercises.filter(e => e.status === 'done').length;
 
   return (
-    <Modal open={open} onClose={onClose} title="🎯 Binary Search" subtitle="Kỹ năng · Độ khó trung bình" size="md"
+    <Modal open={open} onClose={onClose} title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Target size={20} /> Binary Search</div>} subtitle="Kỹ năng · Độ khó trung bình" size="md"
       footer={
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <button className="btn btn-ghost" onClick={onClose}>Đóng</button>
-          <button className="btn btn-primary" onClick={() => { toast({ type: 'success', title: '▶ Tiếp tục luyện tập Binary Search!' }); onClose(); }}>
-            ▶ Tiếp tục học
+          <button className="btn btn-primary" onClick={() => { toast({ type: 'success', title: 'Tiếp tục luyện tập Binary Search!' }); onClose(); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Play size={16} /> Tiếp tục học
           </button>
         </div>
       }
@@ -59,14 +60,16 @@ export default function SkillNodeModal({ open, onClose }: SkillNodeModalProps) {
 
       {/* Prerequisite */}
       <div style={{ marginBottom: 16, fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span>🔓 Yêu cầu trước:</span>
-        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>✅ Array Basics</span>
+        <Unlock size={14} /> <span>Yêu cầu trước:</span>
+        <span style={{ color: 'var(--accent-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><CheckCircle2 size={12} /> Array Basics</span>
         <span>·</span>
-        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>✅ Two Pointers</span>
+        <span style={{ color: 'var(--accent-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><CheckCircle2 size={12} /> Two Pointers</span>
       </div>
 
       {/* Exercise list */}
-      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>📋 Danh sách bài tập</div>
+      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <List size={18} /> Danh sách bài tập
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {exercises.map(ex => (
           <div key={ex.id} style={{
@@ -75,16 +78,18 @@ export default function SkillNodeModal({ open, onClose }: SkillNodeModalProps) {
             border: `1px solid ${ex.status === 'active' ? 'rgba(124,58,237,0.3)' : 'var(--border)'}`,
             opacity: ex.status === 'locked' ? 0.5 : 1,
           }}>
-            <span style={{ fontSize: 16 }}>{statusIcons[ex.status]}</span>
+            <span style={{ fontSize: 16, display: 'flex', alignItems: 'center', color: ex.status === 'done' ? 'var(--accent-green)' : ex.status === 'active' ? 'var(--accent-purple)' : 'inherit' }}>
+                {(() => { const Icon = statusIcons[ex.status]; return <Icon size={18} /> })()}
+            </span>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: ex.status === 'active' ? 700 : 500 }}>{ex.title}</div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 2 }}>{ex.id}</div>
             </div>
             <span className={`badge ${diffColors[ex.diff]}`}>{ex.diff}</span>
             {ex.status === 'active' && (
-              <button className="btn btn-primary" style={{ padding: '4px 10px', fontSize: 11 }}
+              <button className="btn btn-primary" style={{ padding: '4px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}
                 onClick={() => toast({ type: 'info', title: `Mở bài: ${ex.title}` })}>
-                Làm →
+                Làm <ArrowRight size={12} />
               </button>
             )}
           </div>

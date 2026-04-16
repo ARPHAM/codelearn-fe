@@ -3,6 +3,19 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from '@/components/ui/Toast';
 import { useRegister } from './_api/mutation';
+import { 
+  Monitor, 
+  Check, 
+  GraduationCap, 
+  User, 
+  Eye, 
+  EyeOff, 
+  AlertTriangle, 
+  PartyPopper, 
+  ArrowRight,
+  CheckCircle2,
+  ChevronLeft
+} from 'lucide-react';
 
 const STEPS = ['Thông tin', 'Tài khoản', 'Hoàn tất'];
 
@@ -83,7 +96,9 @@ export default function RegisterPage() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link href="/login" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--gradient-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, boxShadow: 'var(--shadow-glow-purple)' }}>💻</div>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--gradient-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: 'var(--shadow-glow-purple)' }}>
+              <Monitor size={20} />
+            </div>
             <span style={{ fontSize: 22, fontWeight: 900 }}>Code<span style={{ color: 'var(--accent-purple-light)' }}>Learn</span></span>
           </Link>
           <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>Tạo tài khoản mới</h1>
@@ -102,7 +117,7 @@ export default function RegisterPage() {
                   boxShadow: i === step ? 'var(--shadow-glow-purple)' : 'none',
                   transition: 'all 0.3s',
                 }}>
-                  {i < step ? '✓' : i + 1}
+                  {i < step ? <Check size={16} /> : i + 1}
                 </div>
                 <span style={{ fontSize: 10, color: i === step ? 'var(--accent-purple-light)' : 'var(--text-muted)', marginTop: 4, fontWeight: i === step ? 700 : 400 }}>{label}</span>
               </div>
@@ -133,7 +148,9 @@ export default function RegisterPage() {
                       background: role === r.val ? 'rgba(124,58,237,0.1)' : 'var(--bg-tertiary)',
                       transition: 'all 0.15s', color: 'var(--text-primary)',
                     }}>
-                      <div style={{ fontSize: 22, marginBottom: 6 }}>{r.icon}</div>
+                      <div style={{ color: role === r.val ? 'var(--accent-purple)' : 'var(--text-muted)', marginBottom: 6 }}>
+                        {r.val === 'student' ? <GraduationCap size={24} /> : <User size={24} />}
+                      </div>
                       <div style={{ fontSize: 13, fontWeight: 700 }}>{r.label}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{r.desc}</div>
                     </button>
@@ -187,8 +204,8 @@ export default function RegisterPage() {
                   <input className="input" type={showPw ? 'text' : 'password'} placeholder="Tối thiểu 8 ký tự"
                     value={form.password} onChange={e => { update('password', e.target.value); setPwStrength(calcStrength(e.target.value)); }}
                     style={{ paddingRight: 44 }} />
-                  <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--text-muted)', padding: 0 }}>
-                    {showPw ? '🙈' : '👁'}
+                  <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0 }}>
+                    {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
 
@@ -217,7 +234,7 @@ export default function RegisterPage() {
                     { label: 'Có chữ số (0-9)', ok: /[0-9]/.test(form.password) },
                   ].map(r => (
                     <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: form.password ? (r.ok ? 'var(--accent-green)' : 'var(--text-muted)') : 'var(--text-muted)' }}>
-                      <span>{form.password && r.ok ? '✅' : '○'}</span> {r.label}
+                      <span>{form.password && r.ok ? <CheckCircle2 size={12} /> : '○'}</span> {r.label}
                     </div>
                   ))}
                 </div>
@@ -229,7 +246,9 @@ export default function RegisterPage() {
                   value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)}
                   style={{ borderColor: form.confirmPassword && form.confirmPassword !== form.password ? 'var(--accent-red)' : '' }} />
                 {form.confirmPassword && form.confirmPassword !== form.password && (
-                  <div style={{ fontSize: 11, color: 'var(--accent-red)', marginTop: 5 }}>⚠️ Mật khẩu không khớp</div>
+                  <div style={{ fontSize: 11, color: 'var(--accent-red)', marginTop: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertTriangle size={12} /> Mật khẩu không khớp
+                  </div>
                 )}
               </div>
             </div>
@@ -238,7 +257,9 @@ export default function RegisterPage() {
           {/* === STEP 2: success === */}
           {step === 2 && (
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
+              <div style={{ marginBottom: 16 }}>
+                <PartyPopper size={64} color="var(--accent-green)" style={{ margin: '0 auto' }} />
+              </div>
               <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--accent-green)', marginBottom: 8 }}>Đăng ký thành công!</h2>
               <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 24 }}>
                 Chào mừng <strong style={{ color: 'var(--text-primary)' }}>{form.fullName}</strong> đến với CodeLearn!<br />
@@ -269,8 +290,8 @@ export default function RegisterPage() {
               {step > 0 && (
                 <button onClick={() => setStep(s => s - 1)} style={{
                   padding: '12px 20px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-tertiary)',
-                  color: 'var(--text-secondary)', fontWeight: 600, fontSize: 14, cursor: 'pointer',
-                }}>← Quay lại</button>
+                  color: 'var(--text-secondary)', fontWeight: 600, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
+                }}><ChevronLeft size={18} /> Quay lại</button>
               )}
               <button
                 onClick={step === 1 ? handleRegister : handleNext}
@@ -286,8 +307,8 @@ export default function RegisterPage() {
                 {loading
                   ? <><span className="spin" style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%' }} /> Đang xử lý...</>
                   : step === 1
-                    ? <>✅ Hoàn tất đăng ký</>
-                    : <>Tiếp theo →</>
+                    ? <><Check size={18} /> Hoàn tất đăng ký</>
+                    : <>Tiếp theo <ArrowRight size={18} /></>
                 }
               </button>
             </div>

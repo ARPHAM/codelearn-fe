@@ -1,6 +1,6 @@
-'use client';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Send, Play, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 
 interface SubmitConfirmModalProps {
   open: boolean;
@@ -16,16 +16,20 @@ export default function SubmitConfirmModal({ open, onClose }: SubmitConfirmModal
     <Modal
       open={open}
       onClose={onClose}
-      title="📤 Xác nhận Nộp bài"
+      title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Send size={20} /> Xác nhận Nộp bài</div>}
       subtitle="Find Peak Element · CS101"
       size="sm"
       footer={
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-          <button className="btn btn-ghost" onClick={onClose}>▶ Chạy lại trước</button>
+          <button className="btn btn-ghost" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Play size={14} /> Chạy lại trước
+          </button>
           <button className="btn btn-primary" onClick={() => {
             toast({ type: 'success', title: 'Đã nộp bài thành công!', message: `Score: ${pct}/100 — ${passCnt}/${total} test cases passed` });
             onClose();
-          }}>📤 Nộp ngay</button>
+          }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Send size={16} /> Nộp ngay
+          </button>
         </div>
       }
     >
@@ -53,14 +57,18 @@ export default function SubmitConfirmModal({ open, onClose }: SubmitConfirmModal
             }} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-            <span style={{ color: 'var(--accent-green)' }}>✅ {passCnt} Passed</span>
-            <span style={{ color: 'var(--accent-red)' }}>❌ {total - passCnt} Failed</span>
+            <span style={{ color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <CheckCircle2 size={14} /> {passCnt} Passed
+            </span>
+            <span style={{ color: 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <XCircle size={14} /> {total - passCnt} Failed
+            </span>
           </div>
         </div>
 
         {pct < 100 && (
-          <div style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)' }}>
-            ⚠️ Bạn chưa vượt qua hết test case. Vẫn muốn nộp?
+          <div style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+            <AlertTriangle size={14} /> Bạn chưa vượt qua hết test case. Vẫn muốn nộp?
           </div>
         )}
       </div>

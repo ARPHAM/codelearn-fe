@@ -3,6 +3,7 @@
 
 import { useAdminProblems, useApproveProblemVersion } from '@/hooks/useProblems';
 import { ProblemSummary } from '@/api/problems.api';
+import { ShieldCheck, CheckCircle2, Sparkles } from 'lucide-react';
 
 export default function AdminProblemsPage() {
     const { data, isLoading, isError } = useAdminProblems();
@@ -29,7 +30,10 @@ export default function AdminProblemsPage() {
         <>
             <div className="page-container animate-in">
                 <div className="page-header" style={{ padding: '24px' }}>
-                    <h1 className="page-title">🛡️ Quản lý Duyệt Bài Tập</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <ShieldCheck size={32} color="var(--accent-blue)" />
+                        Quản lý Duyệt Bài Tập
+                    </h1>
                     <p className="page-subtitle">Duyệt các bài tập mới tạo từ Giảng viên để kích hoạt cho Học sinh.</p>
                 </div>
 
@@ -56,14 +60,16 @@ export default function AdminProblemsPage() {
                                         {p.status === 'INACTIVE' ? (
                                             <button
                                                 className="btn"
-                                                style={{ background: 'var(--accent-green)', color: 'white', border: 'none', padding: '8px 20px', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
+                                                style={{ background: 'var(--accent-green)', color: 'white', border: 'none', padding: '8px 20px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}
                                                 onClick={() => handleApprove(p.id)}
                                                 disabled={isApproving}
                                             >
-                                                {isApproving ? 'Đang duyệt...' : '✅ Duyệt Ngay'}
+                                                {isApproving ? 'Đang duyệt...' : <><CheckCircle2 size={18} /> Duyệt Ngay</>}
                                             </button>
                                         ) : (
-                                            <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>🌟 Đã Kích Hoạt</span>
+                                            <span style={{ color: 'var(--accent-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <Sparkles size={18} /> Đã Kích Hoạt
+                                            </span>
                                         )}
                                     </div>
                                 </div>

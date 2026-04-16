@@ -1,6 +1,29 @@
-'use client';
 import { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { 
+  Key, Book, FileText, Search, Database, BarChart2, Map as MapIcon, Users, Swords, 
+  Boxes, ClipboardList, Settings, User, BookOpen, UserCheck, Beaker, UploadCloud, 
+  Fingerprint, Zap, ShieldCheck, Globe, Trash2, Home, RotateCcw, Eye, Lock, Unlock, CheckCircle2, List, Timer, Dices, SendHorizontal, Check, Copy, AlertTriangle, AlertCircle, FileCode, TrendingDown, XCircle, Info, ChevronRight, ChevronDown
+} from 'lucide-react';
+
+const IconMap: Record<string, any> = {
+  'Key': Key, 'Book': Book, 'FileText': FileText, 'Search': Search, 'Database': Database, 
+  'BarChart2': BarChart2, 'Map': MapIcon, 'Users': Users, 'Swords': Swords, 
+  'Boxes': Boxes, 'ClipboardList': ClipboardList, 'Settings': Settings,
+  'User': User, 'BookOpen': BookOpen, 'UserCheck': UserCheck, 'Beaker': Beaker, 
+  'UploadCloud': UploadCloud, 'Fingerprint': Fingerprint, 'ShieldCheck': ShieldCheck,
+  'Zap': Zap, 'Globe': Globe, 'Trash2': Trash2, 'Home': Home, 'RotateCcw': RotateCcw,
+  'Eye': Eye, 'Lock': Lock, 'Unlock': Unlock, 'CheckCircle2': CheckCircle2,
+  'List': List, 'Timer': Timer, 'Dices': Dices, 'SendHorizontal': SendHorizontal,
+  'Check': Check, 'Copy': Copy, 'AlertTriangle': AlertTriangle, 'AlertCircle': AlertCircle,
+  'FileCode': FileCode, 'TrendingDown': TrendingDown, 'XCircle': XCircle, 'Info': Info
+};
+
+function RenderIcon({ name, size = 16, color }: { name: string, size?: number, color?: string }) {
+  const Icon = IconMap[name];
+  if (!Icon) return null;
+  return <Icon size={size} style={{ color }} />;
+}
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -31,7 +54,7 @@ const methodColor: Record<Method, string> = {
 const apiGroups: ApiGroup[] = [
   // ─────────────────────────────────────────────────────
   {
-    group: 'Authentication', icon: '🔑', color: '#7c3aed',
+    group: 'Authentication', icon: 'Key', color: '#7c3aed',
     endpoints: [
       {
         method: 'POST', path: `${API_BASE}/auth/login`,
@@ -74,7 +97,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Courses & Enrollments', icon: '📚', color: '#06b6d4',
+    group: 'Courses & Enrollments', icon: 'Book', color: '#06b6d4',
     endpoints: [
       {
         method: 'GET', path: `${API_BASE}/courses`,
@@ -104,7 +127,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Exercises & Submissions', icon: '📝', color: '#f59e0b',
+    group: 'Exercises & Submissions', icon: 'FileText', color: '#f59e0b',
     endpoints: [
       {
         method: 'GET', path: `${API_BASE}/exercises`,
@@ -173,7 +196,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Plagiarism Detection', icon: '🔍', color: '#ef4444',
+    group: 'Plagiarism Detection', icon: 'Fingerprint', color: '#ef4444',
     endpoints: [
       {
         method: 'POST', path: `${API_BASE}/plagiarism/check/:exerciseId`,
@@ -203,7 +226,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Question Bank & Exams', icon: '🗃️', color: '#7c3aed',
+    group: 'Question Bank & Exams', icon: 'Database', color: '#7c3aed',
     endpoints: [
       {
         method: 'GET', path: `${API_BASE}/questions`,
@@ -233,7 +256,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Analytics & Dashboard', icon: '📊', color: '#10b981',
+    group: 'Analytics & Dashboard', icon: 'BarChart2', color: '#10b981',
     endpoints: [
       {
         method: 'GET', path: `${API_BASE}/analytics/course/:courseId`,
@@ -262,7 +285,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Learning Path & AI', icon: '🗺️', color: '#f59e0b',
+    group: 'Learning Path & AI', icon: 'Map', color: '#f59e0b',
     endpoints: [
       {
         method: 'GET', path: `${API_BASE}/learning-path/me`,
@@ -292,7 +315,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Pair Programming', icon: '👥', color: '#ec4899',
+    group: 'Pair Programming', icon: 'Users', color: '#ec4899',
     endpoints: [
       {
         method: 'POST', path: `${API_BASE}/pair-rooms`,
@@ -322,7 +345,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Code Battle', icon: '⚔️', color: '#ef4444',
+    group: 'Code Battle', icon: 'Swords', color: '#ef4444',
     endpoints: [
       {
         method: 'POST', path: `${API_BASE}/battles/challenge`,
@@ -365,7 +388,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Admin — Sandbox', icon: '🐳', color: '#10b981',
+    group: 'Admin — Sandbox', icon: 'Boxes', color: '#10b981',
     endpoints: [
       {
         method: 'GET', path: `${API_BASE}/admin/sandbox/jobs`,
@@ -401,7 +424,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Admin — Audit Log', icon: '📋', color: '#06b6d4',
+    group: 'Admin — Audit Log', icon: 'ClipboardList', color: '#06b6d4',
     endpoints: [
       {
         method: 'GET', path: `${API_BASE}/admin/audit-logs`,
@@ -423,7 +446,7 @@ const apiGroups: ApiGroup[] = [
 
   // ─────────────────────────────────────────────────────
   {
-    group: 'Admin — System Config', icon: '🔧', color: '#f59e0b',
+    group: 'Admin — System Config', icon: 'Settings', color: '#f59e0b',
     endpoints: [
       {
         method: 'GET', path: `${API_BASE}/admin/settings`,
@@ -487,7 +510,7 @@ const apiGroups: ApiGroup[] = [
 // ===================== DATABASE SCHEMA =====================
 const dbTables = [
   {
-    name: 'users', icon: '👤', color: '#7c3aed',
+    name: 'users', icon: 'User', color: '#7c3aed',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'full_name', type: 'VARCHAR(100)', note: '' },
@@ -503,7 +526,7 @@ const dbTables = [
     ],
   },
   {
-    name: 'courses', icon: '📚', color: '#06b6d4',
+    name: 'courses', icon: 'BookOpen', color: '#06b6d4',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'code', type: 'VARCHAR(20)', note: 'VD: CS101' },
@@ -514,7 +537,7 @@ const dbTables = [
     ],
   },
   {
-    name: 'enrollments', icon: '✅', color: '#10b981',
+    name: 'enrollments', icon: 'UserCheck', color: '#10b981',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'student_id', type: 'FK → users', note: '' },
@@ -524,7 +547,7 @@ const dbTables = [
     indexes: ['UNIQUE(student_id, course_id)'],
   },
   {
-    name: 'exercises', icon: '📝', color: '#f59e0b',
+    name: 'exercises', icon: 'FileText', color: '#f59e0b',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'title', type: 'VARCHAR(200)', note: '' },
@@ -541,7 +564,7 @@ const dbTables = [
     ],
   },
   {
-    name: 'test_cases', icon: '🧪', color: '#7c3aed',
+    name: 'test_cases', icon: 'Beaker', color: '#7c3aed',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'exercise_id', type: 'FK → exercises', note: '' },
@@ -552,7 +575,7 @@ const dbTables = [
     ],
   },
   {
-    name: 'submissions', icon: '📤', color: '#ef4444',
+    name: 'submissions', icon: 'UploadCloud', color: '#ef4444',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'exercise_id', type: 'FK → exercises', note: '' },
@@ -571,7 +594,7 @@ const dbTables = [
     indexes: ['INDEX(exercise_id, student_id)', 'INDEX(status)'],
   },
   {
-    name: 'plagiarism_results', icon: '🔍', color: '#ef4444',
+    name: 'plagiarism_results', icon: 'Search', color: '#ef4444',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'exercise_id', type: 'FK → exercises', note: '' },
@@ -585,7 +608,7 @@ const dbTables = [
     ],
   },
   {
-    name: 'battles', icon: '⚔️', color: '#f59e0b',
+    name: 'battles', icon: 'Swords', color: '#f59e0b',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'player_a_id', type: 'FK → users', note: '' },
@@ -601,7 +624,7 @@ const dbTables = [
     ],
   },
   {
-    name: 'audit_logs', icon: '📋', color: '#06b6d4',
+    name: 'audit_logs', icon: 'ClipboardList', color: '#06b6d4',
     columns: [
       { name: 'id', type: 'BIGSERIAL PK', note: '' },
       { name: 'user_id', type: 'FK → users', note: '' },
@@ -618,7 +641,7 @@ const dbTables = [
     indexes: ['INDEX(user_id)', 'INDEX(action)', 'INDEX(severity)', 'INDEX(created_at DESC)'],
   },
   {
-    name: 'learning_path_progress', icon: '🗺️', color: '#10b981',
+    name: 'learning_path_progress', icon: 'Map', color: '#10b981',
     columns: [
       { name: 'id', type: 'SERIAL PK', note: '' },
       { name: 'student_id', type: 'FK → users', note: '' },
@@ -675,8 +698,8 @@ function EndpointCard({ ep }: { ep: ApiEndpoint }) {
         <MethodBadge method={ep.method} />
         <code style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12.5, color: 'var(--accent-cyan-light)', flex: 1 }}>{ep.path}</code>
         <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 2 }}>{ep.desc}</span>
-        {ep.auth && <span style={{ fontSize: 10, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 20, padding: '2px 8px', color: '#34d399', whiteSpace: 'nowrap' }}>🔒 {ep.auth}</span>}
-        <span style={{ fontSize: 16, color: 'var(--text-muted)', marginLeft: 8, transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}>›</span>
+        {ep.auth && <span style={{ fontSize: 10, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 20, padding: '2px 8px', color: '#34d399', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}><Lock size={10} /> {ep.auth}</span>}
+        <span style={{ fontSize: 16, color: 'var(--text-muted)', marginLeft: 8, transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}><ChevronRight size={18} /></span>
       </button>
 
       {/* Payload + Response */}
@@ -684,16 +707,16 @@ function EndpointCard({ ep }: { ep: ApiEndpoint }) {
         <div style={{ padding: '16px', borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)', display: 'grid', gridTemplateColumns: ep.payload ? '1fr 1fr 1fr' : '1fr 1fr', gap: 14 }}>
           {ep.payload && (
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent-purple-light)', marginBottom: 8 }}>📦 Payload / Params</div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent-purple-light)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Boxes size={14} /> Payload / Params</div>
               <JsonBlock data={ep.payload} />
             </div>
           )}
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent-green)', marginBottom: 8 }}>✅ Success</div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent-green)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle2 size={14} /> Success</div>
             <JsonBlock data={ep.success} />
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent-red)', marginBottom: 8 }}>❌ Error</div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent-red)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><XCircle size={14} /> Error</div>
             <JsonBlock data={ep.error} />
           </div>
         </div>
@@ -723,7 +746,7 @@ export default function ApiDocsPage() {
         {/* Header */}
         <div className="page-header">
           <div>
-            <h1 className="page-title">📡 API Documentation</h1>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}><ShieldCheck size={28} /> API Documentation</h1>
             <p className="page-subtitle">CodeLearn REST API v1 — {totalEndpoints} endpoints · Base URL: <code style={{ fontFamily: 'monospace', color: 'var(--accent-cyan)', background: 'var(--bg-tertiary)', padding: '1px 6px', borderRadius: 4 }}>https://api.codelearn.vn/api/v1</code></p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -734,8 +757,9 @@ export default function ApiDocsPage() {
         </div>
 
         {/* Filters */}
-        <div className="card" style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
-          <input className="input" style={{ flex: 1, minWidth: 240 }} placeholder="🔍 Tìm theo path hoặc mô tả..." value={search} onChange={e => setSearch(e.target.value)} />
+        <div className="card" style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4, position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 28, color: 'var(--text-muted)' }}><Search size={16} /></div>
+          <input className="input" style={{ flex: 1, minWidth: 240, paddingLeft: 40 }} placeholder="Tìm theo path hoặc mô tả..." value={search} onChange={e => setSearch(e.target.value)} />
           <div style={{ display: 'flex', gap: 6 }}>
             {['ALL', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map(m => (
               <button key={m} onClick={() => setMethodFilter(m)} style={{
@@ -754,8 +778,8 @@ export default function ApiDocsPage() {
             <a key={g.group} href={`#group-${g.group.replace(/\s/g, '')}`} style={{
               padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, textDecoration: 'none',
               background: `${g.color}15`, border: `1px solid ${g.color}40`, color: g.color,
-              transition: 'opacity 0.15s',
-            }}>{g.icon} {g.group}</a>
+              transition: 'opacity 0.15s', display: 'flex', alignItems: 'center', gap: 6
+            }}><RenderIcon name={g.icon} size={13} /> {g.group}</a>
           ))}
         </div>
 
@@ -764,7 +788,10 @@ export default function ApiDocsPage() {
           <div key={group.group} id={`group-${group.group.replace(/\s/g, '')}`} style={{ marginBottom: 28 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '8px 0', borderBottom: `2px solid ${group.color}40` }}>
               <div style={{ width: 3, height: 24, borderRadius: 2, background: group.color }} />
-              <span style={{ fontSize: 15, fontWeight: 800 }}>{group.icon} {group.group}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 800 }}>
+                <RenderIcon name={group.icon} size={18} color={group.color} />
+                {group.group}
+              </div>
               <span className="badge" style={{ background: `${group.color}15`, border: `1px solid ${group.color}40`, color: group.color, fontSize: 10 }}>{group.endpoints.length}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -776,7 +803,7 @@ export default function ApiDocsPage() {
         {/* ====== DATABASE SCHEMA ====== */}
         <div style={{ marginTop: 40, borderTop: '2px solid var(--border)', paddingTop: 32 }}>
           <div style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>🗄️ Database Schema</h2>
+            <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}><Database size={24} /> Database Schema</h2>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
               PostgreSQL — {dbTables.length} tables chính · Sử dụng JSONB cho dữ liệu linh hoạt · Timestamp luôn dùng TIMESTAMPTZ (UTC)
             </p>
@@ -793,7 +820,7 @@ export default function ApiDocsPage() {
                 onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = t.color}
                 onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = `${t.color}30`}
               >
-                <span style={{ fontSize: 18 }}>{t.icon}</span>
+                <span style={{ fontSize: 18, color: t.color }}><RenderIcon name={t.icon} size={20} /></span>
                 <div>
                   <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 12, color: t.color }}>{t.name}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{t.columns.length} cols</div>

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -18,11 +19,11 @@ export function toast(item: Omit<ToastItem, 'id'>) {
   _addToast?.(item);
 }
 
-const toastCfg: Record<ToastType, { icon: string; color: string; border: string }> = {
-  success: { icon: '✅', color: '#10b981', border: 'rgba(16,185,129,0.35)' },
-  error:   { icon: '❌', color: '#ef4444', border: 'rgba(239,68,68,0.35)' },
-  warning: { icon: '⚠️', color: '#f59e0b', border: 'rgba(245,158,11,0.35)' },
-  info:    { icon: 'ℹ️', color: '#06b6d4', border: 'rgba(6,182,212,0.35)' },
+const toastCfg: Record<ToastType, { icon: any; color: string; border: string }> = {
+  success: { icon: CheckCircle2, color: '#10b981', border: 'rgba(16,185,129,0.35)' },
+  error:   { icon: XCircle, color: '#ef4444', border: 'rgba(239,68,68,0.35)' },
+  warning: { icon: AlertTriangle, color: '#f59e0b', border: 'rgba(245,158,11,0.35)' },
+  info:    { icon: Info, color: '#06b6d4', border: 'rgba(6,182,212,0.35)' },
 };
 
 export default function ToastProvider() {
@@ -63,7 +64,7 @@ export default function ToastProvider() {
             display: 'flex', alignItems: 'flex-start', gap: 10,
             pointerEvents: 'auto',
           }}>
-            <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>{cfg.icon}</span>
+            <cfg.icon size={20} color={cfg.color} style={{ flexShrink: 0, marginTop: 1 }} />
             <div>
               <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)', marginBottom: t.message ? 3 : 0 }}>{t.title}</div>
               {t.message && <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{t.message}</div>}

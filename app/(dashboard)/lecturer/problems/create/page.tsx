@@ -4,6 +4,7 @@
 import ProblemEditor from '../_components/ProblemEditor'
 import { useCreateProblem } from '@/hooks/useProblems'
 import { useRouter } from 'next/navigation'
+import { Plus } from 'lucide-react'
 
 export default function CreateProblemPage() {
     const router = useRouter()
@@ -12,7 +13,9 @@ export default function CreateProblemPage() {
     return (
         <>
             <div className="page-header" style={{ padding: '0 24px', paddingTop: 24 }}>
-                <h1 className="page-title">➕ Thêm Bài Tập Mới</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <Plus size={28} color="var(--accent-purple-light)" /> Thêm Bài Tập Mới
+                </h1>
                 <p className="page-subtitle">Soạn thảo đề bài, cấu hình testcase và gán ngôn ngữ lập trình.</p>
             </div>
             

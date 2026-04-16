@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { roomApi, Room } from '@/api/room.api';
 import EditRoomModal from './_components/EditRoomModal';
-import { Loader2, Plus, Play, Users, Search, Globe, Lock, Edit2 } from 'lucide-react';
+import { Loader2, Plus, Play, Users, Search, Globe, Lock, Edit2, Handshake, GraduationCap, Wind } from 'lucide-react';
 
 export default function StudentRoomsLobbyPage() {
     const router = useRouter();
@@ -57,9 +57,9 @@ export default function StudentRoomsLobbyPage() {
 
     const getTypeBadge = (type: string) => {
         switch (type) {
-          case 'PAIR': return <span className="badge badge-cyan">🤝 Lập trình cặp</span>;
-          case 'GROUP': return <span className="badge badge-purple">👥 Nhóm học tập</span>;
-          case 'CLASS': return <span className="badge badge-green">🎓 Lớp học</span>;
+          case 'PAIR': return <span className="badge badge-cyan" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Handshake size={14} /> Lập trình cặp</span>;
+          case 'GROUP': return <span className="badge badge-purple" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Users size={14} /> Nhóm học tập</span>;
+          case 'CLASS': return <span className="badge badge-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><GraduationCap size={14} /> Lớp học</span>;
           default: return <span className="badge badge-gray">{type}</span>;
         }
     };
@@ -68,7 +68,9 @@ export default function StudentRoomsLobbyPage() {
         <div className="page-container animate-in">
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">🏠 Phòng học trực tuyến</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Home size={28} color="var(--accent-purple)" /> Phòng học trực tuyến
+                    </h1>
                     <p className="page-subtitle">Tham gia các phiên học tập cộng tác hoặc tạo không gian riêng của bạn</p>
                 </div>
                 <button 
@@ -132,7 +134,7 @@ export default function StudentRoomsLobbyPage() {
                         ) : filteredRooms.length === 0 ? (
                             <tr>
                                 <td colSpan={6} style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>
-                                    <div style={{ fontSize: 48, marginBottom: 16 }}>🍃</div>
+                                    <div style={{ marginBottom: 16 }}><Wind size={48} opacity={0.3} style={{ margin: '0 auto' }} /></div>
                                     <p style={{ fontWeight: 600 }}>
                                         {searchTerm ? 'Không tìm thấy phòng phù hợp' : (tab === 'mine' ? 'Bạn chưa tạo phòng nào' : 'Hiện chưa có phòng học nào hoạt động')}
                                     </p>

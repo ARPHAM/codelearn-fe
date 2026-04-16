@@ -1,6 +1,7 @@
 'use client';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { User, BarChart2, MessageSquare, AlertTriangle, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface StudentProfileModalProps {
   open: boolean;
@@ -22,13 +23,17 @@ export default function StudentProfileModal({ open, onClose }: StudentProfileMod
     <Modal
       open={open}
       onClose={onClose}
-      title="👤 Hồ sơ Sinh viên"
+      title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><User size={20} /> Hồ sơ Sinh viên</div>}
       size="md"
       footer={
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <button className="btn btn-ghost" onClick={onClose}>Đóng</button>
-          <button className="btn btn-ghost" onClick={() => { toast({ type: 'info', title: 'Mở trang hồ sơ đầy đủ...' }); onClose(); }}>📊 Xem toàn bộ</button>
-          <button className="btn btn-primary" onClick={() => { toast({ type: 'success', title: 'Đã mở cửa sổ chat!' }); onClose(); }}>💬 Nhắn tin</button>
+          <button className="btn btn-ghost" onClick={() => { toast({ type: 'info', title: 'Mở trang hồ sơ đầy đủ...' }); onClose(); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <BarChart2 size={16} /> Xem toàn bộ
+          </button>
+          <button className="btn btn-primary" onClick={() => { toast({ type: 'success', title: 'Đã mở cửa sổ chat!' }); onClose(); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <MessageSquare size={16} /> Nhắn tin
+          </button>
         </div>
       }
     >
@@ -39,7 +44,9 @@ export default function StudentProfileModal({ open, onClose }: StudentProfileMod
           <div style={{ fontWeight: 800, fontSize: 16 }}>Lê Văn Hùng</div>
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>MSSV: 2151063 · CS101-A</div>
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-            <span className="badge badge-red">⚠️ Cần hỗ trợ</span>
+            <span className="badge badge-red" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <AlertTriangle size={12} /> Cần hỗ trợ
+            </span>
             <span className="badge" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Hạng #42</span>
           </div>
         </div>
@@ -62,7 +69,9 @@ export default function StudentProfileModal({ open, onClose }: StudentProfileMod
 
       {/* Weekly chart */}
       <div style={{ marginBottom: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12 }}>📈 Hoạt động tuần này</div>
+        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <TrendingUp size={18} /> Hoạt động tuần này
+        </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 60 }}>
           {weekProgress.map((v, i) => (
             <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
@@ -79,13 +88,17 @@ export default function StudentProfileModal({ open, onClose }: StudentProfileMod
 
       {/* Stuck exercises */}
       <div>
-        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>🔴 Bài tập đang gặp khó</div>
+        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AlertCircle size={18} color="var(--accent-red)" /> Bài tập đang gặp khó
+        </div>
         {stuckExercises.map(ex => (
           <div key={ex.name} style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0',
             borderBottom: '1px solid var(--border-light)',
           }}>
-            <span style={{ fontSize: 14 }}>{ex.status === 'stuck' ? '🔴' : '✅'}</span>
+            <span style={{ fontSize: 14, display: 'flex', alignItems: 'center' }}>
+              {ex.status === 'stuck' ? <AlertCircle size={16} color="var(--accent-red)" /> : <CheckCircle2 size={16} color="var(--accent-green)" />}
+            </span>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{ex.name}</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Thời gian stuck: {ex.stuck}</div>

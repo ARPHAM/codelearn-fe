@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sandboxApi, SandboxJob } from '@/api/sandbox.api';
 import { useInfrastructureInfo } from '@/hooks/useSettings';
-import { Loader2, Zap, Brain, Activity, Trash2, RefreshCw } from 'lucide-react';
+import { Loader2, Zap, Brain, Activity, Trash2, RefreshCw, Ban, Cloud, Settings } from 'lucide-react';
 import { toast } from '@/components/ui/Toast';
 
 export default function SandboxPage() {
@@ -44,14 +44,18 @@ export default function SandboxPage() {
     <div className="page-container animate-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🐳 Giám sát Sandbox</h1>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Cloud size={28} color="var(--accent-purple)" /> Giám sát Sandbox
+          </h1>
           <p className="page-subtitle">Theo dõi trạng thái thực thi code và tài nguyên hệ thống live</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="btn btn-ghost" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-sandbox-jobs'] })}>
             <RefreshCw size={16} className={isJobsLoading ? 'animate-spin' : ''} /> Làm mới
           </button>
-          <button className="btn btn-danger">🚫 Dừng toàn bộ</button>
+          <button className="btn btn-danger" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Ban size={16} /> Dừng toàn bộ
+          </button>
         </div>
       </div>
 
@@ -76,7 +80,9 @@ export default function SandboxPage() {
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>⚙️ Container Jobs thực tế</span>
+          <span style={{ fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Settings size={16} color="var(--accent-purple)" /> Container Jobs thực tế
+          </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div className="spin" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-green)', boxShadow: '0 0 10px var(--accent-green)' }} />
             <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600 }}>Cập nhật tự động (5s)</span>

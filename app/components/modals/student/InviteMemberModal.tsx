@@ -1,7 +1,7 @@
-'use client';
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Users, SendHorizontal, Check, Copy } from 'lucide-react';
 
 interface InviteMemberModalProps {
   open: boolean;
@@ -36,12 +36,12 @@ export default function InviteMemberModal({ open, onClose }: InviteMemberModalPr
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="👥 Mời thành viên" subtitle="Phòng Pair Programming #A3F2-XK91" size="sm"
+    <Modal open={open} onClose={onClose} title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Users size={20} /> Mời thành viên</div>} subtitle="Phòng Pair Programming #A3F2-XK91" size="sm"
       footer={
         <div style={{ display: 'flex', gap: 8, width: '100%' }}>
           <button className="btn btn-ghost" onClick={onClose} style={{ flex: 1, justifyContent: 'center' }}>Hủy</button>
-          <button className="btn btn-primary" onClick={handleSend} disabled={selected.length === 0} style={{ flex: 2, justifyContent: 'center' }}>
-            📨 Gửi lời mời {selected.length > 0 && `(${selected.length})`}
+          <button className="btn btn-primary" onClick={handleSend} disabled={selected.length === 0} style={{ flex: 2, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <SendHorizontal size={18} /> Gửi lời mời {selected.length > 0 && `(${selected.length})`}
           </button>
         </div>
       }
@@ -55,7 +55,7 @@ export default function InviteMemberModal({ open, onClose }: InviteMemberModalPr
               {roomLink}
             </div>
             <button className="btn btn-ghost" onClick={handleCopy} style={{ flexShrink: 0, padding: '8px 12px' }}>
-              {copied ? '✅' : '📋'}
+              {copied ? <Check size={16} /> : <Copy size={16} />}
             </button>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function InviteMemberModal({ open, onClose }: InviteMemberModalPr
                   <div style={{ fontSize: 13, fontWeight: 600 }}>{sv.name}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{sv.id} · {sv.online ? 'Online' : 'Offline'}</div>
                 </div>
-                {isSelected && <span style={{ fontSize: 18 }}>✅</span>}
+                {isSelected && <Check size={18} color="var(--accent-purple)" />}
               </div>
             );
           })}

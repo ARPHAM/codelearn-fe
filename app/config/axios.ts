@@ -29,6 +29,11 @@ axios.interceptors.response.use(
       }
     }
 
+    if (error.response?.status === 403) {
+      window.location.href = '/not-found'
+    }
+
+
     return Promise.reject(error)
   }
 )

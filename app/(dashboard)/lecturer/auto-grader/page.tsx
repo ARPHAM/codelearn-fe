@@ -15,7 +15,11 @@ import {
   RefreshCcw,
   Clock,
   Cpu,
-  Database as MemoryIcon
+  Database as MemoryIcon,
+  Zap,
+  ClipboardList,
+  Cloud,
+  MousePointer2
 } from 'lucide-react';
 
 function StatusBadge({ status }: { status: string }) {
@@ -66,7 +70,9 @@ export default function AutoGraderPage() {
     <div className="page-container animate-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">⚡ Auto-Grader</h1>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Zap size={28} color="var(--accent-yellow)" fill="var(--accent-yellow)" /> Auto-Grader
+          </h1>
           <p className="page-subtitle">Quản lý và theo dõi kết quả nộp bài tự động của sinh viên</p>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
@@ -95,7 +101,9 @@ export default function AutoGraderPage() {
 
       {!selectedExerciseId ? (
         <div className="card" style={{ padding: '80px 0', textAlign: 'center', opacity: 0.7 }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>☝️</div>
+          <div style={{ marginBottom: 16 }}>
+            <MousePointer2 size={40} color="var(--accent-purple-light)" style={{ margin: '0 auto', opacity: 0.5 }} />
+          </div>
           <p style={{ color: 'var(--text-secondary)' }}>Vui lòng chọn một bài tập ở trên để xem lịch sử nộp bài.</p>
         </div>
       ) : loadingSubmissions ? (
@@ -191,7 +199,9 @@ export default function AutoGraderPage() {
             {selectedSubmissionId ? (
               <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--accent-purple-light)22' }}>
                 <div style={{ padding: '16px', background: 'rgba(139, 92, 246, 0.05)', borderBottom: '1px solid var(--border)' }}>
-                   <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>📋 Chi tiết thực thi</h3>
+                   <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <ClipboardList size={18} color="var(--accent-purple-light)" /> Chi tiết thực thi
+                   </h3>
                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '4px 0 0' }}>Mã nộp bài: {selectedSubmissionId.substring(0, 13)}...</p>
                 </div>
                 
@@ -220,7 +230,9 @@ export default function AutoGraderPage() {
               </div>
             ) : (
               <div className="card" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.2)' }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--accent-cyan-light)', marginBottom: 16 }}>🐳 Docker Sandbox Stats</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--accent-cyan-light)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Cloud size={18} /> Docker Sandbox Stats
+                </div>
                 {[
                   { label: 'Uptime', value: '99.9%' },
                   { label: 'Container Active', value: '4/10' },

@@ -70,7 +70,9 @@ export default function AnalyticsPage() {
     <div className="page-container animate-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">📊 Báo cáo & Thống kê</h1>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <BarChart3 size={28} color="var(--accent-purple-light)" /> Báo cáo & Thống kê
+          </h1>
           <p className="page-subtitle">Theo dõi hiệu suất học tập và mức độ tương tác của sinh viên</p>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>

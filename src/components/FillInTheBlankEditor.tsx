@@ -36,17 +36,29 @@ interface FillInTheBlankEditorProps {
 }
 
 export default function FillInTheBlankEditor({ file, updateFile, languages, isStudent = false, height = "220px", onMount }: FillInTheBlankEditorProps) {
-    const isTemplate = file.type === 'TEMPLATE';
     const editorRef = useRef<any>(null);
     const monacoRef = useRef<any>(null);
-    const decorationsRef = useRef<string[]>([]);
-    const [ranges, setRanges] = useState<any[]>([]);
+    const [isRawMode, setIsRawMode] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
-    
-    const showOverlay = (isStudent || !isFocused) && isTemplate;
-    
-    const scanRanges = useCallback(() => {
-        if (!editorRef.current || !monacoRef.current) return;
+    const widgetsRef = useRef<any[]>([]);
+    const decorationsRef = useRef<string[]>([]);
+
+    const isTemplate = file.type === 'TEMPLATE';
+    const showWidgets = isTemplate && !isRawMode;
+
+    const clearWidgets = useCallback(() => {
+        if (!editorRef.current) return;
+        widgetsRef.current.forEach(w => editorRef.current.removeContentWidget(w));
+        widgetsRef.current = [];
+        decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, []);
+    }, []);
+
+    const renderWidgets = useCallback(() => {
+        if (!editorRef.current || !monacoRef.current || !showWidgets) {
+            clearWidgets();
+            return;
+        }
+
         const editor = editorRef.current;
         const monaco = monacoRef.current;
         const model = editor.getModel();
@@ -55,56 +67,66 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
         const text = model.getValue();
         const regex = /\{\{([\s\S]*?)\}\}/g;
         let match;
-        const found: any[] = [];
+        const newWidgets: any[] = [];
         const newDecorations: any[] = [];
-        
+
         while ((match = regex.exec(text)) !== null) {
             const startPos = model.getPositionAt(match.index);
             const endPos = model.getPositionAt(match.index + match[0].length);
+            const content = match[1];
             const range = new monaco.Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column);
-            
+
+            // 1. Decoration to hide original text
             newDecorations.push({
-                range: new monaco.Range(startPos.lineNumber, startPos.column, startPos.lineNumber, startPos.column + 2),
-                options: { inlineClassName: 'fill-in-the-blank-bracket' }
-            });
-            newDecorations.push({
-                range: new monaco.Range(endPos.lineNumber, endPos.column - 2, endPos.lineNumber, endPos.column),
-                options: { inlineClassName: 'fill-in-the-blank-bracket' }
-            });
-            newDecorations.push({
-                range: new monaco.Range(startPos.lineNumber, startPos.column + 2, endPos.lineNumber, endPos.column - 2),
-                options: { inlineClassName: 'fill-in-the-blank-highlight' }
+                range: range,
+                options: { 
+                    inlineClassName: 'fill-blank-hidden',
+                    stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+                }
             });
 
-            const startPix = editor.getScrolledVisiblePosition(startPos);
-            const endPix = editor.getScrolledVisiblePosition(endPos);
+            // 2. Content Widget (The input)
+            const widgetId = `blank-${match.index}`;
+            const domNode = document.createElement('div');
+            domNode.className = 'monaco-input-widget';
             
-            if (startPix) {
-                found.push({
-                    id: match.index,
+            const input = document.createElement('input');
+            input.value = content;
+            input.placeholder = '...';
+            input.oninput = (e) => {
+                const val = (e.target as HTMLInputElement).value;
+                editor.executeEdits("fill-in-the-blank", [{
                     range: range,
-                    content: match[1],
-                    top: startPix.top,
-                    left: startPix.left,
-                    height: editor.getOption(monaco.editor.EditorOption.lineHeight) * (endPos.lineNumber - startPos.lineNumber + 1),
-                    width: Math.max(40, (endPix ? endPix.left : editor.getLayoutInfo().width) - startPix.left),
-                    isMultiLine: endPos.lineNumber > startPos.lineNumber
-                });
-            }
+                    text: `{{${val}}}`,
+                    forceMoveMarkers: true
+                }]);
+                updateFile(file.id?.toString() || '', 'content', editor.getValue());
+            };
+            
+            domNode.appendChild(input);
+
+            const widget = {
+                getId: () => widgetId,
+                getDomNode: () => domNode,
+                getPosition: () => ({
+                    position: startPos,
+                    preference: [monaco.editor.ContentWidgetPositionPreference.EXACT]
+                })
+            };
+
+            editor.addContentWidget(widget);
+            newWidgets.push(widget);
         }
-        
+
+        // Cleanup old widgets before setting new ones
+        widgetsRef.current.forEach(w => editor.removeContentWidget(w));
+        widgetsRef.current = newWidgets;
         decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
-        setRanges(found);
-    }, []);
+    }, [showWidgets, file.id, updateFile]);
 
     useEffect(() => {
-        const timeout = setTimeout(scanRanges, 100);
-        window.addEventListener('resize', scanRanges);
-        return () => {
-            clearTimeout(timeout);
-            window.removeEventListener('resize', scanRanges);
-        };
-    }, [file.content, scanRanges, isFocused]);
+        renderWidgets();
+    }, [file.content, renderWidgets]);
 
     const handleMount = (editor: any, monaco: any) => {
         editorRef.current = editor;
@@ -121,133 +143,102 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
         });
         monaco.editor.setTheme('aiDark');
 
-        editor.onDidScrollChange(() => scanRanges());
-        editor.onDidLayoutChange(() => scanRanges());
         editor.onDidBlurEditorWidget(() => setIsFocused(false));
         editor.onDidFocusEditorWidget(() => setIsFocused(true));
 
         if (onMount) onMount(editor, monaco);
-        scanRanges();
-    };
-
-    const handleOverlayChange = (range: any, value: string) => {
-        const editor = editorRef.current;
-        if (!editor || !monacoRef.current) return;
-        
-        editor.executeEdits("fill-in-the-blank", [{
-            range: range,
-            text: `{{${value}}}`,
-            forceMoveMarkers: true
-        }]);
-        updateFile(file.id?.toString() || '', 'content', editor.getValue());
+        renderWidgets();
     };
 
     const ext = getExt(file.path || '');
     const lang = getMonacoLanguage(ext, languages, file.languageId);
 
     return (
-        <div className="fill-in-the-blank-editor" style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <div className="fill-in-the-blank-wrapper" style={{ position: 'relative', width: '100%', height: height, display: 'flex', flexDirection: 'column' }}>
             <style dangerouslySetInnerHTML={{ __html: `
-                .fill-in-the-blank-bracket {
+                .fill-blank-hidden {
+                    opacity: 0 !important;
                     font-size: 0 !important;
-                    letter-spacing: -1px !important;
-                    display: inline-block;
-                    width: 0px;
-                    opacity: 0;
+                    letter-spacing: -100px !important;
                 }
-                .fill-in-the-blank-highlight {
-                    background-color: ${showOverlay ? 'rgba(139, 92, 246, 0.15)' : 'rgba(139, 92, 246, 0.3)'} !important;
-                    border-bottom: 2px solid var(--accent-purple);
-                    border-radius: 2px;
-                }
-                .monaco-input-overlay {
-                    position: absolute;
+                .monaco-input-widget {
                     z-index: 10;
-                    pointer-events: none;
-                    top: 0; left: 0; width: 100%; height: 100%;
+                    display: flex;
+                    align-items: center;
+                    background: transparent;
                 }
-                .overlay-input {
-                    position: absolute;
-                    pointer-events: auto;
-                    background: rgba(139, 92, 246, 0.08);
-                    border: 1px solid rgba(139, 92, 246, 0.4);
-                    color: #fff;
+                .monaco-input-widget input {
+                    background: rgba(139, 92, 246, 0.1);
+                    border: none;
+                    border-bottom: 2px solid var(--accent-purple);
+                    color: var(--accent-purple-light);
                     font-family: 'JetBrains Mono', monospace;
                     font-size: 13px;
-                    padding: 0 6px;
+                    padding: 0 4px;
                     outline: none;
-                    box-sizing: border-box;
-                    resize: none;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                    overflow: hidden;
-                    border-radius: 4px;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    min-width: 40px;
+                    max-width: 300px;
+                    transition: all 0.2s;
+                    border-radius: 2px 2px 0 0;
                 }
-                .overlay-input:hover {
-                    background: rgba(139, 92, 246, 0.12);
-                    border-color: rgba(139, 92, 246, 0.6);
+                .monaco-input-widget input:focus {
+                    background: rgba(139, 92, 246, 0.2);
+                    border-bottom-color: var(--accent-purple-light);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                 }
-                .overlay-input:focus {
-                    background: rgba(139, 92, 246, 0.15);
+                .raw-mode-toggle {
+                    position: absolute;
+                    top: 8px;
+                    right: 24px;
+                    z-index: 20;
+                    background: rgba(0,0,0,0.6);
+                    border: 1px solid var(--border);
+                    color: var(--text-secondary);
+                    padding: 4px 10px;
+                    border-radius: 6px;
+                    font-size: 11px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+                .raw-mode-toggle:hover {
+                    color: var(--text-primary);
+                    background: rgba(255,255,255,0.05);
+                }
+                .raw-mode-toggle.active {
+                    color: var(--accent-purple-light);
                     border-color: var(--accent-purple-light);
-                    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25), 0 4px 12px rgba(0, 0, 0, 0.3);
-                    transform: translateY(-1px);
-                }
-                .overlay-input::placeholder {
-                    color: rgba(255, 255, 255, 0.3);
-                    font-style: italic;
                 }
             `}} />
 
-            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                <Editor
-                    height={height}
-                    language={lang}
-                    value={file.content}
-                    onChange={val => {
-                        if (isFocused) updateFile(file.id?.toString() || '', 'content', val || '');
-                    }}
-                    onMount={handleMount}
-                    theme="aiDark"
-                    options={{ 
-                        fontSize: 13, 
-                        minimap: { enabled: false }, 
-                        scrollBeyondLastLine: false,
-                        padding: { top: 12, bottom: 12 },
-                        fontFamily: "'JetBrains Mono', monospace",
-                        readOnly: showOverlay && isStudent,
-                        domReadOnly: showOverlay && isStudent,
-                    }}
-                />
+            {!isStudent && isTemplate && (
+                <button 
+                    className={`raw-mode-toggle ${isRawMode ? 'active' : ''}`}
+                    onClick={() => setIsRawMode(!isRawMode)}
+                >
+                    {isRawMode ? '🟢 Mode: RAW (Code)' : '🟣 Mode: FILL (UI)'}
+                </button>
+            )}
 
-                {showOverlay && (
-                    <div className="monaco-input-overlay">
-                        {ranges.map((r, idx) => (
-                            r.isMultiLine ? (
-                                <textarea
-                                    key={r.id}
-                                    className="overlay-input"
-                                    style={{ top: r.top + 12, left: r.left, width: r.width, height: r.height }}
-                                    value={r.content}
-                                    tabIndex={idx + 1}
-                                    onChange={e => handleOverlayChange(r.range, e.target.value)}
-                                    placeholder="..."
-                                />
-                            ) : (
-                                <input
-                                    key={r.id}
-                                    className="overlay-input"
-                                    style={{ top: r.top + 12, left: r.left, width: r.width, height: r.height }}
-                                    value={r.content}
-                                    tabIndex={idx + 1}
-                                    onChange={e => handleOverlayChange(r.range, e.target.value)}
-                                    placeholder="..."
-                                />
-                            )
-                        ))}
-                    </div>
-                )}
-            </div>
+            <Editor
+                height={height}
+                language={lang}
+                value={file.content}
+                onChange={val => {
+                    if (isRawMode || !isTemplate) updateFile(file.id?.toString() || '', 'content', val || '');
+                }}
+                onMount={handleMount}
+                theme="aiDark"
+                options={{ 
+                    fontSize: 13, 
+                    minimap: { enabled: false }, 
+                    scrollBeyondLastLine: false,
+                    padding: { top: 12, bottom: 12 },
+                    fontFamily: "'JetBrains Mono', monospace",
+                    readOnly: isStudent && !showWidgets,
+                }}
+            />
         </div>
     )
 }

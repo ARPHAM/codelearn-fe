@@ -1,5 +1,6 @@
 'use client';
 import { toast } from '@/components/ui/Toast';
+import { Bot, Lightbulb, Check } from 'lucide-react';
 
 interface StuckAlertProps {
   onAccept: () => void;
@@ -23,8 +24,8 @@ export default function StuckAlert({ onAccept, onDismiss, minutesStuck }: StuckA
             width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
             background: 'var(--gradient-purple)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 20, boxShadow: 'var(--shadow-glow-purple)',
-          }}>🤖</div>
+            boxShadow: 'var(--shadow-glow-purple)', color: 'white'
+          }}><Bot size={22} /></div>
           <div>
             <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 3 }}>AI Assistant</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -42,7 +43,8 @@ export default function StuckAlert({ onAccept, onDismiss, minutesStuck }: StuckA
 
         {/* Typing dots preview */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14, fontSize: 12, color: 'var(--text-muted)' }}>
-          <span>💡 Gợi ý:</span>
+          <Lightbulb size={14} color="var(--accent-yellow)" />
+          <span>Gợi ý:</span>
           <em>&quot;Thử nghĩ về binary search...&quot;</em>
         </div>
 
@@ -53,13 +55,17 @@ export default function StuckAlert({ onAccept, onDismiss, minutesStuck }: StuckA
               onAccept();
               toast({ type: 'info', title: 'AI đang chuẩn bị gợi ý...', message: 'Mở AI panel bên phải' });
             }}
-            style={{ flex: 1, justifyContent: 'center', fontSize: 12 }}
-          >🤖 Có, gợi ý đi!</button>
+            style={{ flex: 1, justifyContent: 'center', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Bot size={14} /> Có, gợi ý đi!
+          </button>
           <button
             className="btn btn-ghost"
             onClick={onDismiss}
-            style={{ flex: 1, justifyContent: 'center', fontSize: 12 }}
-          >Không cần 👍</button>
+            style={{ flex: 1, justifyContent: 'center', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            Không cần <Check size={14} />
+          </button>
         </div>
       </div>
     </div>

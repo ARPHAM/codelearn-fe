@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
+import { ClipboardList, CheckCircle2, Download, Play, Code2, Beaker, Terminal, XCircle } from 'lucide-react';
 
 const testCasesData = [
   { id: 1, input: 'n=5, edges=[(0,1),(1,2)]', expected: '[0,1,2]', got: '[0,1,2]', time: '12ms', mem: '2.1MB', status: 'pass' },
@@ -68,30 +69,30 @@ export default function SubmissionDetailModal({ open, onClose }: SubmissionDetai
     <Modal
       open={open}
       onClose={onClose}
-      title="📋 Chi tiết Submission"
+      title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={20} /> Chi tiết Submission</div>}
       subtitle="Nguyễn Minh Khoa · BFS Graph Traversal · C++ · 2 phút trước"
       size="lg"
       footer={
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
           <div style={{ flex: 1, display: 'flex', gap: 8 }}>
-            <span className="badge badge-green">✅ 4/5 Passed</span>
+            <span className="badge badge-green" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><CheckCircle2 size={12} /> 4/5 Passed</span>
             <span className="badge badge-purple">Score: 80/100</span>
             <span className="badge" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>0.18s · 3.4MB</span>
           </div>
-          <button className="btn btn-ghost" style={{ fontSize: 12 }}>📥 Download code</button>
-          <button className="btn btn-primary" style={{ fontSize: 12 }}>▶ Chạy lại</button>
+          <button className="btn btn-ghost" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Download size={14} /> Download code</button>
+          <button className="btn btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Play size={14} /> Chạy lại</button>
         </div>
       }
     >
       {/* Tabs */}
       <div className="modal-tabs">
         {[
-          { id: 'code', label: '💻 Source Code' },
-          { id: 'testcases', label: '🧪 Test Cases (4/5)' },
-          { id: 'stderr', label: '📟 Terminal Output' },
+          { id: 'code', label: 'Source Code', icon: <Code2 size={16} /> },
+          { id: 'testcases', label: 'Test Cases (4/5)', icon: <Beaker size={16} /> },
+          { id: 'stderr', label: 'Terminal Output', icon: <Terminal size={16} /> },
         ].map(t => (
-          <div key={t.id} className={`modal-tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id as typeof tab)}>
-            {t.label}
+          <div key={t.id} className={`modal-tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id as typeof tab)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {t.icon} {t.label}
           </div>
         ))}
       </div>
@@ -124,8 +125,9 @@ export default function SubmissionDetailModal({ open, onClose }: SubmissionDetai
                 <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{tc.time}</td>
                 <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{tc.mem}</td>
                 <td>
-                  <span className={`badge ${tc.status === 'pass' ? 'badge-green' : 'badge-red'}`}>
-                    {tc.status === 'pass' ? '✅ Pass' : '❌ Fail'}
+                  <span className={`badge ${tc.status === 'pass' ? 'badge-green' : 'badge-red'}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {tc.status === 'pass' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                    {tc.status === 'pass' ? 'Pass' : 'Fail'}
                   </span>
                 </td>
               </tr>

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Plus, Pencil, Save, Rocket, FileText, Beaker, Lightbulb, Trash2, X } from 'lucide-react';
 
 interface AddEditQuestionModalProps {
   open: boolean;
@@ -30,28 +31,30 @@ export default function AddEditQuestionModal({ open, onClose, mode = 'add' }: Ad
     <Modal
       open={open}
       onClose={onClose}
-      title={mode === 'add' ? '➕ Thêm câu hỏi mới' : '✏️ Sửa câu hỏi'}
+      title={mode === 'add' ? <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Plus size={20} /> Thêm câu hỏi mới</div> : <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Pencil size={20} /> Sửa câu hỏi</div>}
       subtitle="Ngân hàng câu hỏi · CS101"
       size="lg"
       footer={
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <button className="btn btn-ghost" onClick={onClose}>Hủy</button>
-          <button className="btn btn-ghost" style={{ borderColor: 'rgba(124,58,237,0.4)', color: 'var(--accent-purple-light)' }} onClick={() => handleSave(false)}>
-            💾 Lưu nháp
+          <button className="btn btn-ghost" style={{ borderColor: 'rgba(124,58,237,0.4)', color: 'var(--accent-purple-light)', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => handleSave(false)}>
+            <Save size={16} /> Lưu nháp
           </button>
-          <button className="btn btn-primary" onClick={() => handleSave(true)}>🚀 Xuất bản</button>
+          <button className="btn btn-primary" onClick={() => handleSave(true)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Rocket size={16} /> Xuất bản
+          </button>
         </div>
       }
     >
       {/* Tabs */}
       <div className="modal-tabs">
         {[
-          { id: 'problem', label: '📝 Đề bài' },
-          { id: 'testcases', label: `🧪 Test Cases (${testCases.length})` },
-          { id: 'hints', label: '💡 Gợi ý' },
+          { id: 'problem', label: 'Đề bài', icon: <FileText size={16} /> },
+          { id: 'testcases', label: `Test Cases (${testCases.length})`, icon: <Beaker size={16} /> },
+          { id: 'hints', label: 'Gợi ý', icon: <Lightbulb size={16} /> },
         ].map(t => (
-          <div key={t.id} className={`modal-tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id as typeof tab)}>
-            {t.label}
+          <div key={t.id} className={`modal-tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id as typeof tab)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {t.icon} {t.label}
           </div>
         ))}
       </div>
@@ -95,8 +98,8 @@ export default function AddEditQuestionModal({ open, onClose, mode = 'add' }: Ad
                   borderRadius: 20, padding: '3px 10px', fontSize: 12, color: 'var(--accent-purple-light)',
                 }}>
                   {tag}
-                  <span style={{ cursor: 'pointer', color: 'var(--text-muted)', fontSize: 14, lineHeight: 1 }}
-                    onClick={() => setTags(tags.filter(t => t !== tag))}>×</span>
+                  <span style={{ cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
+                    onClick={() => setTags(tags.filter(t => t !== tag))}><X size={12} /></span>
                 </div>
               ))}
             </div>
@@ -104,7 +107,9 @@ export default function AddEditQuestionModal({ open, onClose, mode = 'add' }: Ad
               <input className="input" placeholder="Thêm tag..." value={newTag} onChange={e => setNewTag(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && newTag.trim()) { setTags([...tags, newTag.trim()]); setNewTag(''); } }}
                 style={{ flex: 1 }} />
-              <button className="btn btn-ghost" onClick={() => { if (newTag.trim()) { setTags([...tags, newTag.trim()]); setNewTag(''); } }}>+ Thêm</button>
+              <button className="btn btn-ghost" onClick={() => { if (newTag.trim()) { setTags([...tags, newTag.trim()]); setNewTag(''); } }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Plus size={14} /> Thêm
+              </button>
             </div>
           </div>
         </div>
@@ -125,7 +130,9 @@ export default function AddEditQuestionModal({ open, onClose, mode = 'add' }: Ad
                     Hidden
                   </label>
                   <button onClick={() => setTestCases(prev => prev.filter((_, j) => j !== i))}
-                    style={{ background: 'none', border: 'none', color: 'var(--accent-red)', cursor: 'pointer', fontSize: 16, padding: 0 }}>🗑</button>
+                    style={{ background: 'none', border: 'none', color: 'var(--accent-red)', cursor: 'pointer', fontSize: 16, padding: 0, display: 'flex', alignItems: 'center' }}>
+                      <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -143,8 +150,8 @@ export default function AddEditQuestionModal({ open, onClose, mode = 'add' }: Ad
             </div>
           ))}
           <button className="btn btn-ghost" onClick={() => setTestCases([...testCases, { input: '', output: '', hidden: false }])}
-            style={{ width: '100%', justifyContent: 'center', borderStyle: 'dashed' }}>
-            ➕ Thêm Test Case
+            style={{ width: '100%', justifyContent: 'center', borderStyle: 'dashed', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Plus size={16} /> Thêm Test Case
           </button>
         </div>
       )}
@@ -152,8 +159,9 @@ export default function AddEditQuestionModal({ open, onClose, mode = 'add' }: Ad
       {/* Tab: Hints */}
       {tab === 'hints' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: '10px 12px', background: 'rgba(6,182,212,0.06)', borderRadius: 8, border: '1px solid rgba(6,182,212,0.2)' }}>
-            💡 Gợi ý được hiển thị theo từng cấp độ. Sinh viên xin gợi ý sẽ thấy Hint 1 trước, sau đó Hint 2, v.v.
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: '10px 12px', background: 'rgba(6,182,212,0.06)', borderRadius: 8, border: '1px solid rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Lightbulb size={16} color="var(--accent-cyan-light)" />
+            <span>Gợi ý được hiển thị theo từng cấp độ. Sinh viên xin gợi ý sẽ thấy Hint 1 trước, sau đó Hint 2, v.v.</span>
           </div>
           {['Gợi ý 1 (Nhẹ)', 'Gợi ý 2 (Trung bình)', 'Gợi ý 3 (Chi tiết)'].map((h, i) => (
             <div key={i}>

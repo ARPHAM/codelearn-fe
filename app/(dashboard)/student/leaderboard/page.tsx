@@ -3,16 +3,16 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { leaderboardApi, LeaderboardItem } from '@/api/leaderboard.api';
-import { Loader2, Flame, Award, Crosshair, Swords } from 'lucide-react';
+import { Loader2, Flame, Award, Crosshair, Swords, Zap, Trophy, ClipboardList, Star, Medal, Handshake, Brain, BarChart3, Target } from 'lucide-react';
 import { useState } from 'react';
 
 const badges = [
-  { icon: '⚡', name: 'Speed Coder', desc: 'Giải trong < 5 phút', color: '#f59e0b', earned: true },
-  { icon: '🔥', name: 'On Fire', desc: 'Streak 7 ngày', color: '#ef4444', earned: true },
-  { icon: '🎯', name: 'Perfect Score', desc: '100% test cases', color: '#10b981', earned: true },
-  { icon: '🤝', name: 'Helper', desc: 'Giúp 10 bạn', color: '#06b6d4', earned: false },
-  { icon: '🏆', name: 'Battle Master', desc: 'Thắng 50 trận', color: '#7c3aed', earned: false },
-  { icon: '🧠', name: 'Algorithm God', desc: 'Giải 100 bài hard', color: '#ec4899', earned: false },
+  { icon: <Zap size={24} />, name: 'Speed Coder', desc: 'Giải trong < 5 phút', color: '#f59e0b', earned: true },
+  { icon: <Flame size={24} />, name: 'On Fire', desc: 'Streak 7 ngày', color: '#ef4444', earned: true },
+  { icon: <Target size={24} />, name: 'Perfect Score', desc: '100% test cases', color: '#10b981', earned: true },
+  { icon: <Handshake size={24} />, name: 'Helper', desc: 'Giúp 10 bạn', color: '#06b6d4', earned: false },
+  { icon: <Trophy size={24} />, name: 'Battle Master', desc: 'Thắng 50 trận', color: '#7c3aed', earned: false },
+  { icon: <Brain size={24} />, name: 'Algorithm God', desc: 'Giải 100 bài hard', color: '#ec4899', earned: false },
 ];
 
 export default function LeaderboardPage() {
@@ -38,9 +38,9 @@ export default function LeaderboardPage() {
   const top3 = items.find(i => i.rank === 3);
 
   const podium = [
-    { sv: top2, rank: 2, height: 140, badge: '🥈', color: '#94a3b8' },
-    { sv: top1, rank: 1, height: 180, badge: '🥇', color: '#f59e0b' },
-    { sv: top3, rank: 3, height: 120, badge: '🥉', color: '#b45309' },
+    { sv: top2, rank: 2, height: 140, badge: <Medal size={28} color="#94a3b8" />, color: '#94a3b8' },
+    { sv: top1, rank: 1, height: 180, badge: <Medal size={36} color="#f59e0b" />, color: '#f59e0b' },
+    { sv: top3, rank: 3, height: 120, badge: <Medal size={28} color="#b45309" />, color: '#b45309' },
   ];
 
   return (
@@ -48,7 +48,9 @@ export default function LeaderboardPage() {
       <div className="page-container animate-in">
         <div className="page-header">
           <div>
-            <h1 className="page-title">🏆 Leaderboard & Danh hiệu</h1>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Trophy size={28} color="#f59e0b" /> Leaderboard & Danh hiệu
+            </h1>
             <p className="page-subtitle">Bảng xếp hạng thực tế từ hệ thống — Cập nhật thời gian thực</p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -115,8 +117,8 @@ export default function LeaderboardPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
               {/* Full leaderboard */}
               <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 14 }}>
-                  📋 Danh sách xếp hạng
+                <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ClipboardList size={16} color="var(--accent-purple)" /> Danh sách xếp hạng
                 </div>
                 <table className="table">
                   <thead>
@@ -137,7 +139,11 @@ export default function LeaderboardPage() {
                             </div>
                             <div>
                               <div style={{ fontWeight: 600, fontSize: 13 }}>{sv.name}</div>
-                              {sv.rank === currentUser?.rank && <span style={{ fontSize: 10, color: 'var(--accent-purple-light)', fontWeight: 600 }}>⭐ Bạn</span>}
+                              {sv.rank === currentUser?.rank && (
+                                <span style={{ fontSize: 10, color: 'var(--accent-purple-light)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                                  <Star size={8} fill="currentColor" /> Bạn
+                                </span>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -152,7 +158,9 @@ export default function LeaderboardPage() {
                           </div>
                         </td>
                         <td>
-                          <span style={{ color: 'var(--accent-orange)', fontWeight: 700 }}>🔥 {sv.streak}</span>
+                          <span style={{ color: 'var(--accent-orange)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <Flame size={14} /> {sv.streak}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -163,7 +171,9 @@ export default function LeaderboardPage() {
               {/* Badges & Personal details */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div className="card">
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}>🎖️ Huy chương của bạn</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Medal size={18} color="var(--accent-purple)" /> Huy chương của bạn
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {badges.map(b => (
                       <div key={b.name} style={{
@@ -181,7 +191,9 @@ export default function LeaderboardPage() {
                 </div>
 
                 <div className="card" style={{ background: 'rgba(124,58,237,0.06)', borderColor: 'rgba(124,58,237,0.25)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--accent-purple-light)', marginBottom: 14 }}>📊 Thống kê cá nhân</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--accent-purple-light)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <BarChart3 size={18} /> Thống kê cá nhân
+                  </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                       <span style={{ color: 'var(--text-secondary)' }}><Award size={14} style={{ display: 'inline', marginRight: 4 }} /> Hạng hiện tại</span>

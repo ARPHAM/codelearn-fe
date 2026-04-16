@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Megaphone, Send, Users, AlertCircle, Bell, Mail } from 'lucide-react';
 
 interface NotifyClassModalProps {
   open: boolean;
@@ -28,7 +29,7 @@ export default function NotifyClassModal({ open, onClose }: NotifyClassModalProp
     <Modal
       open={open}
       onClose={onClose}
-      title="📣 Thông báo cả lớp"
+      title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Megaphone size={20} /> Thông báo cả lớp</div>}
       subtitle="Gửi thông báo đến sinh viên trong CS101"
       size="sm"
       footer={
@@ -37,7 +38,7 @@ export default function NotifyClassModal({ open, onClose }: NotifyClassModalProp
           <button className="btn btn-primary" onClick={handleSend} disabled={loading || !content.trim()} style={{ minWidth: 120, justifyContent: 'center' }}>
             {loading
               ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%' }} />
-              : '📤 Gửi thông báo'
+              : <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Send size={16} /> Gửi thông báo</span>
             }
           </button>
         </div>
@@ -49,8 +50,8 @@ export default function NotifyClassModal({ open, onClose }: NotifyClassModalProp
           <label className="form-label">Đối tượng nhận</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
-              { val: 'all', label: '👥 Toàn bộ lớp', desc: '120 sinh viên' },
-              { val: 'stuck', label: '⚠️ Sinh viên đang stuck', desc: '28 sinh viên' },
+              { val: 'all', label: 'Toàn bộ lớp', desc: '120 sinh viên', icon: <Users size={16} /> },
+              { val: 'stuck', label: 'Sinh viên đang stuck', desc: '28 sinh viên', icon: <AlertCircle size={16} color="var(--accent-red)" /> },
             ].map(opt => (
               <label key={opt.val} style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
@@ -61,8 +62,8 @@ export default function NotifyClassModal({ open, onClose }: NotifyClassModalProp
               }}>
                 <input type="radio" name="target" value={opt.val} checked={target === opt.val} onChange={() => setTarget(opt.val)} style={{ accentColor: 'var(--accent-purple)' }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{opt.label}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{opt.desc}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>{opt.icon} {opt.label}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 22 }}>{opt.desc}</div>
                 </div>
               </label>
             ))}
@@ -83,18 +84,20 @@ export default function NotifyClassModal({ open, onClose }: NotifyClassModalProp
           <label className="form-label">Kênh gửi</label>
           <div style={{ display: 'flex', gap: 10 }}>
             {[
-              { key: 'inapp', label: '🔔 In-app', icon: '🔔' },
-              { key: 'email', label: '📧 Email', icon: '📧' },
+              { key: 'inapp', label: 'In-app', icon: <Bell size={14} /> },
+              { key: 'email', label: 'Email', icon: <Mail size={14} /> },
             ].map(ch => (
               <label key={ch.key} className="checkbox-row" style={{
                 flex: 1, padding: '10px 14px', borderRadius: 8, cursor: 'pointer',
                 background: channels[ch.key as keyof typeof channels] ? 'rgba(124,58,237,0.1)' : 'var(--bg-tertiary)',
                 border: `1px solid ${channels[ch.key as keyof typeof channels] ? 'rgba(124,58,237,0.4)' : 'var(--border)'}`,
                 transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: 8
               }}>
                 <input type="checkbox" checked={channels[ch.key as keyof typeof channels]}
                   onChange={e => setChannels(prev => ({ ...prev, [ch.key]: e.target.checked }))}
                   style={{ accentColor: 'var(--accent-purple)' }} />
+                {ch.icon}
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{ch.label}</span>
               </label>
             ))}

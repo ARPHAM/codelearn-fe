@@ -4,6 +4,7 @@
 import ProblemEditor from '../../_components/ProblemEditor'
 import { useProblemDetail, useUpdateProblem } from '@/hooks/useProblems'
 import { useParams, useRouter } from 'next/navigation'
+import { Edit2, History } from 'lucide-react'
 
 export default function EditProblemPage() {
     const params = useParams()
@@ -53,7 +54,9 @@ export default function EditProblemPage() {
     return (
         <>
             <div className="page-header" style={{ padding: '0 24px', paddingTop: 24 }}>
-                <h1 className="page-title">✏️ Chỉnh Sửa Bài Tập</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <Edit2 size={28} color="var(--accent-purple-light)" /> Chỉnh Sửa Bài Tập
+                </h1>
                 <p className="page-subtitle">ID Bài tập: {problemId}</p>
                 {!canEdit && (
                     <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '10px 16px', borderRadius: 8, marginTop: 12, border: '1px solid rgba(239, 68, 68, 0.3)' }}>
@@ -63,7 +66,9 @@ export default function EditProblemPage() {
             </div>
             <div className="layout-split" style={{ padding: '0 24px', marginBottom: 20 }}>
                 <div className="card" style={{ padding: 16, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 12 }}>
-                    <h3 style={{ margin: '0 0 12px 0', fontSize: 14, color: 'var(--text-secondary)' }}>📜 Lịch sử các phiên bản</h3>
+                    <h3 style={{ margin: '0 0 12px 0', fontSize: 14, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <History size={16} /> Lịch sử các phiên bản
+                    </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {versions?.map((v: any, idx: number) => (
                             <div key={v.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-primary)', borderRadius: 8, border: '1px solid var(--border)' }}>

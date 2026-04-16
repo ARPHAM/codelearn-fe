@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { roomApi, Room } from '@/api/room.api';
-import { Loader2, Users, Calendar, Shield, Trash2, Home } from 'lucide-react';
+import { Loader2, Users, Calendar, Shield, Trash2, Home, Handshake, GraduationCap, Ban } from 'lucide-react';
 
 export default function AdminRoomsPage() {
   const { data: roomsData, isLoading } = useQuery({
@@ -17,9 +17,9 @@ export default function AdminRoomsPage() {
 
   const getTypeBadge = (type: string) => {
     switch (type) {
-      case 'PAIR': return <span className="badge badge-cyan">🤝 Lập trình cặp</span>;
-      case 'GROUP': return <span className="badge badge-purple">👥 Nhóm học tập</span>;
-      case 'CLASS': return <span className="badge badge-green">🎓 Lớp học</span>;
+      case 'PAIR': return <span className="badge badge-cyan" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Handshake size={14} /> Lập trình cặp</span>;
+      case 'GROUP': return <span className="badge badge-purple" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Users size={14} /> Nhóm học tập</span>;
+      case 'CLASS': return <span className="badge badge-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><GraduationCap size={14} /> Lớp học</span>;
       default: return <span className="badge badge-gray">{type}</span>;
     }
   };
@@ -28,11 +28,15 @@ export default function AdminRoomsPage() {
     <div className="page-container animate-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🏠 Quản lý Phòng học</h1>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Home size={28} color="var(--accent-purple)" /> Quản lý Phòng học
+          </h1>
           <p className="page-subtitle">Giám sát và quản lý các phòng học/phiên lập trình cặp đang hoạt động</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-danger">🚫 Đóng toàn bộ phòng</button>
+          <button className="btn btn-danger" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Ban size={16} /> Đóng toàn bộ phòng
+          </button>
         </div>
       </div>
 

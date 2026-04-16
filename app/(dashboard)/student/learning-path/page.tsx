@@ -3,7 +3,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { learningPathApi } from '@/api/learning-path.api';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, Map, Bot, CheckCircle2, Lock, Target, Lightbulb, Medal, ArrowRight, Play, Trees } from 'lucide-react';
 
 type NodeStatus = 'done' | 'active' | 'locked';
 
@@ -62,7 +62,9 @@ export default function LearningPathPage() {
       <div className="page-container animate-in">
         <div className="page-header">
           <div>
-            <h1 className="page-title">🗺️ Lộ trình Học tập</h1>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Map size={24} color="var(--accent-purple)" /> Lộ trình Học tập
+            </h1>
             <p className="page-subtitle">AI gợi ý bài tập dựa trên kỹ năng còn yếu — Lộ trình cá nhân hóa</p>
           </div>
           <button 
@@ -70,7 +72,7 @@ export default function LearningPathPage() {
             onClick={() => refreshMutation.mutate()}
             disabled={refreshMutation.isPending}
           >
-            {refreshMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : '🤖 Cập nhật gợi ý AI'}
+            {refreshMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Bot size={16} /> Cập nhật gợi ý AI</div>}
           </button>
         </div>
 
@@ -83,7 +85,9 @@ export default function LearningPathPage() {
             {/* Skill tree visualization */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="card">
-                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>🌳 Skill Tree</div>
+                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Trees size={16} color="var(--accent-green)" /> Skill Tree
+                </div>
                 <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 20 }}>
                   <span style={{ color: '#10b981' }}>● Hoàn thành</span>
                   <span style={{ color: '#7c3aed', marginLeft: 12 }}>● Đang học</span>
@@ -141,7 +145,7 @@ export default function LearningPathPage() {
                         transition: 'all 0.2s',
                         fontSize: node.status === 'done' ? 20 : node.status === 'locked' ? 16 : 22,
                       }}>
-                        {node.status === 'done' ? '✅' : node.status === 'locked' ? '🔒' : node.tag.slice(0, 1).toUpperCase()}
+                        {node.status === 'done' ? <CheckCircle2 size={24} /> : node.status === 'locked' ? <Lock size={20} /> : node.tag.slice(0, 1).toUpperCase()}
                       </div>
                       <div style={{
                         marginTop: 6, fontSize: 10, fontWeight: 700,
@@ -164,8 +168,8 @@ export default function LearningPathPage() {
               {/* Current skill detail */}
               <div className="card" style={{ background: 'rgba(124,58,237,0.06)', borderColor: 'rgba(124,58,237,0.25)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--accent-purple-light)' }}>
-                    🎯 Đang học: {activeNode?.title || 'Chưa chọn'}
+                  <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--accent-purple-light)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Target size={16} /> Đang học: {activeNode?.title || 'Chưa chọn'}
                   </div>
                   <span className="badge badge-yellow">Active</span>
                 </div>
@@ -184,7 +188,9 @@ export default function LearningPathPage() {
                     <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' }}>{activeNode?.difficulty || 'N/A'}</div>
                   </div>
                 </div>
-                <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>▶ Tiếp tục luyện tập</button>
+                <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Play size={16} fill="currentColor" /> Tiếp tục luyện tập
+                </button>
               </div>
             </div>
 
@@ -193,7 +199,9 @@ export default function LearningPathPage() {
               {/* AI suggested exercises */}
               <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontWeight: 700, fontSize: 14 }}>🤖 AI Gợi ý cho bạn</span>
+                  <span style={{ fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Bot size={16} color="var(--accent-purple)" /> AI Gợi ý cho bạn
+                  </span>
                   <span className="badge badge-purple">Powered by AI</span>
                 </div>
                 {suggested.length === 0 ? (
@@ -208,9 +216,13 @@ export default function LearningPathPage() {
                         {ex.difficulty}
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--accent-cyan)', marginBottom: 8 }}>💡 {ex.aiReason}</div>
+                    <div style={{ fontSize: 11, color: 'var(--accent-cyan)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Lightbulb size={12} /> {ex.aiReason}
+                    </div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn btn-primary" style={{ padding: '4px 12px', fontSize: 11 }}>Làm ngay →</button>
+                      <button className="btn btn-primary" style={{ padding: '4px 12px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        Làm ngay <ArrowRight size={12} />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -218,7 +230,9 @@ export default function LearningPathPage() {
 
               {/* Overall stats placeholder */}
               <div className="card" style={{ background: 'rgba(16,185,129,0.06)', borderColor: 'rgba(16,185,129,0.25)' }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#34d399', marginBottom: 12 }}>🏅 Tiến trình của bạn</div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#34d399', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Medal size={16} /> Tiến trình của bạn
+                </div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                    Hãy hoàn thành các bài tập trong lộ trình để AI phân tích chính xác hơn.
                 </div>

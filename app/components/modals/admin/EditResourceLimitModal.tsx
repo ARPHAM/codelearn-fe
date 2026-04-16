@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Settings, Save, Cpu, Layers, Timer } from 'lucide-react';
 
 interface EditResourceLimitModalProps {
   open: boolean;
@@ -20,11 +21,13 @@ export default function EditResourceLimitModal({ open, onClose, lang = 'Python' 
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={`⚙️ Sửa giới hạn — ${lang}`} subtitle="Sandbox resource allocation" size="sm"
+    <Modal open={open} onClose={onClose} title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Settings size={20} /> Sửa giới hạn — {lang}</div>} subtitle="Sandbox resource allocation" size="sm"
       footer={
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <button className="btn btn-ghost" onClick={onClose}>Hủy</button>
-          <button className="btn btn-primary" onClick={handleSave}>💾 Lưu</button>
+          <button className="btn btn-primary" onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Save size={16} /> Lưu
+          </button>
         </div>
       }
     >
@@ -32,7 +35,7 @@ export default function EditResourceLimitModal({ open, onClose, lang = 'Python' 
         {/* CPU */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <label className="form-label" style={{ marginBottom: 0 }}>💻 CPU Limit</label>
+            <label className="form-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: 6 }}><Cpu size={14} /> CPU Limit</label>
             <div style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: 18, color: cpu > 80 ? 'var(--accent-red)' : cpu > 50 ? 'var(--accent-yellow)' : 'var(--accent-green)' }}>
               {cpu < 100 ? `${(cpu / 100).toFixed(1)}` : '1.0'} vCPU
             </div>
@@ -46,7 +49,7 @@ export default function EditResourceLimitModal({ open, onClose, lang = 'Python' 
         {/* RAM */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <label className="form-label" style={{ marginBottom: 0 }}>🧠 RAM Limit</label>
+            <label className="form-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: 6 }}><Layers size={14} /> RAM Limit</label>
             <div style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: 18, color: ram > 400 ? 'var(--accent-red)' : 'var(--accent-cyan)' }}>
               {ram} MB
             </div>
@@ -60,7 +63,7 @@ export default function EditResourceLimitModal({ open, onClose, lang = 'Python' 
         {/* Timeout */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <label className="form-label" style={{ marginBottom: 0 }}>⏱ Timeout</label>
+            <label className="form-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: 6 }}><Timer size={14} /> Timeout</label>
             <div style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: 18, color: 'var(--accent-purple-light)' }}>
               {timeout}s
             </div>

@@ -3,15 +3,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { auditApi, AuditLog } from '@/api/audit.api';
 import { useState } from 'react';
-import { Loader2, Search, Filter, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Search, Filter, FileText, ChevronLeft, ChevronRight, Settings, Plus, Edit2, Trash2, Archive, ClipboardList, FileDown } from 'lucide-react';
+import React from 'react';
 
-const actionMeta: Record<string, { label: string; cls: string; icon: string }> = {
-  'POST /api/v1/admin/settings': { label: 'Cập nhật cấu hình', cls: 'badge-orange', icon: '⚙' },
-  'PATCH /api/v1/admin/settings': { label: 'Cập nhật cấu hình', cls: 'badge-orange', icon: '⚙' },
-  'POST /api/v1/admin/languages': { label: 'Thêm ngôn ngữ', cls: 'badge-green', icon: '➕' },
-  'PATCH /api/v1/admin/languages': { label: 'Sửa ngôn ngữ', cls: 'badge-yellow', icon: '✏️' },
-  'DELETE /api/v1/admin/languages': { label: 'Xóa ngôn ngữ', cls: 'badge-red', icon: '🗑' },
-  'POST /api/v1/banks': { label: 'Tạo ngân hàng', cls: 'badge-purple', icon: '🗃️' },
+const actionMeta: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
+  'POST /api/v1/admin/settings': { label: 'Cập nhật cấu hình', cls: 'badge-orange', icon: <Settings size={12} /> },
+  'PATCH /api/v1/admin/settings': { label: 'Cập nhật cấu hình', cls: 'badge-orange', icon: <Settings size={12} /> },
+  'POST /api/v1/admin/languages': { label: 'Thêm ngôn ngữ', cls: 'badge-green', icon: <Plus size={12} /> },
+  'PATCH /api/v1/admin/languages': { label: 'Sửa ngôn ngữ', cls: 'badge-yellow', icon: <Edit2 size={12} /> },
+  'DELETE /api/v1/admin/languages': { label: 'Xóa ngôn ngữ', cls: 'badge-red', icon: <Trash2 size={12} /> },
+  'POST /api/v1/banks': { label: 'Tạo ngân hàng', cls: 'badge-purple', icon: <Archive size={12} /> },
 };
 
 const severityLeft: Record<string, string> = { info: '#06b6d4', warning: '#f59e0b', danger: '#ef4444' };
@@ -37,22 +38,26 @@ export default function AuditLogPage() {
     
     // Fallback parsing
     const [method, url] = action.split(' ');
-    if (method === 'DELETE') return { label: 'Xóa dữ liệu', cls: 'badge-red', icon: '🗑' };
-    if (method === 'POST') return { label: 'Tạo mới', cls: 'badge-green', icon: '➕' };
-    if (method === 'PATCH' || method === 'PUT') return { label: 'Cập nhật', cls: 'badge-yellow', icon: '✏️' };
+    if (method === 'DELETE') return { label: 'Xóa dữ liệu', cls: 'badge-red', icon: <Trash2 size={12} /> };
+    if (method === 'POST') return { label: 'Tạo mới', cls: 'badge-green', icon: <Plus size={12} /> };
+    if (method === 'PATCH' || method === 'PUT') return { label: 'Cập nhật', cls: 'badge-yellow', icon: <Edit2 size={12} /> };
     
-    return { label: action, cls: 'badge-gray', icon: '•' };
+    return { label: action, cls: 'badge-gray', icon: <FileText size={12} /> };
   };
 
   return (
     <div className="page-container animate-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">📋 Nhật ký hệ thống</h1>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <ClipboardList size={28} color="var(--accent-purple)" /> Nhật ký hệ thống
+          </h1>
           <p className="page-subtitle">Lịch sử thao tác của các quản trị viên và giảng viên</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-ghost">📤 Xuất báo cáo</button>
+          <button className="btn btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <FileDown size={16} /> Xuất báo cáo
+          </button>
         </div>
       </div>
 
@@ -93,8 +98,8 @@ export default function AuditLogPage() {
                   <tr key={log.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span className={`badge ${meta.cls}`} style={{ width: 'fit-content' }}>
-                          {meta.icon} {meta.label}
+                        <span className={`badge badge-sm ${meta.cls}`} style={{ width: 'fit-content', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '2px 8px' }}>
+                          {meta.icon} <span>{meta.label}</span>
                         </span>
                         <code style={{ fontSize: 10, color: 'var(--text-muted)' }}>{log.action}</code>
                       </div>

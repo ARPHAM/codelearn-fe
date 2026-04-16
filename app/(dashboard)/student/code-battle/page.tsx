@@ -6,7 +6,7 @@ import { battlesApi } from '@/api/battles.api';
 import { leaderboardApi, LeaderboardItem } from '@/api/leaderboard.api';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, Swords, Timer, User, Zap } from 'lucide-react';
+import { Loader2, Swords, Timer, User, Zap, Globe, Target, Code2 } from 'lucide-react';
 
 const battleCode = [
   '// Tìm dãy con có tổng lớn nhất (Kadanes Algorithm)',
@@ -71,7 +71,9 @@ export default function CodeBattlePage() {
       <div className="page-container animate-in">
         <div className="page-header">
           <div>
-            <h1 className="page-title">⚔️ Code Battle</h1>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Swords size={28} color="var(--accent-red)" /> Code Battle
+            </h1>
             <p className="page-subtitle">Thi đấu thuật toán 1v1 - Dữ liệu thời gian thực</p>
           </div>
         </div>
@@ -106,7 +108,9 @@ export default function CodeBattlePage() {
           {/* Lobby */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="card">
-              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>🎯 Chế độ đấu</div>
+              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Target size={16} color="var(--accent-purple)" /> Chế độ đấu
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div style={{
                   padding: '12px', borderRadius: 10, textAlign: 'center',
@@ -121,7 +125,9 @@ export default function CodeBattlePage() {
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
               <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 14, display: 'flex', justifyContent: 'space-between' }}>
-                <span>🌐 Lobby Trực Tuyến</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Globe size={16} color="var(--accent-cyan)" /> Lobby Trực Tuyến
+                </span>
                 {isLoadingOpponents && <Loader2 className="animate-spin" size={14} />}
               </div>
               {opponents.length === 0 && !isLoadingOpponents && (
@@ -203,7 +209,9 @@ export default function CodeBattlePage() {
             {isStarted && (
               <div className="card" style={{ padding: 0, overflow: 'hidden', flex: 1 }}>
                 <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>💻 Code Editor</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Code2 size={14} /> Code Editor
+                  </span>
                   <span className="badge badge-cyan">Python 3.11</span>
                 </div>
                 <div style={{ background: 'var(--bg-primary)', padding: '10px 0', minHeight: 200 }}>

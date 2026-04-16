@@ -1,6 +1,7 @@
 'use client';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from '@/components/ui/Toast';
+import { XCircle, AlertTriangle } from 'lucide-react';
 
 interface KillJobConfirmProps {
   open: boolean;
@@ -38,12 +39,12 @@ export default function KillJobConfirm({ open, onClose, jobId = 'JOB-4823', stud
               <span style={{ color: 'var(--text-primary)' }}>{exercise}</span>
             </div>
           </div>
-          <p style={{ color: '#f87171', fontSize: 12, marginTop: 8 }}>
-            ⚠️ Bài nộp sẽ bị tính là <strong>FAILED</strong>. Hành động này không thể hoàn tác.
+          <p style={{ color: '#f87171', fontSize: 12, marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+            <AlertTriangle size={14} /> <span>Bài nộp sẽ bị tính là <strong>FAILED</strong>. Hành động này không thể hoàn tác.</span>
           </p>
         </div>
       }
-      confirmLabel="⛔ Kill ngay"
+      confirmLabel={<div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><XCircle size={16} /> Kill ngay</div>}
       cancelLabel="Giữ lại"
     />
   );

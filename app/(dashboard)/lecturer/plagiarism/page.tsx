@@ -12,7 +12,9 @@ import {
   AlertTriangle,
   Users,
   FileCode,
-  ShieldAlert
+  ShieldAlert,
+  Target,
+  CheckCircle2
 } from 'lucide-react';
 
 function RiskBadge({ similarity }: { similarity: number }) {
@@ -73,7 +75,9 @@ export default function PlagiarismPage() {
     <div className="page-container animate-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🔍 Phát hiện Đạo văn</h1>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Search size={28} color="var(--accent-purple-light)" /> Phát hiện Đạo văn
+          </h1>
           <p className="page-subtitle">Phân tích tương đồng mã nguồn giữa các sinh viên trên cùng một bài tập</p>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
@@ -102,7 +106,9 @@ export default function PlagiarismPage() {
 
       {!selectedExerciseId ? (
         <div className="card" style={{ padding: '80px 0', textAlign: 'center', opacity: 0.7 }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>🎯</div>
+          <div style={{ marginBottom: 16 }}>
+            <Target size={48} color="var(--accent-purple-light)" style={{ margin: '0 auto', opacity: 0.5 }} />
+          </div>
           <p style={{ color: 'var(--text-secondary)' }}>Vui lòng chọn một bài tập để xem kết quả kiểm tra đạo văn.</p>
         </div>
       ) : loadingResults ? (
@@ -201,7 +207,9 @@ export default function PlagiarismPage() {
              </div>
 
              <div className="card" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: '#f87171', margin: '0 0 8px' }}>⚠️ Lưu ý về ngưỡng (Threshold)</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: '#f87171', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertTriangle size={16} /> Lưu ý về ngưỡng (Threshold)
+                </h3>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                    Các bài tập đơn giản có thể có độ tương đồng cao một cách tự nhiên. Giảng viên nên cân nhắc kỹ trước khi đánh dấu vi phạm đối với các tỷ lệ dưới 70%.
                 </p>
@@ -212,6 +220,3 @@ export default function PlagiarismPage() {
     </div>
   );
 }
-
-// Helper icons missing from earlier import if needed
-import { CheckCircle2 } from 'lucide-react';

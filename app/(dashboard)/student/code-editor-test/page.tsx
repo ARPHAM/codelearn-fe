@@ -1,4 +1,17 @@
-
+import { 
+  Monitor, 
+  Bot, 
+  Clock, 
+  Save, 
+  Play, 
+  Upload, 
+  FileText, 
+  CheckCircle2, 
+  XCircle, 
+  Shuffle, 
+  AlertTriangle, 
+  Send
+} from 'lucide-react';
 
 const aiMessages = [
   {
@@ -40,7 +53,9 @@ export default function CodeEditorPage() {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div>
-            <h1 className="page-title">💻 Code Editor + 🤖 AI Assistant</h1>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Monitor size={28} /> Code Editor + <Bot size={28} /> AI Assistant
+            </h1>
             <p className="page-subtitle">Bài: Find Peak Element · Python 3.11 · CS101-A</p>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -50,17 +65,17 @@ export default function CodeEditorPage() {
               background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
               borderRadius: 8, padding: '6px 14px',
             }}>
-              <span style={{ fontSize: 14 }}>⏱</span>
+              <Clock size={16} />
               <div>
                 <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Đang stuck</div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#f87171' }}>{stuckMinutes} phút</div>
               </div>
               <div style={{ width: 1, height: 28, background: 'var(--border)', margin: '0 4px' }} />
-              <div style={{ fontSize: 11, color: '#f87171', fontWeight: 600 }}>AI đang hỗ trợ 🤖</div>
+              <div style={{ fontSize: 11, color: '#f87171', fontWeight: 600 }}>AI đang hỗ trợ <Bot size={12} style={{ display: 'inline', verticalAlign: 'middle' }} /></div>
             </div>
-            <button className="btn btn-ghost">💾 Lưu</button>
-            <button className="btn btn-primary">▶ Chạy code</button>
-            <button className="btn btn-ghost" style={{ color: 'var(--accent-green)', borderColor: 'rgba(16,185,129,0.4)' }}>📤 Nộp bài</button>
+            <button className="btn btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Save size={16} /> Lưu</button>
+            <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Play size={16} /> Chạy code</button>
+            <button className="btn btn-ghost" style={{ color: 'var(--accent-green)', borderColor: 'rgba(16,185,129,0.4)', display: 'flex', alignItems: 'center', gap: 6 }}><Upload size={16} /> Nộp bài</button>
           </div>
         </div>
 
@@ -70,7 +85,7 @@ export default function CodeEditorPage() {
           {/* Left: Problem statement */}
           <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-              <div style={{ fontWeight: 700, fontSize: 13 }}>📋 Đề bài</div>
+              <div style={{ fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={16} /> Đề bài</div>
               <div style={{ marginTop: 4, display: 'flex', gap: 6 }}>
                 <span className="badge badge-yellow">Medium</span>
                 <span className="badge badge-cyan">Search</span>
@@ -112,7 +127,7 @@ export default function CodeEditorPage() {
                 { n: 4, status: 'pass' }, { n: 5, status: 'pass' },
               ].map(tc => (
                 <div key={tc.n} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, fontSize: 11 }}>
-                  <span>{tc.status === 'pass' ? '✅' : '❌'}</span>
+                  <span>{tc.status === 'pass' ? <CheckCircle2 size={14} color="var(--accent-green)" /> : <XCircle size={14} color="var(--accent-red)" />}</span>
                   <span style={{ color: 'var(--text-secondary)' }}>Test #{tc.n}</span>
                   <span style={{ marginLeft: 'auto', color: tc.status === 'pass' ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600, fontSize: 10 }}>
                     {tc.status.toUpperCase()}
@@ -131,7 +146,7 @@ export default function CodeEditorPage() {
                 <select className="select" style={{ padding: '4px 10px', fontSize: 11 }}>
                   <option>Python 3.11</option><option>C++ 17</option><option>Java 21</option>
                 </select>
-                <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }}>🔀 Format</button>
+                <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}><Shuffle size={14} /> Format</button>
               </div>
             </div>
 
@@ -150,7 +165,7 @@ export default function CodeEditorPage() {
                         line.code.startsWith('    if') || line.code.startsWith('    for') ? <><span style={{ color: 'var(--text-muted)' }}>{'    '}</span><span className="code-keyword">{line.code.trim().split(' ')[0]}</span><span className="code-string"> {line.code.trim().slice(line.code.trim().split(' ')[0].length)}</span></> :
                           <span>{line.code}</span>}
                   </span>
-                  {line.err && <span style={{ fontSize: 11, color: '#f87171' }}>⚠ IndexError</span>}
+                  {line.err && <span style={{ fontSize: 11, color: '#f87171', display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={12} /> IndexError</span>}
                 </div>
               ))}
               {/* Cursor */}
@@ -188,7 +203,8 @@ export default function CodeEditorPage() {
                 background: 'var(--gradient-purple)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 16, boxShadow: 'var(--shadow-glow-purple)',
-              }}>🤖</div>
+                color: 'white'
+              }}><Bot size={18} /></div>
               <div>
                 <div style={{ fontWeight: 800, fontSize: 13 }}>AI Code Assistant</div>
                 <div style={{ fontSize: 10, color: 'var(--accent-purple-light)', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -213,7 +229,7 @@ export default function CodeEditorPage() {
               {aiMessages.map((m, i) => (
                 <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flexDirection: m.role === 'user' ? 'row-reverse' : 'row' }}>
                   {m.role === 'assistant' && (
-                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--gradient-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>🤖</div>
+                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--gradient-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: 'white' }}><Bot size={14} /></div>
                   )}
                   <div style={{
                     maxWidth: '85%',
@@ -233,7 +249,7 @@ export default function CodeEditorPage() {
 
               {/* AI typing */}
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--gradient-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>🤖</div>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--gradient-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'white' }}><Bot size={14} /></div>
                 <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '0 12px 12px 12px', padding: '10px 14px', display: 'flex', gap: 4, alignItems: 'center' }}>
                   {[0, 0.2, 0.4].map((d, i) => (
                     <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-purple)', animation: `blink 1.2s ${d}s infinite` }} />
@@ -245,7 +261,7 @@ export default function CodeEditorPage() {
             {/* Input */}
             <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border)', display: 'flex', gap: 8 }}>
               <input className="input" placeholder="Hỏi AI về code..." style={{ flex: 1, fontSize: 12 }} />
-              <button className="btn btn-primary" style={{ padding: '8px 12px', fontSize: 14 }}>➤</button>
+              <button className="btn btn-primary" style={{ padding: '8px 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Send size={16} /></button>
             </div>
           </div>
         </div>

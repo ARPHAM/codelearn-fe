@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useCreateRoom } from '@/features/room/mutations';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Rocket, AlertTriangle } from 'lucide-react';
 
 export default function CreateRoomPage() {
     const router = useRouter();
@@ -55,7 +55,7 @@ export default function CreateRoomPage() {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             margin: '0 auto 14px', fontSize: 22,
                         }}>
-                            🚀
+                            <Rocket size={24} color="white" />
                         </div>
                         <h1 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>Tạo Phòng Mới</h1>
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Bắt đầu một phiên code cùng nhau.</p>
@@ -64,7 +64,7 @@ export default function CreateRoomPage() {
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                         {error && (
                             <div className="badge badge-red" style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', fontSize: 12, width: '100%', justifyContent: 'center', textTransform: 'none' }}>
-                                ⚠ {error}
+                                <AlertTriangle size={14} style={{ marginRight: 8 }} /> {error}
                             </div>
                         )}
 
@@ -105,8 +105,8 @@ export default function CreateRoomPage() {
                                 disabled={createRoomMutation.isPending}
                                 style={{ width: '100%' }}
                             >
-                                <option value="CODE">💻 Coding Session</option>
-                                <option value="MEETING">🎙️ Meeting</option>
+                                <option value="CODE">Code Session</option>
+                                <option value="MEETING">Meeting</option>
                             </select>
                         </div>
 
@@ -126,7 +126,9 @@ export default function CreateRoomPage() {
                                     Đang tạo...
                                 </>
                             ) : (
-                                '🚀 Tạo Phòng'
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <Rocket size={16} /> Tạo Phòng
+                                </div>
                             )}
                         </button>
                     </form>

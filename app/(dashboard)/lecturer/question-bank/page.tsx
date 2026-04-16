@@ -12,7 +12,9 @@ import {
   ChevronRight,
   Database,
   Search,
-  Dice5
+  Dice5,
+  Archive,
+  Lightbulb
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -49,7 +51,9 @@ export default function QuestionBankPage() {
     <div className="page-container animate-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🗃️ Ngân hàng Câu hỏi</h1>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Archive size={28} color="var(--accent-purple-light)" /> Ngân hàng Câu hỏi
+          </h1>
           <p className="page-subtitle">Quản lý các bộ sưu tập bài tập và tạo đề thi từ ngân hàng dữ liệu</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -58,7 +62,9 @@ export default function QuestionBankPage() {
              <span>Tạo ngân hàng mới</span>
           </button>
           <Link href="/lecturer/problems/create">
-            <button className="btn btn-primary">➕ Thêm câu hỏi mới</button>
+            <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Plus size={16} /> Thêm câu hỏi mới
+            </button>
           </Link>
         </div>
       </div>
@@ -163,7 +169,9 @@ export default function QuestionBankPage() {
            </div>
 
            <div className="card">
-              <h3 style={{ fontSize: 13, fontWeight: 700, margin: '0 0 16px' }}>💡 Mẹo tối ưu</h3>
+              <h3 style={{ fontSize: 13, fontWeight: 700, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                 <Lightbulb size={16} color="var(--accent-yellow)" /> Mẹo tối ưu
+              </h3>
               <ul style={{ padding: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
                  {[
                    'Gắn nhãn (Tag) cho bài tập để lọc nhanh hơn.',

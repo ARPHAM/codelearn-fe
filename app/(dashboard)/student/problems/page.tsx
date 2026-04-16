@@ -12,11 +12,12 @@ import {
   Users, 
   Zap, 
   Target,
-  Rocket
+  Rocket,
+  Circle
 } from 'lucide-react';
 
 const diffColors: Record<string, string> = { EASY: 'badge-green', MEDIUM: 'badge-yellow', HARD: 'badge-red' };
-const diffLabels: Record<string, string> = { EASY: '🟢 Dễ', MEDIUM: '🟡 Trung bình', HARD: '🔴 Khó' };
+const diffLabels: Record<string, string> = { EASY: 'Dễ', MEDIUM: 'Trung bình', HARD: 'Khó' };
 
 export default function StudentProblemsListPage() {
   const router = useRouter()
@@ -62,24 +63,25 @@ export default function StudentProblemsListPage() {
             <div className="card" style={{ 
                 padding: '16px 20px', 
                 display: 'flex', 
-                gap: 12, 
-                flexWrap: 'wrap', 
+                gap: 16, 
+                flexWrap: 'nowrap', 
                 alignItems: 'center', 
                 marginBottom: 28,
                 background: 'rgba(30, 35, 48, 0.6)',
                 backdropFilter: 'blur(12px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: 16
+                borderRadius: 16,
+                overflowX: 'auto'
             }}>
-                <div style={{ position: 'relative', flex: 1, minWidth: 260 }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
                     <Search size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                     <input 
                         className="input" 
                         placeholder="Tìm kiếm bài tập theo tên, slug..." 
-                        style={{ paddingLeft: 42, borderRadius: 12, height: 44, background: 'rgba(13, 17, 23, 0.4)' }} 
+                        style={{ paddingLeft: 42, borderRadius: 12, height: 44, background: 'rgba(13, 17, 23, 0.4)', width: '100%' }} 
                     />
                 </div>
-                <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
                     <div style={{ position: 'relative' }}>
                         <Filter size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
                         <select className="select" style={{ paddingLeft: 36, borderRadius: 10, height: 44, background: 'rgba(13, 17, 23, 0.4)', minWidth: 150 }}>
@@ -142,7 +144,8 @@ export default function StudentProblemsListPage() {
                             }}>
                                 #{p.id.substring(0, 8)}
                             </div>
-                            <span className={`badge ${diffColors[p.difficulty] || 'badge-gray'}`} style={{ padding: '6px 14px', borderRadius: 10 }}>
+                            <span className={`badge ${diffColors[p.difficulty] || 'badge-gray'}`} style={{ padding: '6px 14px', borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                <Circle size={8} fill="currentColor" />
                                 {diffLabels[p.difficulty] || p.difficulty}
                             </span>
                         </div>

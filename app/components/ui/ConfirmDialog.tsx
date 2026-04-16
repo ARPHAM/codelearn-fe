@@ -1,22 +1,23 @@
 'use client';
 import Modal from './Modal';
+import { AlertTriangle, AlertCircle, Info } from 'lucide-react';
 
 interface ConfirmDialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  title: string;
+  title: string | React.ReactNode;
   message: string | React.ReactNode;
-  confirmLabel?: string;
-  cancelLabel?: string;
+  confirmLabel?: string | React.ReactNode;
+  cancelLabel?: string | React.ReactNode;
   variant?: 'danger' | 'warning' | 'info';
   loading?: boolean;
 }
 
-const variantConfig = {
-  danger:  { icon: '🚨', color: '#ef4444', bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.25)',   btnCls: 'btn-danger' },
-  warning: { icon: '⚠️', color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', btnCls: 'btn-primary' },
-  info:    { icon: 'ℹ️', color: '#06b6d4', bg: 'rgba(6,182,212,0.08)',   border: 'rgba(6,182,212,0.25)',  btnCls: 'btn-cyan' },
+const variantConfig: Record<string, { icon: any; color: string; bg: string; border: string; btnCls: string }> = {
+  danger:  { icon: AlertCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.25)',   btnCls: 'btn-danger' },
+  warning: { icon: AlertTriangle, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', btnCls: 'btn-primary' },
+  info:    { icon: Info, color: '#06b6d4', bg: 'rgba(6,182,212,0.08)',   border: 'rgba(6,182,212,0.25)',  btnCls: 'btn-cyan' },
 };
 
 export default function ConfirmDialog({
@@ -42,7 +43,7 @@ export default function ConfirmDialog({
           width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px',
           background: cfg.bg, border: `2px solid ${cfg.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28,
-        }}>{cfg.icon}</div>
+        }}><cfg.icon size={32} /></div>
         <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 12, color: 'var(--text-primary)' }}>{title}</div>
         <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{message}</div>
       </div>

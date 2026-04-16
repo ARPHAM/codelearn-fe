@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/Toast';
+import { Trophy, Frown, BarChart2, Eye, Home, RotateCcw, ArrowRight } from 'lucide-react';
 
 interface BattleResultModalProps {
   open: boolean;
@@ -17,12 +18,14 @@ export default function BattleResultModal({ open, onClose }: BattleResultModalPr
     <Modal open={open} onClose={onClose} title="" size="md" noPadding
       footer={
         <div style={{ display: 'flex', gap: 8, width: '100%' }}>
-          <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { toast({ type: 'info', title: '🔍 Mở code đối thủ...' }); setViewCode(true); }}>
-            👁 Xem code đối thủ
+          <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => { toast({ type: 'info', title: 'Mở code đối thủ...' }); setViewCode(true); }}>
+            <Eye size={16} /> Xem code đối thủ
           </button>
-          <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={onClose}>🏠 Về lobby</button>
-          <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { toast({ type: 'info', title: '⚔️ Tìm trận mới...' }); onClose(); }}>
-            🔄 Chơi lại
+          <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 6 }} onClick={onClose}>
+            <Home size={16} /> Về lobby
+          </button>
+          <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => { toast({ type: 'info', title: 'Tìm trận mới...' }); onClose(); }}>
+            <RotateCcw size={16} /> Chơi lại
           </button>
         </div>
       }
@@ -30,12 +33,14 @@ export default function BattleResultModal({ open, onClose }: BattleResultModalPr
       {/* Winner banner */}
       <div style={{
         background: isWinner
-          ? 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(16,185,129,0.1))'
+          ? 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(10,185,129,0.1))'
           : 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(124,58,237,0.08))',
         padding: '32px 24px', textAlign: 'center',
         borderBottom: '1px solid var(--border)',
       }}>
-        <div style={{ fontSize: 52, marginBottom: 12 }}>{isWinner ? '🏆' : '😤'}</div>
+        <div style={{ fontSize: 52, marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+          {isWinner ? <Trophy size={60} color="#f59e0b" /> : <Frown size={60} color="#f87171" />}
+        </div>
         <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 4, color: isWinner ? '#f59e0b' : '#f87171' }}>
           {isWinner ? 'CHIẾN THẮNG!' : 'THUA RỒI!'}
         </div>
@@ -49,13 +54,17 @@ export default function BattleResultModal({ open, onClose }: BattleResultModalPr
           <span style={{ fontWeight: 800, fontSize: 16, color: isWinner ? 'var(--accent-green)' : 'var(--accent-red)' }}>
             {isWinner ? '+24' : '-18'}
           </span>
-          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>→ {isWinner ? 1704 : 1662}</span>
+          <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <ArrowRight size={12} /> {isWinner ? 1704 : 1662}
+          </span>
         </div>
       </div>
 
       {/* Comparison table */}
       <div style={{ padding: '20px 22px' }}>
-        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>📊 So sánh kết quả</div>
+        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BarChart2 size={18} /> So sánh kết quả
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 0, alignItems: 'center' }}>
           {/* Header */}
           <div style={{ textAlign: 'center', padding: '8px', color: isWinner ? '#f59e0b' : 'var(--text-secondary)', fontWeight: 700, fontSize: 13 }}>Bạn</div>

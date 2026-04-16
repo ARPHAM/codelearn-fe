@@ -6,6 +6,7 @@ import Editor from '@monaco-editor/react'
 import { JetBrains_Mono } from 'next/font/google'
 import { useCreateExercise } from '../_api/mutations'
 import { useRouter } from 'next/navigation'
+import { Plus, Save, Code2, Lightbulb } from 'lucide-react'
 
 const mono = JetBrains_Mono({
     subsets: ['latin'],
@@ -85,13 +86,15 @@ export default function CreateQuestionPage() {
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <h1 className="page-title">➕ Tạo câu hỏi mới</h1>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Plus size={28} color="var(--accent-purple-light)" /> Tạo câu hỏi mới
+                        </h1>
                         <p className="page-subtitle">Thiết lập nội dung và code mẫu cho các ngôn ngữ</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                         <button className="btn btn-ghost" onClick={() => router.back()}>Hủy</button>
-                        <button className="btn btn-primary" onClick={handleSave} disabled={isPending}>
-                            {isPending ? "Đang lưu..." : "💾 Lưu câu hỏi"}
+                        <button className="btn btn-primary" onClick={handleSave} disabled={isPending} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {isPending ? "Đang lưu..." : <><Save size={18} /> Lưu câu hỏi</>}
                         </button>
                     </div>
                 </div>
@@ -153,7 +156,9 @@ export default function CreateQuestionPage() {
                     {/* RIGHT: Editor for Default Code */}
                     <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontWeight: 700, fontSize: 13 }}>🛠️ Code khởi tạo (Template)</div>
+                            <div style={{ fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <Code2 size={16} /> Code khởi tạo (Template)
+                            </div>
                             <select 
                                 className="select" 
                                 value={selectedLanguage} 
@@ -165,8 +170,8 @@ export default function CreateQuestionPage() {
                             </select>
                         </div>
                         
-                        <div style={{ padding: '8px 14px', background: 'rgba(59,130,246,0.05)', fontSize: 11, color: 'var(--text-secondary)', borderBottom: '1px solid var(--border)' }}>
-                            💡 Sinh viên sẽ bắt đầu làm bài với code này khi chọn ngôn ngữ tương ứng.
+                        <div style={{ padding: '8px 14px', background: 'rgba(59,130,246,0.05)', fontSize: 11, color: 'var(--text-secondary)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Lightbulb size={14} color="var(--accent-yellow)" /> Sinh viên sẽ bắt đầu làm bài với code này khi chọn ngôn ngữ tương ứng.
                         </div>
 
                         <div className={mono.className} style={{ flex: 1 }}>

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from '@/components/ui/Toast';
+import { Search, AlertTriangle, AlertCircle, FileCode, Trash2, TrendingDown, XCircle, Info } from 'lucide-react';
 
 interface PlagiarismDetailModalProps {
   open: boolean;
@@ -56,7 +57,7 @@ export default function PlagiarismDetailModal({ open, onClose }: PlagiarismDetai
       <Modal
         open={open}
         onClose={onClose}
-        title="🔍 Chi tiết Đạo văn"
+        title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Search size={20} /> Chi tiết Đạo văn</div>}
         subtitle="Nguyễn M. Khoa ↔ Đỗ Quang Vinh · Bài: BFS Graph Traversal"
         size="xl"
         footer={
@@ -65,7 +66,9 @@ export default function PlagiarismDetailModal({ open, onClose }: PlagiarismDetai
             <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Dòng trùng: 42–67, 88–102</span>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
               <button className="btn btn-ghost" onClick={onClose}>Bỏ qua</button>
-              <button className="btn btn-danger" onClick={() => setFlagOpen(true)}>⚠️ Đánh dấu Đạo văn</button>
+              <button className="btn btn-danger" onClick={() => setFlagOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <AlertTriangle size={16} /> Đánh dấu Đạo văn
+              </button>
             </div>
           </div>
         }
@@ -78,7 +81,9 @@ export default function PlagiarismDetailModal({ open, onClose }: PlagiarismDetai
         }}>
           <div style={{ fontSize: 36, fontWeight: 900, color: '#f87171', lineHeight: 1, fontFamily: 'monospace' }}>82%</div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 14, color: '#f87171' }}>🚨 Mức độ tương đồng rất cao</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: '#f87171', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <AlertCircle size={18} /> Mức độ tương đồng rất cao
+            </div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>
               Thuật toán AST + Token phát hiện 14/17 đoạn trùng khớp cấu trúc logic
             </div>
@@ -124,18 +129,19 @@ export default function PlagiarismDetailModal({ open, onClose }: PlagiarismDetai
           ))}
         </div>
 
-        <div style={{ marginTop: 14, padding: '10px 14px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8 }}>
-          <span style={{ fontSize: 12, color: '#fbbf24' }}>🔶 Các dòng nền vàng = đoạn code có cấu trúc AST giống nhau (tên biến khác nhưng logic giống)</span>
+        <div style={{ marginTop: 14, padding: '10px 14px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Info size={14} color="#fbbf24" />
+          <span style={{ fontSize: 12, color: '#fbbf24' }}>Các dòng nền vàng = đoạn code có cấu trúc AST giống nhau (tên biến khác nhưng logic giống)</span>
         </div>
       </Modal>
 
       {/* Flag confirmation */}
-      <Modal open={flagOpen} onClose={() => setFlagOpen(false)} title="⚠️ Đánh dấu Đạo văn" size="sm"
+      <Modal open={flagOpen} onClose={() => setFlagOpen(false)} title={<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={18} /> Đánh dấu Đạo văn</div>} size="sm"
         footer={
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
             <button className="btn btn-ghost" onClick={() => setFlagOpen(false)} disabled={loading}>Hủy</button>
-            <button className="btn btn-danger" onClick={handleFlag} disabled={loading} style={{ minWidth: 120, justifyContent: 'center' }}>
-              {loading ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%' }} /> : '⚠️ Xác nhận'}
+            <button className="btn btn-danger" onClick={handleFlag} disabled={loading} style={{ minWidth: 120, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8 }}>
+              {loading ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%' }} /> : <><AlertTriangle size={16} /> Xác nhận</>}
             </button>
           </div>
         }
@@ -144,9 +150,9 @@ export default function PlagiarismDetailModal({ open, onClose }: PlagiarismDetai
           <label className="form-label">Hành động</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
             {[
-              { val: 'warn', label: '⚠️ Cảnh báo', desc: 'Gửi email cảnh báo đến sinh viên' },
-              { val: 'deduct', label: '📉 Trừ điểm (50%)', desc: 'Bài nộp bị trừ 50% điểm' },
-              { val: 'zero', label: '❌ Hủy bài nộp', desc: 'Sinh viên nhận 0 điểm cho bài này' },
+              { val: 'warn', label: 'Cảnh báo', icon: <AlertTriangle size={14} />, desc: 'Gửi email cảnh báo đến sinh viên' },
+              { val: 'deduct', label: 'Trừ điểm (50%)', icon: <TrendingDown size={14} />, desc: 'Bài nộp bị trừ 50% điểm' },
+              { val: 'zero', label: 'Hủy bài nộp', icon: <XCircle size={14} />, desc: 'Sinh viên nhận 0 điểm cho bài này' },
             ].map(opt => (
               <label key={opt.val} style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
@@ -157,7 +163,7 @@ export default function PlagiarismDetailModal({ open, onClose }: PlagiarismDetai
                 <input type="radio" name="flag-action" value={opt.val} checked={action === opt.val} onChange={() => setAction(opt.val)}
                   style={{ marginTop: 3, accentColor: '#ef4444' }} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{opt.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>{opt.icon} {opt.label}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{opt.desc}</div>
                 </div>
               </label>

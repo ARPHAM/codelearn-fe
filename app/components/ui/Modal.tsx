@@ -13,7 +13,7 @@ const sizeMap: Record<ModalSize, number> = {
 interface ModalProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title: string | React.ReactNode;
   subtitle?: string;
   size?: ModalSize;
   children: React.ReactNode;

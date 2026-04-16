@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { roomApi, Room } from '@/api/room.api';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Plus, Play, Sparkles } from 'lucide-react';
+import { Loader2, Users, Plus, Play, Sparkles, Handshake, Globe, Award, Brain, Bug, Shield } from 'lucide-react';
 
 export default function PairProgrammingLobbyPage() {
   const router = useRouter();
@@ -25,7 +25,10 @@ export default function PairProgrammingLobbyPage() {
     <div className="page-container animate-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🤝 Lập trình Cặp (Pair Programming)</h1>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Handshake size={32} color="var(--accent-purple)" />
+            Pair Programming
+          </h1>
           <p className="page-subtitle">Tìm kiếm cộng sự, cùng nhau giải quyết các thử thách thuật toán khó</p>
         </div>
         <button 
@@ -63,7 +66,9 @@ export default function PairProgrammingLobbyPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>🌐 Các phiên đang chờ cộng sự</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Globe size={18} color="var(--accent-cyan)" /> Các phiên đang chờ cộng sự
+            </h3>
             <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600 }}>● {rooms.length} phòng đang online</span>
           </div>
 
@@ -119,15 +124,17 @@ export default function PairProgrammingLobbyPage() {
         {/* Sidebar info */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div className="card">
-            <h4 style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}>🥇 Lợi ích của Pair Programming</h4>
+            <h4 style={{ fontWeight: 700, fontSize: 14, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Award size={18} color="var(--accent-yellow)" /> Lợi ích của Pair Programming
+            </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { title: 'Tối ưu thuật toán', desc: 'Có thêm một góc nhìn giúp code sạch và tối ưu hơn.', icon: '🧠' },
-                { title: 'Học hỏi lẫn nhau', desc: 'Chia sẻ kiến thức về cú pháp và các mẹo lập trình.', icon: '🤝' },
-                { title: 'Giải quyết lỗi nhanh', desc: 'Phát hiện lỗi logic ngay khi đang gõ.', icon: '🐛' },
+                { title: 'Tối ưu thuật toán', desc: 'Có thêm một góc nhìn giúp code sạch và tối ưu hơn.', icon: <Brain size={20} color="var(--accent-purple-light)" /> },
+                { title: 'Học hỏi lẫn nhau', desc: 'Chia sẻ kiến thức về cú pháp và các mẹo lập trình.', icon: <Handshake size={20} color="var(--accent-cyan-light)" /> },
+                { title: 'Giải quyết lỗi nhanh', desc: 'Phát hiện lỗi logic ngay khi đang gõ.', icon: <Bug size={20} color="var(--accent-red-light)" /> },
               ].map((item, i) => (
                 <div key={i} style={{ display: 'flex', gap: 12 }}>
-                  <span style={{ fontSize: 20 }}>{item.icon}</span>
+                  <div style={{ flexShrink: 0, marginTop: 2 }}>{item.icon}</div>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700 }}>{item.title}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{item.desc}</div>
@@ -138,7 +145,9 @@ export default function PairProgrammingLobbyPage() {
           </div>
 
           <div className="card" style={{ background: 'rgba(6, 182, 212, 0.05)', borderColor: 'rgba(6, 182, 212, 0.2)' }}>
-            <h4 style={{ fontWeight: 700, fontSize: 13, color: 'var(--accent-cyan)', marginBottom: 12 }}>🛡️ Quy tắc cộng tác</h4>
+            <h4 style={{ fontWeight: 700, fontSize: 13, color: 'var(--accent-cyan)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Shield size={16} /> Quy tắc cộng tác
+            </h4>
             <ul style={{ paddingLeft: 16, fontSize: 11, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 6 }}>
               <li>Luôn tôn trọng ý kiến của cộng sự.</li>
               <li>Thay đổi vai trò (Driver - Navigator) thường xuyên.</li>

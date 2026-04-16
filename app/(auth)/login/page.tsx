@@ -5,12 +5,28 @@ import { toast } from '@/components/ui/Toast';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useLogin } from './_api/mutation';
 import { broadcastAuthChange } from "@/config/auth-channel";
+import { 
+  Bot, 
+  Swords, 
+  Map, 
+  BarChart3, 
+  GraduationCap, 
+  User, 
+  Settings, 
+  Monitor, 
+  Eye, 
+  EyeOff, 
+  AlertTriangle,
+  Github,
+  Chrome,
+  Shield
+} from 'lucide-react';
 
 const FEATURES = [
-  { icon: '🤖', title: 'AI Code Assistant', desc: 'Hỗ trợ gỡ lỗi & gợi ý thông minh' },
-  { icon: '⚔️', title: 'Code Battle', desc: '1v1 thách đấu lập trình realtime' },
-  { icon: '🗺️', title: 'Learning Path', desc: 'Lộ trình cá nhân hóa theo kỹ năng' },
-  { icon: '📊', title: 'Auto-Grader', desc: 'Chấm bài tự động với Docker sandbox' },
+  { icon: <Bot size={20} />, title: 'AI Code Assistant', desc: 'Hỗ trợ gỡ lỗi & gợi ý thông minh' },
+  { icon: <Swords size={20} />, title: 'Code Battle', desc: '1v1 thách đấu lập trình realtime' },
+  { icon: <Map size={20} />, title: 'Learning Path', desc: 'Lộ trình cá nhân hóa theo kỹ năng' },
+  { icon: <BarChart3 size={20} />, title: 'Auto-Grader', desc: 'Chấm bài tự động với Docker sandbox' },
 ];
 
 export default function LoginPage() {
@@ -38,9 +54,9 @@ export default function LoginPage() {
   });
 
   const roleConfig = {
-    student: { label: 'Sinh viên', icon: '🎓', gradient: 'var(--gradient-purple)', color: 'var(--accent-purple)' },
-    lecturer: { label: 'Giảng viên', icon: '👨‍🏫', gradient: 'linear-gradient(135deg, #1d4ed8, #06b6d4)', color: '#3b82f6' },
-    admin: { label: 'Admin', icon: '⚙️', gradient: 'linear-gradient(135deg, #065f46, #10b981)', color: '#10b981' },
+    student: { label: 'Sinh viên', icon: <GraduationCap size={24} />, gradient: 'var(--gradient-purple)', color: 'var(--accent-purple)' },
+    lecturer: { label: 'Giảng viên', icon: <User size={24} />, gradient: 'linear-gradient(135deg, #1d4ed8, #06b6d4)', color: '#3b82f6' },
+    admin: { label: 'Admin', icon: <Settings size={24} />, gradient: 'linear-gradient(135deg, #065f46, #10b981)', color: '#10b981' },
   };
   const rc = roleConfig[role];
 
@@ -61,8 +77,9 @@ export default function LoginPage() {
               width: 44, height: 44, borderRadius: 12,
               background: 'var(--gradient-purple)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22, boxShadow: 'var(--shadow-glow-purple)',
-            }}>💻</div>
+              boxShadow: 'var(--shadow-glow-purple)',
+              color: 'white'
+            }}><Monitor size={24} /></div>
             <span style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.5px' }}>
               Code<span style={{ color: 'var(--accent-purple-light)' }}>Learn</span>
             </span>
@@ -87,7 +104,7 @@ export default function LoginPage() {
               <div style={{
                 width: 42, height: 42, borderRadius: 10, flexShrink: 0,
                 background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-purple-light)'
               }}>{f.icon}</div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 1 }}>{f.title}</div>
@@ -132,7 +149,7 @@ export default function LoginPage() {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
                 transition: 'all 0.18s', color: 'var(--text-primary)',
               }}>
-                <span style={{ fontSize: 22 }}>{cfg.icon}</span>
+                <span style={{ color: role === key ? cfg.color : 'var(--text-muted)' }}>{cfg.icon}</span>
                 <span style={{ fontSize: 12, fontWeight: role === key ? 700 : 500, color: role === key ? cfg.color : 'var(--text-secondary)' }}>
                   {cfg.label}
                 </span>
@@ -158,14 +175,14 @@ export default function LoginPage() {
                 value={password} onChange={e => setPassword(e.target.value)} style={{ fontSize: 14, paddingRight: 44 }} />
               <button type="button" onClick={() => setShowPassword(!showPassword)} style={{
                 position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--text-muted)', padding: 0,
-              }}>{showPassword ? '🙈' : '👁'}</button>
+                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0,
+              }}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
             </div>
           </div>
 
           {error && (
-            <div style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8, border: '1px solid rgba(239,68,68,0.25)' }}>
-              ⚠️ {error}
+            <div style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8, border: '1px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <AlertTriangle size={14} /> {error}
             </div>
           )}
 
@@ -191,9 +208,9 @@ export default function LoginPage() {
 
         <div style={{ display: 'flex', gap: 10 }}>
           {[
-            { icon: '🔵', label: 'Google', color: '#2563eb', onClick: () => handleLoginGoogle() },
-            { icon: '🎓', label: 'HCMUS SSO', color: '#1d4ed8', onClick: () => toast({ type: 'info', title: 'HCMUS SSO...' }) },
-            { icon: '🔵', label: 'Microsoft', color: '#2563eb', onClick: () => toast({ type: 'info', title: 'Microsoft SSO...' }) },
+            { icon: <Chrome size={16} />, label: 'Google', color: '#ea4335', onClick: () => handleLoginGoogle() },
+            { icon: <Shield size={16} />, label: 'HCMUS SSO', color: '#1d4ed8', onClick: () => toast({ type: 'info', title: 'HCMUS SSO...' }) },
+            { icon: <Github size={16} />, label: 'Microsoft', color: '#333', onClick: () => toast({ type: 'info', title: 'Microsoft SSO...' }) },
           ].map(s => (
             <button key={s.label} onClick={s.onClick} style={{
               flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer',

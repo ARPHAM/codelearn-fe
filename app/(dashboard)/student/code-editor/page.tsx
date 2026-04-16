@@ -14,7 +14,7 @@ import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
 import { toast } from '@/components/ui/Toast'
 import { useSearchParams } from 'next/navigation'
 import ProblemUiStudent from '../components/problem-ui-student'
-import { Bot, Send } from 'lucide-react'
+import { Bot, Send, Target, ClipboardList, Code2, Play, Upload, Edit2, Star, X, Plus, Database, Terminal, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { aiApi } from '@/src/api/ai.api';
 
@@ -472,7 +472,10 @@ export default function CodeEditorPage() {
                 {/* HEADER */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                     <div>
-                        <h1 className="page-title">💻 Code Editor + {slug ? '🎯 Giải thuật' : '🤖 AI Assistant'}</h1>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <Code2 size={24} color="var(--accent-purple)" />
+                            Code Editor + {slug ? <><Target size={20} color="var(--accent-cyan)" /> Giải thuật</> : <><Bot size={20} color="var(--accent-purple-light)" /> AI Assistant</>}
+                        </h1>
                         <p className="page-subtitle">{problemData?.title ? `Bài: ${problemData.title}` : 'Chế độ Code Tự Do'} · {currentFile?.language}</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -487,12 +490,12 @@ export default function CodeEditorPage() {
                                 <option key={l.id} value={l.name.toLowerCase()}>{l.name}</option>
                             ))}
                         </select>
-                        <button className="btn btn-ghost" onClick={handleRun} disabled={status === "RUNNING" || status === "QUEUED"}>
-                            {status === "RUNNING" || status === "QUEUED" ? "..." : "▶ Chạy code"}
+                        <button className="btn btn-ghost" onClick={handleRun} disabled={status === "RUNNING" || status === "QUEUED"} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {status === "RUNNING" || status === "QUEUED" ? <Loader2 className="animate-spin" size={16} /> : <><Play size={16} fill="currentColor" /> Chạy code</>}
                         </button>
                         {slug && (
-                            <button className="btn btn-primary" onClick={handleSubmit} disabled={status === "RUNNING" || status === "QUEUED"}>
-                                {status === "RUNNING" || status === "QUEUED" ? "Đang xử lý..." : "📤 Nộp bài"}
+                            <button className="btn btn-primary" onClick={handleSubmit} disabled={status === "RUNNING" || status === "QUEUED"} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                {status === "RUNNING" || status === "QUEUED" ? "Đang xử lý..." : <><Upload size={16} /> Nộp bài</>}
                             </button>
                         )}
                     </div>
@@ -503,7 +506,9 @@ export default function CodeEditorPage() {
                     {slug && (
                         <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                             <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-                                <div style={{ fontWeight: 700, fontSize: 13 }}>📋 Đề bài</div>
+                                <div style={{ fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <ClipboardList size={14} /> Đề bài
+                                </div>
                             </div>
                             <div style={{ flex: 1, overflowY: 'auto', padding: 0, fontSize: 12 }}>
                                 {isLoadingProblem && <div style={{ padding: 16 }}>Đang tải đề bài...</div>}
@@ -554,36 +559,31 @@ export default function CodeEditorPage() {
                                             }}
                                             onClick={() => setActiveFileName(f.filename)}
                                         >
-                                            <span style={{
-                                                display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
-                                                background: isMain ? (isExtInvalid || isUnsupported ? 'var(--accent-red)' : 'var(--accent-purple)') : 'transparent',
-                                                boxShadow: isMain ? `0 0 8px ${isExtInvalid || isUnsupported ? 'var(--accent-red)' : 'var(--accent-purple)'}` : 'none'
-                                            }} />
                                             {f.filename}
                                             {activeFileName === f.filename && (
-                                                <div style={{ display: 'flex', gap: 4, marginLeft: 6 }}>
+                                                <div style={{ display: 'flex', gap: 4, marginLeft: 4 }}>
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); handleRenameFile(f.filename); }}
-                                                        style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', fontSize: 10 }}
+                                                        style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                                                         title="Đổi tên file"
                                                     >
-                                                        ✎
+                                                        <Edit2 size={10} />
                                                     </button>
                                                     {!isMain && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleSetMain(f.filename); }}
-                                                            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', fontSize: 10 }}
+                                                            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                                                             title="Đặt làm file chính"
                                                         >
-                                                            ★
+                                                            <Star size={10} />
                                                         </button>
                                                     )}
                                                     {files.length > 1 && !isMain && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleDeleteFile(f.filename); }}
-                                                            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}
+                                                            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                                                         >
-                                                            ×
+                                                            <X size={12} />
                                                         </button>
                                                     )}
                                                 </div>
@@ -595,16 +595,16 @@ export default function CodeEditorPage() {
                                     onClick={handleAddFile}
                                     style={{
                                         padding: '4px 8px', background: 'none', border: 'none',
-                                        color: 'var(--accent-purple)', cursor: 'pointer', fontSize: 18,
+                                        color: 'var(--accent-purple)', cursor: 'pointer',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center'
                                     }}
                                     title="Thêm file mới"
                                 >
-                                    +
+                                    <Plus size={18} />
                                 </button>
                             </div>
                         </div>
-                        <div className={mono.className} style={{ flex: 1, position: 'relative' }}>
+                        <div className={mono.className} style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
                             {currentFile ? (
                                 <FillInTheBlankEditor 
                                     file={{
@@ -641,10 +641,11 @@ export default function CodeEditorPage() {
                                         padding: '10px 4px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
                                         color: resultTab === 'output' ? 'var(--accent-purple)' : 'var(--text-muted)',
                                         borderBottom: resultTab === 'output' ? '2px solid var(--accent-purple)' : '2px solid transparent',
-                                        transition: 'all 0.2s'
+                                        transition: 'all 0.2s',
+                                        display: 'flex', alignItems: 'center', gap: 6
                                     }}
                                 >
-                                    💾 Kết quả
+                                    <Database size={14} /> Kết quả
                                 </div>
                                 <div 
                                     onClick={() => setResultTab('input')}
@@ -652,10 +653,11 @@ export default function CodeEditorPage() {
                                         padding: '10px 4px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
                                         color: resultTab === 'input' ? 'var(--accent-purple)' : 'var(--text-muted)',
                                         borderBottom: resultTab === 'input' ? '2px solid var(--accent-purple)' : '2px solid transparent',
-                                        transition: 'all 0.2s'
+                                        transition: 'all 0.2s',
+                                        display: 'flex', alignItems: 'center', gap: 6
                                     }}
                                 >
-                                    📥 Custom Input
+                                    <Terminal size={14} /> Custom Input
                                 </div>
                             </div>
 

@@ -229,7 +229,9 @@ export default function RoomPage({ params }: PageProps) {
                     <AlertTriangle size={40} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
                     <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>Phòng không tồn tại</h2>
                     <div style={{ display: 'flex', gap: 10 }}>
-                        <button className="btn btn-ghost" onClick={() => router.push('/dashboard')}>← Dashboard</button>
+                        <button className="btn btn-ghost" onClick={() => router.push('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <ArrowLeft size={16} /> Quay lại Dashboard
+                        </button>
                     </div>
                 </div>
             </>

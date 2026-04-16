@@ -17,6 +17,7 @@ import { Language } from '@/api/languages.api';
 import { SystemSettings } from '@/api/settings.api';
 import { toast } from '@/components/ui/Toast';
 import LanguageModal from '../languages/_components/LanguageModal';
+import { Wrench, Save, Plus, Globe, Settings, Cloud, Cpu, Zap, Timer, Edit2, Trash2, Search, Monitor, Circle, Loader2 } from 'lucide-react';
 
 type TabType = 'languages' | 'settings' | 'infrastructure';
 
@@ -68,7 +69,6 @@ export default function SystemConfigPage() {
 
   // --- Settings Logic ---
   const { data: settings, isLoading: isSettingsLoading } = useSystemSettings();
-  console.log(settings);
   const updateSettingsMutation = useUpdateSystemSettings();
   const [localSettings, setLocalSettings] = useState<SystemSettings | null>(null);
 
@@ -104,14 +104,14 @@ export default function SystemConfigPage() {
 
   const getStatusBadge = (status: Language['imageStatus'], error?: string | null) => {
     switch (status) {
-      case 'READY': return <span className="badge badge-green">🟢 Sẵn sàng</span>;
+      case 'READY': return <span className="badge badge-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Circle size={8} fill="currentColor" /> Sẵn sàng</span>;
       case 'PULLING': return (
-        <span className="badge badge-yellow">
-          <span className="spin" style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', marginRight: 6 }} />
+        <span className="badge badge-yellow" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Loader2 size={10} className="spin" />
           Đang tải...
         </span>
       );
-      case 'ERROR': return <span className="badge badge-red" title={error || ''}>🔴 Lỗi image</span>;
+      case 'ERROR': return <span className="badge badge-red" style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }} title={error || ''}><Circle size={8} fill="currentColor" /> Lỗi image</span>;
       default: return <span className="badge badge-ghost">{status}</span>;
     }
   };
@@ -121,17 +121,19 @@ export default function SystemConfigPage() {
       <div className="page-container animate-in">
         <div className="page-header">
           <div>
-            <h1 className="page-title">🔧 Cấu hình Hệ thống</h1>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Wrench size={28} color="var(--accent-purple)" /> Cấu hình Hệ thống
+            </h1>
             <p className="page-subtitle">Quản lý ngôn ngữ, tham số sandbox và hạ tầng thực tế</p>
           </div>
           {activeTab === 'settings' && (
-            <button className="btn btn-primary" onClick={saveSettings} disabled={updateSettingsMutation.isPending}>
-              {updateSettingsMutation.isPending ? '⏳ Đang lưu...' : '💾 Lưu cấu hình'}
+            <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={saveSettings} disabled={updateSettingsMutation.isPending}>
+              {updateSettingsMutation.isPending ? <><Loader2 size={16} className="spin" /> Đang lưu...</> : <><Save size={16} /> Lưu cấu hình</>}
             </button>
           )}
           {activeTab === 'languages' && (
-            <button className="btn btn-primary" onClick={() => { setEditingLang(null); setIsLangModalOpen(true); }}>
-              ➕ Thêm Ngôn ngữ
+            <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => { setEditingLang(null); setIsLangModalOpen(true); }}>
+              <Plus size={16} /> Thêm Ngôn ngữ
             </button>
           )}
         </div>
@@ -139,9 +141,9 @@ export default function SystemConfigPage() {
         {/* Tab Navigation */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--bg-secondary)', padding: 4, borderRadius: 10, width: 'fit-content' }}>
           {[
-            { id: 'languages', label: '🌐 Ngôn ngữ', icon: '🛠️' },
-            { id: 'settings', label: '⚙️ Tham số hệ thống', icon: '🔧' },
-            { id: 'infrastructure', label: '🐳 Hạ tầng Docker', icon: '☁️' },
+            { id: 'languages', label: 'Ngôn ngữ', icon: <Globe size={14} /> },
+            { id: 'settings', label: 'Tham số hệ thống', icon: <Settings size={14} /> },
+            { id: 'infrastructure', label: 'Hạ tầng Docker', icon: <Cloud size={14} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -159,7 +161,10 @@ export default function SystemConfigPage() {
                 boxShadow: activeTab === tab.id ? 'var(--shadow-sm)' : 'none',
               }}
             >
-              {tab.label}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {tab.icon}
+                {tab.label}
+              </div>
             </button>
           ))}
         </div>
@@ -192,17 +197,17 @@ export default function SystemConfigPage() {
                         </td>
                         <td><code style={{ fontSize: 12, background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: 4 }}>{lang.dockerImage}</code></td>
                         <td>
-                          <div style={{ display: 'flex', gap: 8, fontSize: 11 }}>
-                            <span title="RAM"><span style={{ opacity: 0.6 }}>🧠</span> {lang.defaultMemoryLimit}MB</span>
-                            <span title="CPU"><span style={{ opacity: 0.6 }}>⚡</span> {lang.defaultCpuLimit} vCPU</span>
-                            <span title="Timeout"><span style={{ opacity: 0.6 }}>⏱</span> {lang.defaultTimeout}ms</span>
+                          <div style={{ display: 'flex', gap: 12, fontSize: 11 }}>
+                            <span title="RAM" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Cpu size={12} style={{ opacity: 0.6 }} /> {lang.defaultMemoryLimit}MB</span>
+                            <span title="CPU" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Zap size={12} style={{ opacity: 0.6 }} /> {lang.defaultCpuLimit} vCPU</span>
+                            <span title="Timeout" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Timer size={12} style={{ opacity: 0.6 }} /> {lang.defaultTimeout}ms</span>
                           </div>
                         </td>
                         <td>{getStatusBadge(lang.imageStatus, lang.lastError)}</td>
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                            <button className="btn btn-ghost" style={{ padding: '4px 8px' }} onClick={() => { setEditingLang(lang); setIsLangModalOpen(true); }}>✏️</button>
-                            <button className="btn btn-ghost" style={{ padding: '4px 8px', color: 'var(--accent-red)' }} onClick={() => handleLangDelete(lang.id)}>🗑</button>
+                            <button className="btn btn-ghost" style={{ padding: 8 }} onClick={() => { setEditingLang(lang); setIsLangModalOpen(true); }}><Edit2 size={16} /></button>
+                            <button className="btn btn-ghost" style={{ padding: 8, color: 'var(--accent-red)' }} onClick={() => handleLangDelete(lang.id)}><Trash2 size={16} /></button>
                           </div>
                         </td>
                       </tr>
@@ -218,7 +223,9 @@ export default function SystemConfigPage() {
               {isSettingsLoading ? <p>Đang tải cấu hình...</p> : localSettings && (
                 <>
                   <div className="card">
-                    <div style={{ fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>🐳 Sandbox Environment</div>
+                    <div style={{ fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <Cloud size={18} color="var(--accent-purple)" /> Sandbox Environment
+                    </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                       <div>
                         <label className="form-label">Max Concurrent Executions</label>
@@ -258,7 +265,9 @@ export default function SystemConfigPage() {
                   </div>
 
                   <div className="card">
-                    <div style={{ fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>🔍 Plagiarism Detection</div>
+                    <div style={{ fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <Search size={18} color="var(--accent-purple)" /> Plagiarism Detection
+                    </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                       <div>
                         <label className="form-label">Detection Algorithm</label>
@@ -301,7 +310,9 @@ export default function SystemConfigPage() {
           {activeTab === 'infrastructure' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
               <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <div style={{ padding: 16, borderBottom: '1px solid var(--border)', fontWeight: 700 }}>🖥️ Sandbox Cluster Nodes</div>
+                <div style={{ padding: 16, borderBottom: '1px solid var(--border)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Monitor size={18} color="var(--accent-purple)" /> Sandbox Cluster Nodes
+                </div>
                 <table className="table">
                   <thead>
                     <tr>
@@ -338,7 +349,9 @@ export default function SystemConfigPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div className="card" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--accent-cyan)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 16, color: 'var(--accent-cyan)' }}>🐳 Docker Runtime</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 16, color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Cloud size={18} /> Docker Runtime
+                  </div>
                   {isInfraLoading ? <p>...</p> : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
