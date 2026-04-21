@@ -40,7 +40,7 @@ export const getSystemSettings = async (): Promise<SystemSettings> => {
 
 export const updateSystemSettings = async (data: Partial<SystemSettings>): Promise<SystemSettings> => {
   const response = await axios.patch('/admin/settings', data);
-  return response.data;
+  return response.data.data;
 };
 
 export const getInfrastructureInfo = async (): Promise<InfrastructureInfo> => {

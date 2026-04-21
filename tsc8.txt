@@ -1,1 +1,0 @@
-﻿app/problems/[slug]/_api/queries.ts(4,10): error TS2614: Module '"@/components/editor/RunPanel"' has no exported member 'RunResultData'. Did you mean to use 'import RunResultData from "@/components/editor/RunPanel"' instead?

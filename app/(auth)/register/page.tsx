@@ -139,8 +139,8 @@ export default function RegisterPage() {
                 <label className="form-label">Đăng ký với tư cách</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {[
-                    { val: 'student', icon: '🎓', label: 'Sinh viên', desc: 'Học viên tham gia khóa học' },
-                    { val: 'lecturer', icon: '👨‍🏫', label: 'Giảng viên', desc: 'Tạo & quản lý bài tập' },
+                    { val: 'student', label: 'Sinh viên', desc: 'Học viên tham gia khóa học' },
+                    { val: 'lecturer', label: 'Giảng viên', desc: 'Tạo & quản lý bài tập' },
                   ].map(r => (
                     <button key={r.val} onClick={() => setRole(r.val as 'student' | 'lecturer')} style={{
                       padding: '12px', borderRadius: 10, cursor: 'pointer', textAlign: 'left',

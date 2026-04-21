@@ -17,8 +17,6 @@ import {
   Eye, 
   EyeOff, 
   AlertTriangle,
-  Github,
-  Chrome,
   Shield
 } from 'lucide-react';
 
@@ -52,6 +50,24 @@ export default function LoginPage() {
   const handleLoginGoogle = useGoogleLogin({
     onSuccess: tokenResponse => console.log(tokenResponse),
   });
+
+  const GoogleIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24">
+      <path fill="#EA4335" d="M24 12.48c0-.86-.07-1.68-.2-2.48H12v4.71h6.73c-.29 1.57-1.18 2.9-2.5 3.79l4.05 3.14c2.37-2.19 3.72-5.41 3.72-9.16Z"/>
+      <path fill="#FBBC05" d="M12 24c3.31 0 6.08-1.1 8.08-2.98l-4.05-3.14c-1.11.75-2.52 1.19-4.03 1.19-3.11 0-5.74-2.11-6.68-4.94l-4.18 3.24C3.12 21.03 7.23 24 12 24Z"/>
+      <path fill="#34A853" d="M5.32 14.13c-.24-.71-.37-1.46-.37-2.13 0-.67.13-1.42.37-2.13l-4.18-3.24C.47 8.31 0 10.1 0 12s.47 3.69 1.14 5.37l4.18-3.24Z"/>
+      <path fill="#4285F4" d="M12 4.81c1.8 0 3.42.62 4.69 1.83l3.51-3.51C17.91 1.05 15.22 0 12 0 7.23 0 3.12 2.97 1.14 6.63l4.18 3.24c.94-2.83 3.57-4.94 6.18-4.94Z"/>
+    </svg>
+  );
+
+  const MicrosoftIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 23 23">
+      <path fill="#f35325" d="M1 1h10v10H1z"/>
+      <path fill="#81bc06" d="M12 1h10v10H12z"/>
+      <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+      <path fill="#ffba08" d="M12 12h10v10H12z"/>
+    </svg>
+  );
 
   const roleConfig = {
     student: { label: 'Sinh viên', icon: <GraduationCap size={24} />, gradient: 'var(--gradient-purple)', color: 'var(--accent-purple)' },
@@ -208,9 +224,9 @@ export default function LoginPage() {
 
         <div style={{ display: 'flex', gap: 10 }}>
           {[
-            { icon: <Chrome size={16} />, label: 'Google', color: '#ea4335', onClick: () => handleLoginGoogle() },
+            { icon: <GoogleIcon />, label: 'Google', color: '#ea4335', onClick: () => handleLoginGoogle() },
             { icon: <Shield size={16} />, label: 'HCMUS SSO', color: '#1d4ed8', onClick: () => toast({ type: 'info', title: 'HCMUS SSO...' }) },
-            { icon: <Github size={16} />, label: 'Microsoft', color: '#333', onClick: () => toast({ type: 'info', title: 'Microsoft SSO...' }) },
+            { icon: <MicrosoftIcon />, label: 'Microsoft', color: '#f35325', onClick: () => toast({ type: 'info', title: 'Microsoft SSO...' }) },
           ].map(s => (
             <button key={s.label} onClick={s.onClick} style={{
               flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer',

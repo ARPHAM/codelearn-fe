@@ -57,14 +57,41 @@ export default function AnalyticsPage() {
   const isLoading = loadingDash || loadingCourse;
 
   const stats = [
-    { label: 'Tổng sinh viên', value: courseData?.totalStudents || 0, icon: Users, color: '#8b5cf6', trend: '+12% tháng này' },
-    { label: 'Tỷ lệ hoàn thành', value: `${courseData?.avgCompletion || 0}%`, icon: CheckCircle, color: '#10b981', trend: 'Tăng 5% so với kỳ trước' },
-    { label: 'Sinh viên gặp khó', value: courseData?.stuckStudents || 0, icon: AlertTriangle, color: '#f59e0b', trend: 'Cần hỗ trợ sớm' },
-    { label: 'Tổng bài tập', value: dashboard?.totalProblems || 0, icon: Target, color: '#3b82f6', trend: 'Đang hoạt động' },
+    { 
+      label: 'Tổng sinh viên', 
+      value: courseData?.totalStudents || 0, 
+      icon: Users, 
+      color: '#8b5cf6', 
+      trend: `${courseData?.trends?.students >= 0 ? '+' : ''}${courseData?.trends?.students || 0}% tháng này` 
+    },
+    { 
+      label: 'Tỷ lệ hoàn thành', 
+      value: `${courseData?.avgCompletion || 0}%`, 
+      icon: CheckCircle, 
+      color: '#10b981', 
+      trend: `${(courseData?.trends?.completion || 0) >= 0 ? 'Tăng' : 'Giảm'} ${Math.abs(courseData?.trends?.completion || 0)}% so với kỳ trước` 
+    },
+    { 
+      label: 'Sinh viên gặp khó', 
+      value: courseData?.stuckStudents || 0, 
+      icon: AlertTriangle, 
+      color: '#f59e0b', 
+      trend: (courseData?.stuckStudents || 0) > 0 ? 'Cần hỗ trợ sớm' : 'Đang ổn định' 
+    },
+    { 
+      label: 'Tổng bài tập', 
+      value: dashboard?.totalProblems || 0, 
+      icon: Target, 
+      color: '#3b82f6', 
+      trend: 'Đang hoạt động' 
+    },
   ];
 
   const days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
   const weeklyData = courseData?.weeklySubmissions || [0, 0, 0, 0, 0, 0, 0];
+  const maxSubmissions = Math.max(...weeklyData, 0);
+  const maxDayIndex = weeklyData.lastIndexOf(maxSubmissions);
+  const avgSubmissions = (weeklyData.reduce((a: number, b: number) => a + b, 0) / 7).toFixed(1);
 
   return (
     <div className="page-container animate-in">
@@ -78,7 +105,7 @@ export default function AnalyticsPage() {
         <div style={{ display: 'flex', gap: 12 }}>
           <div className="card" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8, height: 44, borderRadius: 12 }}>
             <Calendar size={16} color="var(--text-muted)" />
-            <span style={{ fontSize: 13, fontWeight: 600 }}>Học kỳ 2 - 2026</span>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>Học kỳ Hiện tại</span>
           </div>
           <button className="btn btn-primary" style={{ height: 44 }}>
             Xuất báo cáo PDF
@@ -153,12 +180,12 @@ export default function AnalyticsPage() {
                 <div style={{ display: 'flex', gap: 16 }}>
                   <div>
                     <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase' }}>Ngày cao điểm</p>
-                    <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Thứ 5 (25 bài nộp)</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>{days[maxDayIndex]} ({maxSubmissions} bài nộp)</p>
                   </div>
                   <div style={{ width: 1, background: 'var(--border)', height: 32 }} />
                   <div>
                     <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase' }}>Trung bình/ngày</p>
-                    <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>18.4 bài</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>{avgSubmissions} bài</p>
                   </div>
                 </div>
                 <BarChart3 size={24} color="var(--accent-purple)" style={{ opacity: 0.4 }} />

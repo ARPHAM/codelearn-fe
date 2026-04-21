@@ -1,23 +1,64 @@
 'use client'
 
-
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLecturerProblems } from '@/hooks/useProblems';
 import { useRouter } from 'next/navigation';
-import { Folder, Plus, Search, Circle, Lock, CheckCircle2, Loader2, Eye, Edit2 } from 'lucide-react';
+import { Folder, Plus, Search, Circle, Lock, CheckCircle2, Loader2, Eye, Edit2, ChevronLeft, ChevronRight, X, User as UserIcon } from 'lucide-react';
 
 const diffColors: Record<string, string> = { EASY: 'badge-green', MEDIUM: 'badge-yellow', HARD: 'badge-red' };
-const diffLabels: Record<string, React.ReactNode> = { 
-    EASY: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Circle size={8} fill="currentColor" /> Dễ</span>, 
-    MEDIUM: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Circle size={8} fill="currentColor" /> Trung bình</span>, 
-    HARD: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Circle size={8} fill="currentColor" /> Khó</span> 
+const diffLabels: Record<string, React.ReactNode> = {
+    EASY: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Circle size={8} fill="currentColor" /> Dễ</span>,
+    MEDIUM: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Circle size={8} fill="currentColor" /> Trung bình</span>,
+    HARD: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Circle size={8} fill="currentColor" /> Khó</span>
 };
 
 export default function ProblemsListPage() {
     const router = useRouter()
-    // Mock filter/search state omitted for brevity, passing empty params
-    const { data, isLoading, isError } = useLecturerProblems({ page: 1, limit: 20 });
-    console.log(data);
+
+    // State for filters and pagination
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [difficulty, setDifficulty] = useState('');
+    const [status, setStatus] = useState('');
+    const [filter, setFilter] = useState('ALL');
+    const [page, setPage] = useState(1);
+    const limit = 10;
+
+    // Main problems query
+    const { data, isLoading, isError } = useLecturerProblems({
+        page,
+        limit,
+        search: searchQuery,
+        difficulty: difficulty || undefined,
+        status: status || undefined,
+        filter: filter || 'ALL'
+    });
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchQuery(searchTerm);
+            setPage(1);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const handleFilterChange = (setter: any) => (e: any) => {
+        setter(e.target.value);
+        setPage(1);
+    };
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        setSearchQuery('');
+        setDifficulty('');
+        setStatus('');
+        setFilter('ALL');
+        setPage(1);
+    };
+
+    const totalPages = data ? Math.ceil(data.total / limit) : 0;
 
     return (
         <>
@@ -44,18 +85,61 @@ export default function ProblemsListPage() {
                     <div className="card" style={{ padding: '14px 16px', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 20 }}>
                         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
                             <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                            <input className="input" placeholder="Tìm câu hỏi..." style={{ width: '100%', padding: '8px 12px', paddingLeft: 36, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} />
+                            <input
+                                className="input"
+                                placeholder="Tìm câu hỏi..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ width: '100%', padding: '8px 12px', paddingLeft: 36, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                            />
                         </div>
-                        <select className="select" style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                            <option>Tất cả độ khó</option><option>Dễ</option><option>Trung bình</option><option>Khó</option>
+
+                        <select
+                            className="select"
+                            value={filter}
+                            onChange={handleFilterChange(setFilter)}
+                            style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontWeight: 600 }}
+                        >
+                            <option value="ALL">Tất cả bài tập</option>
+                            <option value="ME">Bài tập của tôi</option>
                         </select>
-                        <select className="select" style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                            <option>Tất cả trạng thái</option><option>Công khai</option><option>Riêng tư</option>
+
+                        <select
+                            className="select"
+                            value={difficulty}
+                            onChange={handleFilterChange(setDifficulty)}
+                            style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                        >
+                            <option value="">Tất cả độ khó</option>
+                            <option value="EASY">Dễ</option>
+                            <option value="MEDIUM">Trung bình</option>
+                            <option value="HARD">Khó</option>
                         </select>
+
+                        <select
+                            className="select"
+                            value={status}
+                            onChange={handleFilterChange(setStatus)}
+                            style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                        >
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="ACTIVE">Sẵn sàng (Active)</option>
+                            <option value="INACTIVE">Chờ duyệt (Inactive)</option>
+                        </select>
+
+                        {(searchQuery || difficulty || status || filter !== 'ALL') && (
+                            <button
+                                onClick={clearFilters}
+                                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none' }}
+                            >
+                                <X size={14} /> Xóa lọc
+                            </button>
+                        )}
                     </div>
 
                     {isLoading && (
                         <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
+                            <Loader2 className="spin" style={{ margin: '0 auto', marginBottom: 12 }} />
                             Đang tải danh sách bài tập...
                         </div>
                     )}
@@ -68,7 +152,7 @@ export default function ProblemsListPage() {
 
                     {!isLoading && !isError && data?.items?.length === 0 && (
                         <div style={{ textAlign: 'center', padding: 60, border: '1px dashed var(--border)', borderRadius: 12, color: 'var(--text-muted)' }}>
-                            Bạn chưa có bài tập nào. Hãy tạo bài tập đầu tiên!
+                            Không tìm thấy bài tập nào khớp với bộ lọc.
                         </div>
                     )}
 
@@ -95,8 +179,11 @@ export default function ProblemsListPage() {
                                             </span>
                                         </div>
                                         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: 'var(--text-primary)' }}>{p.title}</div>
-                                        <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--text-secondary)' }}>
-                                            <span>Slug: <code>{p.slug}</code></span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, color: 'var(--text-secondary)' }}>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent-purple-light)', fontWeight: 500 }}>
+                                                <UserIcon size={14} /> {p.createdBy?.fullName || 'Hệ thống'}
+                                            </span>
+                                            <span>• Slug: <code>{p.slug}</code></span>
                                             {p.stats && <span>• Lượt nộp: {p.stats.totalSubmissions}</span>}
                                             {p.stats && <span>• Tỷ lệ đỗ: {p.stats.acceptanceRate}%</span>}
                                         </div>
@@ -115,6 +202,43 @@ export default function ProblemsListPage() {
                             </div>
                         ))}
                     </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginTop: 32, marginBottom: 32 }}>
+                            <button
+                                className="btn-icon"
+                                disabled={page === 1}
+                                onClick={() => setPage(page - 1)}
+                                style={{ opacity: page === 1 ? 0.4 : 1, cursor: page === 1 ? 'not-allowed' : 'pointer', background: 'var(--bg-secondary)', padding: 8, borderRadius: 8, border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+
+                            <div style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                                Trang <input
+                                    type="number"
+                                    min={1}
+                                    max={totalPages}
+                                    value={page}
+                                    onChange={(e) => {
+                                        const p = parseInt(e.target.value);
+                                        if (p >= 1 && p <= totalPages) setPage(p);
+                                    }}
+                                    style={{ width: 40, textAlign: 'center', background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, color: 'var(--text-primary)', margin: '0 4px' }}
+                                /> / {totalPages}
+                            </div>
+
+                            <button
+                                className="btn-icon"
+                                disabled={page === totalPages}
+                                onClick={() => setPage(page + 1)}
+                                style={{ opacity: page === totalPages ? 0.4 : 1, cursor: page === totalPages ? 'not-allowed' : 'pointer', background: 'var(--bg-secondary)', padding: 8, borderRadius: 8, border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </>

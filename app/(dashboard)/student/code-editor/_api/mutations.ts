@@ -12,6 +12,7 @@ export interface SubmitCodeRequest {
         language: string;
         content: string;
     }[];
+    answers?: Record<string, string[]>;
 }
 
 export const useSubmitCode = () => {
@@ -21,9 +22,19 @@ export const useSubmitCode = () => {
         mutationFn: async (payload: SubmitCodeRequest) => {
             const { language, entryFile, files, problemVersionId } = payload;
             
-            // Tìm extension của file chính
-            const langObj = languages.find(l => l.name.toLowerCase() === language.toLowerCase());
+            // Tìm kiếm ngôn ngữ chính xác hơn
+            const langObj = languages.find(l => 
+                l.name.toLowerCase() === language.toLowerCase() || 
+                l.ext.toLowerCase() === (language.startsWith('.') ? language.toLowerCase() : '.' + language.toLowerCase())
+            );
+
+            if (!langObj && languages.length > 0) {
+                console.error("Language not found in list:", language, languages);
+                throw new Error(`Ngôn ngữ "${language}" không được hỗ trợ. Vui lòng kiểm tra lại.`);
+            }
+
             const ext = langObj?.ext || '.py';
+            const languageId = langObj?.id;
 
             // Mapping files sang cấu trúc backend mong muốn và thêm extension
             const mappedFiles = files.map(f => {
@@ -36,8 +47,10 @@ export const useSubmitCode = () => {
             const submitPayload = {
                 problemVersionId,
                 language,
+                languageId,
                 entryFile: entryFile.includes('.') ? entryFile : entryFile + ext,
-                files: mappedFiles
+                files: mappedFiles,
+                answers: payload.answers
             };
 
             const response = await axios.post('/submission', submitPayload);
@@ -67,7 +80,16 @@ export const useRunCode = () => {
         mutationFn: async (payload: RunCodeRequest) => {
             const { language, entryFile, files, problemVersionId, input } = payload;
             
-            const langObj = languages.find(l => l.name.toLowerCase() === language.toLowerCase());
+            const langObj = languages.find(l => 
+                l.name.toLowerCase() === language.toLowerCase() || 
+                l.ext.toLowerCase() === (language.startsWith('.') ? language.toLowerCase() : '.' + language.toLowerCase())
+            );
+            
+            if (!langObj && languages.length > 0) {
+                console.error("Language not found in list:", language, languages);
+                throw new Error(`Ngôn ngữ "${language}" không được hỗ trợ. Vui lòng kiểm tra lại.`);
+            }
+
             const ext = langObj?.ext || '.py';
 
             const mappedFiles = files.map(f => {
@@ -82,7 +104,8 @@ export const useRunCode = () => {
                 languageId: langObj?.id,
                 entryFile: entryFile.includes('.') ? entryFile : entryFile + ext,
                 files: mappedFiles,
-                input
+                input,
+                answers: payload.answers
             };
 
             const response = await axios.post('/run', runPayload);

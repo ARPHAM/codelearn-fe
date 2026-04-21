@@ -19,8 +19,8 @@ import Editor from '@monaco-editor/react'
 import { CreateProblemDto, Block, TestCase, LanguageFile } from '@/api/problems.api'
 import { useLanguages } from '@/hooks/useLanguages'
 import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
-import { PlusSquare, RotateCcw, Trash2, ArrowUp, ArrowDown, Cpu, Zap, Timer, Circle, Paperclip } from 'lucide-react'
-import './editor.css'
+import { PlusSquare, RotateCcw, Trash2, ArrowUp, ArrowDown, Cpu, Zap, Timer, Circle, Paperclip, Star } from 'lucide-react'
+import styles from './editor.module.css'
 
 // ---------------- TOGGLE NODE ----------------
 const ToggleComponent = () => {
@@ -101,35 +101,35 @@ function EditorBlock({
     }
 
     return (
-        <div className={`editor-block ${isFocused ? 'focused' : ''}`}>
+        <div className={`${styles['editor-block']} ${isFocused ? styles.focused : ''}`}>
             {isFocused && (
-                <div className="toolbar-wrapper">
-                    <div className="toolbar">
-                        <div className="button-group">
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'active' : ''} title="In đậm (Bold)"><b>B</b></button>
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'active' : ''} title="In nghiêng (Italic)"><i>I</i></button>
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? 'active' : ''} title="Gạch ngang chữ"><s>S</s></button>
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleCode().run()} className={editor.isActive('code') ? 'active' : ''} title="Code Highlight (Chữ dạng Code)"><code>{"{}"}</code></button>
+                <div className={styles['toolbar-wrapper']}>
+                    <div className={styles.toolbar}>
+                        <div className={styles['button-group']}>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? styles.active : ''} title="In đậm (Bold)"><b>B</b></button>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? styles.active : ''} title="In nghiêng (Italic)"><i>I</i></button>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? styles.active : ''} title="Gạch ngang chữ"><s>S</s></button>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleCode().run()} className={editor.isActive('code') ? styles.active : ''} title="Code Highlight (Chữ dạng Code)"><code>{"{}"}</code></button>
                         </div>
-                        <div className="button-group">
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive('paragraph') ? 'active' : ''} title="Văn bản đoạn (Paragraph)">¶</button>
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? 'active' : ''} title="Tiêu đề chính lớn (H1)">H1</button>
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? 'active' : ''} title="Tiêu đề phụ (H2)">H2</button>
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive('heading', { level: 3 }) ? 'active' : ''} title="Tiêu đề nhỏ (H3)">H3</button>
+                        <div className={styles['button-group']}>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive('paragraph') ? styles.active : ''} title="Văn bản đoạn (Paragraph)">¶</button>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? styles.active : ''} title="Tiêu đề chính lớn (H1)">H1</button>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? styles.active : ''} title="Tiêu đề phụ (H2)">H2</button>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive('heading', { level: 3 }) ? styles.active : ''} title="Tiêu đề nhỏ (H3)">H3</button>
                         </div>
-                        <div className="button-group">
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? 'active' : ''} title="Danh sách gạch ngang (Bullet)">•</button>
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? 'active' : ''} title="Danh sách đánh số (Numeric)">1.</button>
+                        <div className={styles['button-group']}>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? styles.active : ''} title="Danh sách gạch ngang (Bullet)">•</button>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? styles.active : ''} title="Danh sách đánh số (Numeric)">1.</button>
                         </div>
-                        <div className="button-group">
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? 'active' : ''} title="Thêm trích dẫn (Blockquote)">“</button>
+                        <div className={styles['button-group']}>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? styles.active : ''} title="Thêm trích dẫn (Blockquote)">“</button>
                             <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => {
                                 const { from, to } = editor.state.selection
                                 const selectedText = editor.state.doc.textBetween(from, to, ' ')
                                 insertToggle(selectedText || "")
                             }} title="Khối đóng khung nội dung (Nhấn mạnh, Code, Panel)"><PlusSquare size={14} /></button>
                         </div>
-                        <div className="button-group color-picker-group">
+                        <div className={`${styles['button-group']} ${styles['color-picker-group']}`}>
                             <input type="color" onInput={(e) => setColor((e.target as HTMLInputElement).value)} value={editor.getAttributes('textStyle').color || '#ffffff'} title="Màu tùy chỉnh" />
                             {PRESET_COLORS.map(c => (
                                 <button key={c} type="button" onMouseDown={e => e.preventDefault()} onClick={() => setColor(c)} style={{ background: c, width: 14, height: 14, padding: 0, borderRadius: '50%', border: '1px solid #555', margin: '0 2px' }} title={c} />
@@ -137,7 +137,7 @@ function EditorBlock({
                             <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().unsetColor().run()} title="Bỏ tô màu (Trở về mặc định)"><RotateCcw size={14} /></button>
                         </div>
                     </div>
-                    <div className="block-actions">
+                    <div className={styles['block-actions']}>
                         <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => deleteBlock(block.id)} title="Xóa toàn bộ khối này" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Trash2 size={12} color="var(--accent-red)" />
                         </button>
@@ -160,12 +160,12 @@ function EditorBlock({
                     })
                     return lineCount >= 6
                 }}>
-                    <div className="bubble-menu">
-                        <div className="button-group">
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'active' : ''}><b>B</b></button>
-                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'active' : ''}><i>I</i></button>
+                    <div className={styles['bubble-menu']}>
+                        <div className={styles['button-group']}>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? styles.active : ''}><b>B</b></button>
+                            <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? styles.active : ''}><i>I</i></button>
                         </div>
-                        <div className="button-group color-picker-group">
+                        <div className={`${styles['button-group']} ${styles['color-picker-group']}`}>
                             <input type="color" onInput={(e) => setColor((e.target as HTMLInputElement).value)} value={editor.getAttributes('textStyle').color || '#ffffff'} />
                             {PRESET_COLORS.map(c => (
                                 <button key={c} type="button" onMouseDown={e => e.preventDefault()} onClick={() => setColor(c)} style={{ background: c, width: 14, height: 14, padding: 0, borderRadius: '50%', border: '1px solid #555', margin: '0 2px' }} title={c} />
@@ -205,6 +205,22 @@ const getMonacoLanguage = (ext: string, languages: any[] = [], languageId?: numb
 const getExt = (filename: string) => {
     const parts = filename.split('.');
     return parts.length > 1 ? '.' + parts.pop() : '';
+}
+
+const DEFAULT_TEMPLATES: Record<string, string> = {
+    'python': 'import sys\n\ndef solve():\n    # Read input from stdin\n    # line = sys.stdin.read()\n    pass\n\nif __name__ == "__main__":\n    solve()',
+    'java': 'import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Your code here\n    }\n}',
+    'cpp': '#include <iostream>\nusing namespace std;\n\nint main() {\n    // Your code here\n    return 0;\n}',
+    'sql': '-- Write your query here\nSELECT * FROM table_name;',
+}
+
+const getDefaultContent = (langName: string) => {
+    const key = langName.toLowerCase();
+    if (key.includes('python')) return DEFAULT_TEMPLATES['python'];
+    if (key.includes('java')) return DEFAULT_TEMPLATES['java'];
+    if (key.includes('c++') || key.includes('cpp')) return DEFAULT_TEMPLATES['cpp'];
+    if (key.includes('sql')) return DEFAULT_TEMPLATES['sql'];
+    return '// Write code here';
 }
 
 // ---------------- LANGUAGE FILE EDITOR ----------------
@@ -316,6 +332,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
     const [testcases, setTestcases] = useState<TestCase[]>(initialData?.testcases || [])
     const [selectedTestcaseIds, setSelectedTestcaseIds] = useState<string[]>([])
     const [languageFiles, setLanguageFiles] = useState<LanguageFile[]>(initialData?.languageFiles || [])
+    const [entryFile, setEntryFile] = useState<string>(initialData?.entryFile || initialData?.languageFiles?.[0]?.path || '')
 
     // --- Unified Editor Setup ---
     const editor = useEditor({
@@ -381,8 +398,13 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
 
     // --- File Actions ---
     const addFile = () => {
+        const firstLang = languages[0] || { id: 1, name: 'Python' };
         setLanguageFiles(prev => [...prev, {
-            id: Date.now().toString(), languageId: languages[0]?.id || 1, path: 'main.js', type: 'TEMPLATE', content: '// Write code here'
+            id: Date.now().toString(), 
+            languageId: firstLang.id, 
+            path: 'solution' + (firstLang.ext || '.py'), 
+            type: 'TEMPLATE', 
+            content: getDefaultContent(firstLang.name)
         }])
     }
     const updateFile = (id: string, field: keyof LanguageFile, value: any) => {
@@ -398,6 +420,14 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                     if (matchedLang) {
                         const baseName = f.path.split('.')[0] || 'file';
                         updated.path = baseName + matchedLang.ext;
+                        
+                        // Nếu nội dung cũ là trống hoặc là template mặc định của ngôn ngữ khác, thì cập nhật template mới
+                        const oldLang = languages.find(l => l.id === f.languageId);
+                        const isOldContentDefault = !f.content || (oldLang && f.content === getDefaultContent(oldLang.name)) || f.content === '// Write code here';
+                        
+                        if (isOldContentDefault) {
+                            updated.content = getDefaultContent(matchedLang.name);
+                        }
                     }
                 }
                 return updated;
@@ -419,17 +449,25 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
             workspaceConfig,
             // Convert single HTML back to Array of Block for Backend Compatibility
             description: [{ id: 'main-description', content: editor?.getHTML() || '' }] as Block[],
-            testcases: testcases.map(({ id, ...rest }) => rest) as TestCase[],
-            languageFiles: languageFiles.map(({ id, ...rest }) => rest) as LanguageFile[],
+            testcases: testcases.map(({ input, expectedOutput, score, isHidden, order }) => ({
+                input, expectedOutput, score, isHidden: isHidden ?? false, order
+            })) as TestCase[],
+            languageFiles: languageFiles.map((file: any) => ({
+                languageId: file.languageId || file.language?.id,
+                path: file.path,
+                type: file.type,
+                content: file.content
+            })) as LanguageFile[],
+            entryFile,
             problemFiles: []
         }
         onSubmit(payload)
     }
 
     return (
-        <div className="page-container">
-            <div className="header-section" style={{ marginBottom: 16 }}>
-                <div className="title-input-group">
+        <div className={styles['page-container']}>
+            <div className={styles['header-section']} style={{ marginBottom: 16 }}>
+                <div className={styles['title-input-group']}>
                     <label htmlFor="title">Tên bài:</label>
                     <input 
                         type="text" 
@@ -443,46 +481,52 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                     {isSubmitting ? 'Đang lưu...' : disableSave ? 'Chỉ Xem' : 'Lưu Bài Tập'}
                 </button>
             </div>
+            {entryFile && (
+                <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '6px 12px', borderRadius: 6, marginBottom: 16, border: '1px solid rgba(59, 130, 246, 0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Star size={14} fill="var(--accent-blue)" color="var(--accent-blue)" />
+                    <span style={{ fontSize: 13, color: 'var(--accent-blue-light)' }}>File chạy chính hiện tại: <strong>{entryFile}</strong></span>
+                </div>
+            )}
 
-            <div className="layout-split">
+            <div className={styles['layout-split']}>
                 {/* LEFT PANEL */}
-                <div className="left-panel">
-                    <div className="panel-header" style={{ marginBottom: 12 }}>
+                <div className={styles['left-panel']}>
+                    <div className={styles['panel-header']} style={{ marginBottom: 12 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <div style={{ width: 4, height: 18, background: 'var(--accent-purple)', borderRadius: 2 }} />
                             <h3 style={{ fontSize: 15, fontWeight: 700 }}>Mô tả bài tập</h3>
                         </div>
                     </div>
 
-                    <div className="card description-card" style={{ padding: 0, overflow: 'visible' }}>
+                    <div className={`${styles.card} description-card`} style={{ padding: 0, overflow: 'visible' }}>
                         {editor && (
                             <div className="unified-editor">
-                                <div className="toolbar-wrapper" style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', padding: '4px 8px', borderRadius: '12px 12px 0 0' }}>
-                                    <div className="toolbar" style={{ margin: 0 }}>
-                                        <div className="button-group">
-                                            <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'active' : ''}><b>B</b></button>
-                                            <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'active' : ''}><i>I</i></button>
-                                            <button type="button" onClick={() => editor.chain().focus().toggleCode().run()} className={editor.isActive('code') ? 'active' : ''}><code>{"{}"}</code></button>
+                                <div className={styles['toolbar-wrapper']} style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', padding: '4px 8px', borderRadius: '12px 12px 0 0' }}>
+                                    <div className={styles.toolbar} style={{ margin: 0 }}>
+                                        <div className={styles['button-group']}>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? styles.active : ''}><b>B</b></button>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? styles.active : ''}><i>I</i></button>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleCode().run()} className={editor.isActive('code') ? styles.active : ''}><code>{"{}"}</code></button>
                                         </div>
-                                        <div className="button-group">
-                                            <button type="button" onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive('paragraph') ? 'active' : ''}>¶</button>
-                                            <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? 'active' : ''}>H1</button>
-                                            <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? 'active' : ''}>H2</button>
-                                            <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive('heading', { level: 3 }) ? 'active' : ''}>H3</button>
+                                        <div className={styles['button-group']}>
+                                            <button type="button" onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive('paragraph') ? styles.active : ''}>¶</button>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? styles.active : ''}>H1</button>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? styles.active : ''}>H2</button>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive('heading', { level: 3 }) ? styles.active : ''}>H3</button>
                                         </div>
-                                        <div className="button-group">
-                                            <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? 'active' : ''}>•</button>
-                                            <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? 'active' : ''}>1.</button>
+                                        <div className={styles['button-group']}>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? styles.active : ''}>•</button>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? styles.active : ''}>1.</button>
                                         </div>
-                                        <div className="button-group">
-                                            <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? 'active' : ''}>“</button>
+                                        <div className={styles['button-group']}>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? styles.active : ''}>“</button>
                                             <button type="button" onClick={() => {
                                                 const { from, to } = editor.state.selection
                                                 const selectedText = editor.state.doc.textBetween(from, to, ' ')
                                                 insertToggle(selectedText || "")
                                             }} title="Khối đóng khung"><PlusSquare size={14} /></button>
                                         </div>
-                                        <div className="button-group color-picker-group">
+                                        <div className={`${styles['button-group']} ${styles['color-picker-group']}`}>
                                             <input type="color" onInput={(e) => setColor((e.target as HTMLInputElement).value)} />
                                             {PRESET_COLORS.map(c => (
                                                 <button key={c} type="button" onClick={() => setColor(c)} style={{ background: c, width: 12, height: 12, borderRadius: '50%', padding: 0, minWidth: 12 }} />
@@ -493,9 +537,9 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                                 <div style={{ padding: '4px 8px' }}>
                                     <EditorContent editor={editor} className="editor-content" />
                                     <BubbleMenu editor={editor} shouldShow={({ from, to }) => from !== to}>
-                                        <div className="bubble-menu">
-                                            <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'active' : ''}><b>B</b></button>
-                                            <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'active' : ''}><i>I</i></button>
+                                        <div className={styles['bubble-menu']}>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? styles.active : ''}><b>B</b></button>
+                                            <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? styles.active : ''}><i>I</i></button>
                                             <button type="button" onClick={() => editor.chain().focus().setColor('#ef4444').run()}><Circle size={14} fill="#ef4444" /></button>
                                         </div>
                                     </BubbleMenu>
@@ -504,7 +548,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                         )}
                     </div>
 
-                    <div className="panel-header" style={{ marginTop: 20 }}>
+                    <div className={styles['panel-header']} style={{ marginTop: 20 }}>
                         <div style={{ display: 'flex', gap: 8 }}>
                             {selectedTestcaseIds.length > 0 && (
                                 <div className="bulk-actions" style={{ display: 'flex', gap: 6, background: 'rgba(239, 68, 68, 0.1)', padding: '2px 8px', borderRadius: 6, border: '1px solid rgba(239, 68, 68, 0.2)', alignItems: 'center' }}>
@@ -513,7 +557,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                                     <button type="button" onClick={deleteSelectedTestcases} style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>Xóa</button>
                                 </div>
                             )}
-                            <button className="add-block-btn" onClick={addTestcase} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', fontSize: 11, padding: '4px 12px' }}>+ Thêm Case</button>
+                            <button className={styles['add-block-btn']} onClick={addTestcase} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', fontSize: 11, padding: '4px 12px' }}>+ Thêm Case</button>
                         </div>
                     </div>
 
@@ -527,30 +571,30 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                     )}
                     <div className="testcases-list">
                         {testcases.map((tc) => (
-                            <div key={tc.id} className={`testcase-item ${tc.isHidden ? 'is-hidden' : ''}`} style={{ position: 'relative' }}>
+                            <div key={tc.id} className={`${styles['testcase-item']} ${tc.isHidden ? styles['is-hidden'] : ''}`} style={{ position: 'relative' }}>
                                 <div style={{ position: 'absolute', left: -22, top: 12 }}>
                                     <input type="checkbox" checked={selectedTestcaseIds.includes(tc.id as string)} onChange={() => toggleSelectTestcase(tc.id as string)} />
                                 </div>
-                                <div className="testcase-row">
+                                <div className={styles['testcase-row']}>
                                     <label style={{ width: 60, fontSize: 11, color: 'var(--text-muted)' }}>INPUT</label>
                                     <textarea value={tc.input} onChange={e => updateTestcase(tc.id as string, 'input', e.target.value)} placeholder="Nhập input..." style={{ flex: 1, minHeight: 40, borderRadius: 6, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 12, padding: 8 }} />
                                 </div>
-                                <div className="testcase-row">
+                                <div className={styles['testcase-row']}>
                                     <label style={{ width: 60, fontSize: 11, color: 'var(--text-muted)' }}>OUTPUT</label>
                                     <textarea value={tc.expectedOutput} onChange={e => updateTestcase(tc.id as string, 'expectedOutput', e.target.value)} placeholder="Kỳ vọng..." style={{ flex: 1, minHeight: 40, borderRadius: 6, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 12, padding: 8 }} />
                                 </div>
-                                <div className="testcase-actions" style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div className={styles['testcase-actions']} style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                             <input type="number" value={tc.score} onChange={e => updateTestcase(tc.id as string, 'score', parseInt(e.target.value) || 0)} style={{ width: 40, background: 'transparent', border: 'none', borderBottom: '1px solid var(--border)', color: 'var(--accent-purple-light)', fontWeight: 700, textAlign: 'center' }} />
                                             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>đ</span>
                                         </div>
-                                        <label className="checkbox-label">
+                                        <label className={styles['checkbox-label']}>
                                             <input type="checkbox" checked={tc.isHidden} onChange={e => updateTestcase(tc.id as string, 'isHidden', e.target.checked)} />
                                             Ẩn
                                         </label>
                                     </div>
-                                    <button className="btn-icon" onClick={() => removeTestcase(tc.id as string)}><Trash2 size={16} /></button>
+                                    <button className={styles['btn-icon']} onClick={() => removeTestcase(tc.id as string)}><Trash2 size={16} /></button>
                                 </div>
                             </div>
                         ))}
@@ -558,20 +602,20 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                 </div>
 
                 {/* RIGHT PANEL */}
-                <div className="right-panel">
-                    <div className="tabs-header">
-                        <button className={activeTab === 'CODE' ? 'active' : ''} onClick={() => setActiveTab('CODE')}>Templates & Solutions</button>
-                        <button className={activeTab === 'SETTINGS' ? 'active' : ''} onClick={() => setActiveTab('SETTINGS')}>Cấu hình</button>
+                <div className={styles['right-panel']}>
+                    <div className={styles['tabs-header']}>
+                        <button className={activeTab === 'CODE' ? styles.active : ''} onClick={() => setActiveTab('CODE')}>Templates & Solutions</button>
+                        <button className={activeTab === 'SETTINGS' ? styles.active : ''} onClick={() => setActiveTab('SETTINGS')}>Cấu hình</button>
                     </div>
 
-                    <div className="tab-content" style={{ padding: 16 }}>
+                    <div className={styles['tab-content']} style={{ padding: 16 }}>
                         {activeTab === 'SETTINGS' && (
-                            <div className="form-grid">
-                                <div className="form-group">
+                            <div className={styles['form-grid']}>
+                                <div className={styles['form-group']}>
                                     <label>Slug</label>
                                     <input value={problemState.slug} onChange={e => setProblemState(s => ({ ...s, slug: e.target.value }))} placeholder="vi-du-bai-tap" />
                                 </div>
-                                <div className="form-group">
+                                <div className={styles['form-group']}>
                                     <label>Độ khó</label>
                                     <select value={problemState.difficulty} onChange={e => setProblemState(s => ({ ...s, difficulty: e.target.value as any}))}>
                                         <option value="EASY">Dễ</option>
@@ -579,14 +623,14 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                                         <option value="HARD">Khó</option>
                                     </select>
                                 </div>
-                                <div className="form-group full-width">
+                                <div className={`${styles['form-group']} ${styles['full-width']}`}>
                                     <label>Loại hình</label>
                                     <select value={problemState.type} onChange={e => setProblemState(s => ({ ...s, type: e.target.value as any}))}>
                                         <option value="CODE">Lập trình (CODE)</option>
                                         <option value="SQL">Truy vấn (SQL)</option>
                                     </select>
                                 </div>
-                                <div className="form-group full-width">
+                                <div className={`${styles['form-group']} ${styles['full-width']}`}>
                                     <label>Tùy chỉnh IDE Học viên</label>
                                     <div style={{ background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 8, border: '1px solid var(--border)' }}>
                                         <label className="checkbox-row" style={{ display: 'flex', gap: 8, fontSize: 13, marginBottom: 8 }}>
@@ -606,12 +650,12 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <h4 style={{ margin: 0, fontSize: 14, color: 'var(--text-secondary)' }}>Danh sách tập tin</h4>
-                                    <button className="add-block-btn" onClick={addFile} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', fontSize: 11 }}>+ Thêm file</button>
+                                    <button className={styles['add-block-btn']} onClick={addFile} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', fontSize: 11 }}>+ Thêm file</button>
                                 </div>
                                 
                                 {languageFiles.map(file => (
-                                    <div key={file.id} className="code-file-item">
-                                        <div className="code-file-header" style={{ padding: '8px 12px' }}>
+                                    <div key={file.id} className={styles['code-file-item']}>
+                                        <div className={styles['code-file-header']} style={{ padding: '8px 12px' }}>
                                             <select value={file.languageId} onChange={e => updateFile(file.id as string, 'languageId', parseInt(e.target.value))} style={{ fontSize: 12 }}>
                                                 <option value={0}>Đính kèm</option>
                                                 {languages.map(l => (
@@ -623,7 +667,15 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                                                 <option value="SOLUTION">SOLUTION</option>
                                             </select>
                                             <input value={file.path} onChange={e => updateFile(file.id as string, 'path', e.target.value)} placeholder="Tên file" style={{ flex: 1, fontSize: 12 }} />
-                                            <button className="btn-icon" onClick={() => removeFile(file.id as string)}><Trash2 size={16} /></button>
+                                            <button 
+                                                className={styles['btn-icon']} 
+                                                onClick={() => setEntryFile(file.path)}
+                                                style={{ color: entryFile === file.path ? 'var(--accent-yellow)' : 'var(--text-muted)' }}
+                                                title="Đặt làm file chạy chính"
+                                            >
+                                                <Star size={16} fill={entryFile === file.path ? 'var(--accent-yellow)' : 'none'} />
+                                            </button>
+                                            <button className={styles['btn-icon']} onClick={() => removeFile(file.id as string)}><Trash2 size={16} /></button>
                                         </div>
                                         <LanguageFileEditor file={file} updateFile={updateFile} languages={languages} />
                                     </div>

@@ -23,7 +23,7 @@ export const getLanguages = async (): Promise<Language[]> => {
 
 export const getLanguage = async (id: number): Promise<Language> => {
   const response = await axios.get(`/languages/${id}`);
-  return response.data;
+  return response.data.data;
 };
 
 export const getAdminLanguages = async (): Promise<Language[]> => {
@@ -33,12 +33,12 @@ export const getAdminLanguages = async (): Promise<Language[]> => {
 
 export const createLanguage = async (data: Partial<Language>): Promise<Language> => {
   const response = await axios.post('/admin/languages', data);
-  return response.data;
+  return response.data.data;
 };
 
 export const updateLanguage = async (data: { id: number; data: Partial<Language> }): Promise<Language> => {
   const response = await axios.patch(`/admin/languages/${data.id}`, data.data);
-  return response.data;
+  return response.data.data;
 };
 
 export const deleteLanguage = async (id: number): Promise<void> => {

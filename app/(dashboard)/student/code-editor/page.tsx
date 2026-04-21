@@ -14,7 +14,7 @@ import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
 import { toast } from '@/components/ui/Toast'
 import { useSearchParams } from 'next/navigation'
 import ProblemUiStudent from '../components/problem-ui-student'
-import { Bot, Send, Target, ClipboardList, Code2, Play, Upload, Edit2, Star, X, Plus, Database, Terminal, Loader2 } from 'lucide-react'
+import { Bot, Send, Target, ClipboardList, Code2, Play, Upload, Edit2, Star, X, Plus, Database, Terminal, Loader2, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { aiApi } from '@/src/api/ai.api';
 
@@ -62,10 +62,20 @@ const getUniqueFilename = (name: string, files: any[]) => {
     return newName;
 }
 
+const extractAnswers = (content: string): string[] => {
+    const regex = /\{\{([\s\S]*?)\}\}/g;
+    const answers: string[] = [];
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+        answers.push(match[1]);
+    }
+    return answers;
+};
+
 const initialAiMessages = [
     {
         role: 'assistant',
-        msg: '👋 Xin chào! Tôi là AI Assistant. Tôi đã sẵn sàng hỗ trợ bạn giải quyết bài tập này. Bạn cần giúp đỡ gì không?',
+        msg: 'Xin chào! Tôi là AI Assistant. Tôi đã sẵn sàng hỗ trợ bạn giải quyết bài tập này. Bạn cần giúp đỡ gì không?',
     }
 ]
 
@@ -85,48 +95,73 @@ export default function CodeEditorPage() {
 
     const { data: languages = [] } = useLanguages()
 
+    const [isInitialized, setIsInitialized] = useState(false)
     // ---------------- Tự động cập nhật file khởi tạo khi load đề ----------------
     useEffect(() => {
-        if (problemData && problemData.languageFiles && problemData.languageFiles.length > 0) {
-            const templateFile = problemData.languageFiles.find(f => f.type === 'TEMPLATE') || problemData.languageFiles[0]
-            if (templateFile) {
-                const langObj = languages.find(l => l.id === templateFile.languageId)
-                if (langObj) {
-                    setLanguage(langObj.name.toLowerCase())
-                    const mappedFiles = problemData.languageFiles.filter(f => f.type === 'TEMPLATE').map(f => {
-                        const l = languages.find(lx => lx.id === f.languageId)
+        if (!isInitialized && !isLoadingProblem && problemData && languages.length > 0) {
+            console.log("Initializing student editor...", { problemData, languagesCount: languages.length });
+            
+            // Trường hợp có file mẫu trong DB
+            if (problemData.languageFiles && problemData.languageFiles.length > 0) {
+                const templateFiles = problemData.languageFiles.filter(f => f.type === 'TEMPLATE')
+                if (templateFiles.length > 0) {
+                    const mappedFiles = templateFiles.map(f => {
+                        // Thử tìm theo languageId hoặc lấy trực tiếp từ relation f.language
+                        const l = languages.find(lx => lx.id === f.languageId) || f.language;
+                        const langName = l?.name?.toLowerCase() || 'text';
+                        
+                        console.log(`Mapping file ${f.path}:`, { languageId: f.languageId, found: !!l, name: langName });
+                        
                         return {
                             filename: f.path,
-                            language: l ? l.name.toLowerCase() : 'text',
-                            content: f.content
+                            language: langName,
+                            content: f.content,
+                            type: f.type
                         }
                     })
-                    if (mappedFiles.length > 0) {
-                        setFiles(mappedFiles)
-                        setActiveFileName(mappedFiles[0].filename)
-                        setMainFileName(mappedFiles[0].filename)
+                    
+                    setFiles(mappedFiles)
+                    setActiveFileName(mappedFiles[0].filename)
+                    setMainFileName(problemData?.version?.entryFile || mappedFiles[0].filename)
+                    
+                    // Cập nhật ngôn ngữ dựa trên file chính
+                    if (mappedFiles[0].language !== 'text') {
+                        setLanguage(mappedFiles[0].language)
+                        setIsInitialized(true) // Chỉ đánh dấu hoàn thành nếu đã gán đúng ngôn ngữ
                     }
+                } else {
+                    setIsInitialized(true)
                 }
+            } else {
+                // Trường hợp DB rỗng: Khởi tạo 1 file main.py trắng
+                console.log("No language files found, using default python template");
+                const defaultFiles = [{
+                    filename: "main.py",
+                    language: "python",
+                    content: "",
+                    type: "NORMAL"
+                }]
+                setFiles(defaultFiles)
+                setActiveFileName("main.py")
+                setMainFileName("main.py")
+                setLanguage("python")
+                setIsInitialized(true)
             }
         }
-    }, [problemData, languages])
+    }, [problemData, languages, isInitialized, isLoadingProblem])
 
     const [language, setLanguage] = useState('python')
-    const [files, setFiles] = useState([
+    const [files, setFiles] = useState<{filename: string, language: string, content: string, type?: string}[]>([
         {
             filename: "main.py",
             language: "python",
-            content: `def find_peak(arr):\n    if not arr:\n        return -1\n    peak = 0\n    for i in range(len(arr)):\n        if arr[i] > arr[peak]:\n            peak = i\n        if i < len(arr) - 1 and arr[i] < arr[i+1]:\n            continue\n    return peak\n\n# Test\nprint(find_peak([1,3,2,5,4]))`
-        },
-        {
-            filename: "helper.py",
-            language: "python",
-            content: `def helper():\n    return 'Hello'`
+            content: "",
+            type: "NORMAL"
         }
     ])
 
     const [activeFileName, setActiveFileName] = useState<string>("main.py")
-    const [mainFileName, setMainFileName] = useState<string>("main.py")
+    const [mainFileName, setMainFileName] = useState<string>("")
 
     // --- File Handlers ---
     const handleAddFile = () => {
@@ -268,7 +303,7 @@ export default function CodeEditorPage() {
                 }
             })
 
-            const data = resp.data
+            const data = resp
             if (data.text) {
                 setChatMessages(prev => [...prev, { role: 'assistant', msg: data.text }])
             } else {
@@ -396,12 +431,27 @@ export default function CodeEditorPage() {
         setRunResult(null);
         setSubmitResult(null);
 
+        // FITB Logic: Extract answers for template files
+        const answers: Record<string, string[]> = {};
+        const otherFiles: any[] = [];
+        
+        files.forEach(f => {
+            const dbFile = problemData?.languageFiles?.find((lf: any) => lf.path === f.filename);
+            if (dbFile && dbFile.type === 'TEMPLATE') {
+                answers[f.filename] = extractAnswers(f.content);
+            } else {
+                otherFiles.push({ filePath: f.filename, content: f.content });
+            }
+        });
+
         try {
             const resp = await runMutation.mutateAsync({
                 language: langName,
                 entryFile: mainFileName,
-                files,
-                input: customInput
+                files: otherFiles,
+                answers,
+                input: customInput,
+                problemVersionId: problemData?.version?.id
             })
 
             setStatus("QUEUED")
@@ -421,11 +471,26 @@ export default function CodeEditorPage() {
         const mainFileObj = files.find(f => f.filename === mainFileName) || files[0];
         const langName = mainFileObj.language || 'python';
 
+        // FITB Logic: Extract answers for template files
+        const answers: Record<string, string[]> = {};
+        const otherFiles: any[] = [];
+        
+        files.forEach(f => {
+            const dbFile = problemData?.languageFiles?.find((lf: any) => lf.path === f.filename);
+            if (dbFile && dbFile.type === 'TEMPLATE') {
+                answers[f.filename] = extractAnswers(f.content);
+            } else {
+                otherFiles.push({ filePath: f.filename, content: f.content });
+            }
+        });
+
         try {
             const resp = await submitMutation.mutateAsync({
                 language: langName,
                 entryFile: mainFileName,
-                files
+                files: otherFiles,
+                answers,
+                problemVersionId: problemData?.version?.id as string
             })
 
             setStatus("QUEUED")
@@ -468,7 +533,7 @@ export default function CodeEditorPage() {
 
     return (
         <>
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 124px)', gap: 14, minHeight: 0 }}>
                 {/* HEADER */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                     <div>
@@ -501,10 +566,10 @@ export default function CodeEditorPage() {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: slug ? '280px 1fr 340px' : '1fr 340px', gap: 14, flex: 1 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: slug ? '280px 1fr 340px' : '1fr 340px', gap: 14, flex: 1, minHeight: 0 }}>
                     {/* LEFT PROBLEM */}
                     {slug && (
-                        <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%', minHeight: 0 }}>
                             <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between' }}>
                                 <div style={{ fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <ClipboardList size={14} /> Đề bài
@@ -531,7 +596,7 @@ export default function CodeEditorPage() {
                     )}
 
                     {/* CENTER EDITOR */}
-                    <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%', minHeight: 0 }}>
                         <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                                 {files.map(f => {
@@ -540,6 +605,11 @@ export default function CodeEditorPage() {
                                     const fileExt = getExt(f.filename);
                                     const isExtInvalid = isMain && currentLangObj && fileExt !== currentLangObj.ext && !['.txt', ''].includes(fileExt);
                                     const isUnsupported = isMain && !languages.find(l => l.ext === fileExt);
+
+                                    // Xác định xem file này có phải là TEMPLATE trong DB không
+                                    const dbFile = problemData?.languageFiles?.find((lf: any) => lf.path === f.filename);
+                                    const isTemplateFile = dbFile && dbFile.type === 'TEMPLATE';
+                                    const workspaceConfig = problemData?.version?.workspaceConfig || { canCreateFile: false, canChangeMainFile: false };
 
                                     return (
                                         <div
@@ -559,17 +629,23 @@ export default function CodeEditorPage() {
                                             }}
                                             onClick={() => setActiveFileName(f.filename)}
                                         >
+                                            {isMain && <Star size={12} fill="var(--accent-yellow)" color="var(--accent-yellow)" style={{ marginRight: 4 }} />}
                                             {f.filename}
                                             {activeFileName === f.filename && (
                                                 <div style={{ display: 'flex', gap: 4, marginLeft: 4 }}>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleRenameFile(f.filename); }}
-                                                        style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                                                        title="Đổi tên file"
-                                                    >
-                                                        <Edit2 size={10} />
-                                                    </button>
-                                                    {!isMain && (
+                                                    {/* Chỉ cho phép đổi tên nếu KHÔNG phải TEMPLATE */}
+                                                    {!isTemplateFile && (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleRenameFile(f.filename); }}
+                                                            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                                            title="Đổi tên file"
+                                                        >
+                                                            <Edit2 size={10} />
+                                                        </button>
+                                                    )}
+                                                    
+                                                    {/* Đặt làm file chính nếu cấu hình cho phép và không phải là main hiện tại */}
+                                                    {!isMain && workspaceConfig.canChangeMainFile && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleSetMain(f.filename); }}
                                                             style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -578,7 +654,9 @@ export default function CodeEditorPage() {
                                                             <Star size={10} />
                                                         </button>
                                                     )}
-                                                    {files.length > 1 && !isMain && (
+
+                                                    {/* Chỉ cho xóa nếu KHÔNG phải TEMPLATE và KHÔNG phải file chính */}
+                                                    {files.length > 1 && !isMain && !isTemplateFile && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleDeleteFile(f.filename); }}
                                                             style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -591,42 +669,50 @@ export default function CodeEditorPage() {
                                         </div>
                                     );
                                 })}
-                                <button
-                                    onClick={handleAddFile}
-                                    style={{
-                                        padding: '4px 8px', background: 'none', border: 'none',
-                                        color: 'var(--accent-purple)', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                    }}
-                                    title="Thêm file mới"
-                                >
-                                    <Plus size={18} />
-                                </button>
+                                {(problemData?.version?.workspaceConfig?.canCreateFile ?? false) && (
+                                    <button
+                                        onClick={handleAddFile}
+                                        style={{
+                                            padding: '4px 8px', background: 'none', border: 'none',
+                                            color: 'var(--accent-purple)', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}
+                                        title="Thêm file mới"
+                                    >
+                                        <Plus size={18} />
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        <div className={mono.className} style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                            {currentFile ? (
-                                <FillInTheBlankEditor 
-                                    file={{
-                                        id: currentFile.filename,
-                                        path: currentFile.filename,
-                                        content: currentFile.content,
-                                        type: 'TEMPLATE', 
-                                    }}
-                                    updateFile={(id: string, field: string, value: any) => {
-                                        setFiles(prev => prev.map(f => f.filename === id ? { ...f, [field === 'path' ? 'filename' : field]: value } : f));
-                                    }}
-                                    languages={languages}
-                                    isStudent={true}
-                                    height="100%"
-                                    onMount={(editor: any, monaco: any) => {
-                                        editorRef.current = editor;
-                                        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-                                            if (submitRef.current) submitRef.current()
-                                        })
-                                    }}
-                                />
-                            ) : (
+                        <div className={mono.className} style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                            {currentFile ? (() => {
+                                const dbFile = problemData?.languageFiles?.find((lf: any) => lf.path === currentFile.filename);
+                                const isTemplateFile = dbFile && dbFile.type === 'TEMPLATE';
+                                
+                                return (
+                                    <FillInTheBlankEditor 
+                                        key={activeFileName}
+                                        file={{
+                                            id: currentFile.filename,
+                                            path: currentFile.filename,
+                                            content: currentFile.content,
+                                            type: isTemplateFile ? 'TEMPLATE' : (currentFile.type || 'NORMAL'), 
+                                        }}
+                                        updateFile={(id: string, field: string, value: any) => {
+                                            setFiles(prev => prev.map(f => f.filename === id ? { ...f, [field === 'path' ? 'filename' : field]: value } : f));
+                                        }}
+                                        languages={languages}
+                                        isStudent={true}
+                                        height="100%"
+                                        onMount={(editor: any, monaco: any) => {
+                                            editorRef.current = editor;
+                                            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                                                if (submitRef.current) submitRef.current()
+                                            })
+                                        }}
+                                    />
+                                );
+                            })() : (
                                 <div style={{ padding: 20, color: 'var(--text-muted)' }}>Vui lòng chọn hoặc tạo file để bắt đầu...</div>
                             )}
                         </div>
@@ -733,6 +819,8 @@ export default function CodeEditorPage() {
                         display: 'flex', 
                         flexDirection: 'column', 
                         overflow: 'hidden',
+                        height: '100%',
+                        minHeight: 0,
                         background: 'rgba(30, 35, 48, 0.4)',
                         backdropFilter: 'blur(10px)',
                         border: '1px solid rgba(255, 255, 255, 0.05)'
@@ -753,7 +841,7 @@ export default function CodeEditorPage() {
                             }}>
                                 <Bot size={18} color="white" />
                             </div>
-                            <span style={{ fontWeight: 700, fontSize: 13, letterSpacing: '0.01em' }}>🤖 AI Code Assistant</span>
+                            <span style={{ fontWeight: 700, fontSize: 13, letterSpacing: '0.01em' }}>AI Code Assistant</span>
                         </div>
                         
                         <div style={{ flex: 1, padding: '10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -772,10 +860,29 @@ export default function CodeEditorPage() {
                                         color: 'var(--text-primary)',
                                         fontSize: 13,
                                         lineHeight: 1.6,
-                                        boxShadow: m.role === 'user' ? '0 4px 12px rgba(139, 92, 246, 0.2)' : 'none'
+                                        boxShadow: m.role === 'user' ? '0 4px 12px rgba(139, 92, 246, 0.2)' : 'none',
+                                        overflowWrap: 'break-word',
+                                        wordBreak: 'break-word'
                                     }}>
                                         {m.role === 'assistant' ? (
-                                            <div className="markdown-body" style={{ fontSize: 13 }}>
+                                            <div className="markdown-body" style={{ 
+                                                fontSize: 13,
+                                                background: 'transparent',
+                                            }}>
+                                                <style>{`
+                                                    .markdown-body pre {
+                                                        white-space: pre-wrap !important;
+                                                        word-break: break-all !important;
+                                                        background: rgba(0,0,0,0.3) !important;
+                                                        padding: 10px !important;
+                                                        border-radius: 8px !important;
+                                                        margin: 8px 0 !important;
+                                                    }
+                                                    .markdown-body code {
+                                                        white-space: pre-wrap !important;
+                                                        word-break: break-all !important;
+                                                    }
+                                                `}</style>
                                                 <ReactMarkdown>{m.msg}</ReactMarkdown>
                                             </div>
                                         ) : (

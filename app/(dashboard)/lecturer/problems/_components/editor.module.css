@@ -1,4 +1,4 @@
-/* editor.css */
+/* editor.module.css */
 
 .page-container {
     padding: 16px;
@@ -437,54 +437,54 @@
   background: #333;
 }
 
-/* Editor Content Styling */
-.editor-content {
+/* Editor Content Styling - Global for Tiptap integration */
+:global(.editor-content) {
   outline: none;
 }
 
-.editor-content h1 {
+:global(.editor-content h1) {
   font-size: 1.8rem;
   font-weight: 800;
   margin-bottom: 0.5em;
   color: var(--text-primary);
 }
 
-.editor-content h2 {
+:global(.editor-content h2) {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.4em;
   color: var(--text-primary);
 }
 
-.editor-content h3 {
+:global(.editor-content h3) {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.3em;
   color: var(--text-primary);
 }
 
-.editor-content p {
+:global(.editor-content p) {
   line-height: 1.6;
 }
 
-.editor-content ul {
+:global(.editor-content ul) {
   list-style-type: disc !important;
   padding-left: 1.5rem;
   margin-bottom: 0.5em;
 }
 
-.editor-content ol {
+:global(.editor-content ol) {
   list-style-type: decimal !important;
   padding-left: 1.5rem;
   margin-bottom: 0.5em;
 }
 
-.editor-content li p {
+:global(.editor-content li p) {
   margin: 0;
   display: inline-block;
 }
 
-.editor-content blockquote {
+:global(.editor-content blockquote) {
   border-left: 4px solid var(--accent-purple-light);
   padding-left: 1rem;
   margin: 1em 0;
@@ -492,7 +492,7 @@
   font-style: italic;
 }
 
-.editor-content code {
+:global(.editor-content code) {
   background: var(--bg-secondary);
   padding: 2px 4px;
   border-radius: 4px;
@@ -500,7 +500,7 @@
   font-size: 0.9em;
 }
 
-.editor-content pre {
+:global(.editor-content pre) {
   background: #1e1e1e;
   color: #d4d4d4;
   padding: 1rem;
@@ -509,11 +509,11 @@
   overflow-x: auto;
 }
 
-.editor-content pre code {
+:global(.editor-content pre code) {
   background: none;
   padding: 0;
 }
 
-.tiptap {
+:global(.tiptap) {
   padding: 8px;
 }

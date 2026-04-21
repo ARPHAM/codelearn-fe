@@ -1,3 +1,5 @@
+/* CodeEditor.module.css */
+
 @keyframes cursor-blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
@@ -8,17 +10,18 @@
     to { transform: rotate(360deg); }
 }
 
-.remote-cursor-v6-combined {
+/* Các class này được inject động vào Monaco, cần giữ global */
+:global(.remote-cursor-v6-combined) {
     position: absolute;
     width: 0;
     height: 100%;
 }
 
-.remote-selection {
+:global(.remote-selection) {
     background-color: rgba(59, 130, 246, 0.25) !important;
 }
 
-.remote-cursor-v6-combined::before {
+:global(.remote-cursor-v6-combined::before) {
     content: '';
     position: absolute;
     top: 0;
@@ -29,7 +32,7 @@
     animation-delay: 500ms;
 }
 
-.remote-cursor-v6-combined::after {
+:global(.remote-cursor-v6-combined::after) {
     content: var(--remote-user-name, 'User');
     position: absolute;
     top: -16px;
@@ -44,7 +47,7 @@
     z-index: 10;
 }
 
-/* New CSS Classes from Tailwind */
+/* Các class giao diện bao quanh */
 
 .editor-container {
     display: flex;

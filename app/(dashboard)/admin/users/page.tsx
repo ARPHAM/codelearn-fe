@@ -1,39 +1,14 @@
 "use client";
-
-
 import { useState } from "react";
-import { useListLecturer, useListStudent } from "./_api/queries";
+
+import { useListLecturer, useListStudent, Student, Lecturer } from "./_api/queries";
 import { Users, Plus, Search, Star, Edit2, Trash2, GraduationCap, TrendingUp, Lock, UserRound, User, Circle } from "lucide-react";
 
-// Types
-type Role = "LECTURER" | "STUDENT";
 type Status = "active" | "inactive" | "pending";
-
-interface BaseUser {
-  id: string;
-  fullName: string;
-  email: string;
-  role: Role;
-  status: Status;
-  rating: number;
-  xp: number;
-  createdAt: string;
-}
-
-interface Student extends BaseUser {
-  role: "STUDENT";
-  mssv: string;
-  major: string;
-}
-
-interface Lecturer extends BaseUser {
-  role: "LECTURER";
-}
-
 type UserType = Student | Lecturer;
 
 export default function UsersManagementPage() {
-  const [activeTab, setActiveTab] = useState<Role>("LECTURER");
+  const [activeTab, setActiveTab] = useState<string>("LECTURER");
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: lecturer = [], isLoading: lecturerLoading } = useListLecturer();
@@ -158,13 +133,13 @@ export default function UsersManagementPage() {
                   {activeTab === "STUDENT" && (
                     <td>
                       <code style={{ fontFamily: 'monospace', fontSize: 13, background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: 4 }}>
-                        {(user as Student).mssv}
+                       {(user as any).mssv}
                       </code>
                     </td>
                   )}
                   {activeTab === "STUDENT" && (
                     <td style={{ color: 'var(--text-secondary)' }}>
-                      {(user as Student).major}
+                      {(user as any).major}
                     </td>
                   )}
 

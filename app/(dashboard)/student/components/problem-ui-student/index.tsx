@@ -11,7 +11,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import { Node, mergeAttributes } from '@tiptap/core'
-import './editor.css'
+import styles from './editor.module.css'
 
 // ---------------- TYPES ----------------
 type Block = {
@@ -82,7 +82,7 @@ function StudentEditorBlock({ content }: { content: string }) {
     if (!editor) return null
 
     return (
-        <div className="editor-block read-only">
+        <div className={`${styles['editor-block']} read-only`}>
             <EditorContent editor={editor} className="editor-content" />
         </div>
     )
@@ -93,15 +93,15 @@ function StudentEditorBlock({ content }: { content: string }) {
 export default function ProblemUiStudent({ blocks, title, description, difficulty, stats, testcases }: ProblemUiStudentProps) {
 
     return (
-        <div className="page-container student-view">
+        <div className={`${styles['page-container']} student-view`}>
             {title && (
-                <div className="header-section" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                <div className={styles['header-section']} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
                     <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                         {title}
                     </h2>
-                    <div className="problem-meta">
+                    <div className="problem-meta" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         {difficulty && (
-                            <span className={`badge difficulty-${difficulty.toLowerCase()}`}>
+                            <span className={`${styles.badge} ${styles[`difficulty-${difficulty.toLowerCase()}`]}`}>
                                 {difficulty === 'EASY' ? 'Dễ' : difficulty === 'MEDIUM' ? 'Trung bình' : 'Khó'}
                             </span>
                         )}
@@ -114,7 +114,7 @@ export default function ProblemUiStudent({ blocks, title, description, difficult
                 </div>
             )}
             
-            <div className="card read-only-wrapper" style={{ padding: 16 }}>
+            <div className={`${styles.card} read-only-wrapper`} style={{ padding: 16 }}>
                 {description && description.length > 0 ? (
                     description.map((block, idx) => (
                         <StudentEditorBlock key={block.id || idx} content={block.content} />

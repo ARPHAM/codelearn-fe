@@ -42,6 +42,8 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
     const [isFocused, setIsFocused] = useState(false);
     const widgetsRef = useRef<any[]>([]);
     const decorationsRef = useRef<string[]>([]);
+    const activeWidgetIdRef = useRef<string | null>(null);
+    const activeSelectionRef = useRef<{ start: number, end: number } | null>(null);
 
     const isTemplate = file.type === 'TEMPLATE';
     const showWidgets = isTemplate && !isRawMode;
@@ -76,7 +78,7 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
             const content = match[1];
             const range = new monaco.Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column);
 
-            // 1. Decoration to hide original text
+            // 1. Decoration to hide original text (KEEP SPACE)
             newDecorations.push({
                 range: range,
                 options: { 
@@ -90,20 +92,52 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
             const domNode = document.createElement('div');
             domNode.className = 'monaco-input-widget';
             
-            const input = document.createElement('input');
-            input.value = content;
-            input.placeholder = '...';
-            input.oninput = (e) => {
-                const val = (e.target as HTMLInputElement).value;
+            const textarea = document.createElement('textarea');
+            textarea.value = content;
+            textarea.placeholder = '...';
+            textarea.rows = 1;
+            
+            // Auto resize height and width based on content
+            const syncSize = (ta: HTMLTextAreaElement) => {
+                ta.style.height = 'auto';
+                ta.style.height = ta.scrollHeight + 'px';
+                
+                // Estimate width if single line, or use scrollWidth
+                if (!ta.value.includes('\n')) {
+                    ta.style.width = 'auto';
+                    const len = ta.value.length || 3;
+                    ta.style.width = (len * 8.5 + 10) + 'px'; // Approximation for mono font
+                } else {
+                    ta.style.width = '200px';
+                }
+            };
+
+            textarea.oninput = (e) => {
+                const ta = e.target as HTMLTextAreaElement;
+                const val = ta.value;
+                
+                // Save cursor
+                activeWidgetIdRef.current = widgetId;
+                activeSelectionRef.current = { start: ta.selectionStart, end: ta.selectionEnd };
+
+                syncSize(ta);
+
+                // Update underlying model
                 editor.executeEdits("fill-in-the-blank", [{
                     range: range,
                     text: `{{${val}}}`,
                     forceMoveMarkers: true
                 }]);
-                updateFile(file.id?.toString() || '', 'content', editor.getValue());
             };
+
+            textarea.onfocus = () => {
+                activeWidgetIdRef.current = widgetId;
+            };
+
+            // Initial size
+            setTimeout(() => syncSize(textarea), 0);
             
-            domNode.appendChild(input);
+            domNode.appendChild(textarea);
 
             const widget = {
                 getId: () => widgetId,
@@ -116,6 +150,16 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
 
             editor.addContentWidget(widget);
             newWidgets.push(widget);
+
+            // Restore focus and selection if this was the active widget
+            if (activeWidgetIdRef.current === widgetId) {
+                setTimeout(() => {
+                    textarea.focus();
+                    if (activeSelectionRef.current) {
+                        textarea.setSelectionRange(activeSelectionRef.current.start, activeSelectionRef.current.end);
+                    }
+                }, 0);
+            }
         }
 
         // Cleanup old widgets before setting new ones
@@ -157,9 +201,7 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
         <div className="fill-in-the-blank-wrapper" style={{ position: 'relative', width: '100%', height: height, display: 'flex', flexDirection: 'column' }}>
             <style dangerouslySetInnerHTML={{ __html: `
                 .fill-blank-hidden {
-                    opacity: 0 !important;
-                    font-size: 0 !important;
-                    letter-spacing: -100px !important;
+                    color: transparent !important;
                 }
                 .monaco-input-widget {
                     z-index: 10;
@@ -167,7 +209,7 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
                     align-items: center;
                     background: transparent;
                 }
-                .monaco-input-widget input {
+                .monaco-input-widget textarea {
                     background: rgba(139, 92, 246, 0.1);
                     border: none;
                     border-bottom: 2px solid var(--accent-purple);
@@ -176,12 +218,16 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
                     font-size: 13px;
                     padding: 0 4px;
                     outline: none;
-                    min-width: 40px;
-                    max-width: 300px;
-                    transition: all 0.2s;
+                    min-width: 30px;
+                    max-width: 600px;
+                    transition: border-color 0.2s;
                     border-radius: 2px 2px 0 0;
+                    resize: none;
+                    overflow: hidden;
+                    line-height: 1.5;
+                    vertical-align: middle;
                 }
-                .monaco-input-widget input:focus {
+                .monaco-input-widget textarea:focus {
                     background: rgba(139, 92, 246, 0.2);
                     border-bottom-color: var(--accent-purple-light);
                     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -226,7 +272,7 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
                 language={lang}
                 value={file.content}
                 onChange={val => {
-                    if (isRawMode || !isTemplate) updateFile(file.id?.toString() || '', 'content', val || '');
+                    updateFile(file.id?.toString() || '', 'content', val || '');
                 }}
                 onMount={handleMount}
                 theme="aiDark"
@@ -236,7 +282,8 @@ export default function FillInTheBlankEditor({ file, updateFile, languages, isSt
                     scrollBeyondLastLine: false,
                     padding: { top: 12, bottom: 12 },
                     fontFamily: "'JetBrains Mono', monospace",
-                    readOnly: isStudent && !showWidgets,
+                    readOnly: isStudent && isTemplate, 
+                    domReadOnly: isStudent && isTemplate,
                 }}
             />
         </div>

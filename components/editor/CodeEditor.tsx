@@ -4,7 +4,7 @@ import { socket } from '@/features/realtime/socket';
 import { ParticipantData, WorkspaceFile, createFileApi, deleteFileApi, getWorkspaceFiles } from '@/features/room/api';
 import { useCurrentUserInfo } from '@/app/components/_api/queries';
 import { File, Plus, Trash2, ChevronRight, MousePointer2 } from 'lucide-react';
-import './CodeEditor.css';
+import styles from './CodeEditor.module.css';
 
 interface CodeEditorProps {
     roomId: string;
@@ -436,25 +436,25 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
 
     return (
         <div 
-            className="editor-container"
+            className={styles['editor-container']}
             style={{ '--remote-user-name': `"${viewingUser?.user?.fullName || 'User'}"` } as any}
         >
-            <div className="editor-sidebar">
-                <div className="sidebar-header">
-                    <span className="sidebar-title">Explorer</span>
+            <div className={styles['editor-sidebar']}>
+                <div className={styles['sidebar-header']}>
+                    <span className={styles['sidebar-title']}>Explorer</span>
                     {!isViewing && (
-                        <button onClick={() => setIsAddingFile(true)} className="btn-icon">
+                        <button onClick={() => setIsAddingFile(true)} className={styles['btn-icon']}>
                             <Plus size={16} />
                         </button>
                     )}
                 </div>
 
-                <div className="sidebar-content">
+                <div className={styles['sidebar-content']}>
                     {isAddingFile && (
-                        <div className="add-file-container">
+                        <div className={styles['add-file-container']}>
                             <input
                                 autoFocus
-                                className="add-file-input"
+                                className={styles['add-file-input']}
                                 placeholder="filename.ts"
                                 value={newFileName}
                                 onChange={(e) => setNewFileName(e.target.value)}
@@ -474,7 +474,7 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
                             <button
                                 onClick={handleAddFile}
                                 onMouseDown={(e) => e.preventDefault()}
-                                className="btn-confirm"
+                                className={styles['btn-confirm']}
                                 title="Add File"
                             >
                                 <ChevronRight size={14} />
@@ -482,24 +482,24 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
                         </div>
                     )}
 
-                    <div className="file-list">
+                    <div className={styles['file-list']}>
                         {files.map((f) => (
                             <div
                                 key={f.filePath}
-                                className={`file-item ${filePath === f.filePath ? 'active' : 'inactive'}`}
+                                className={`${styles['file-item']} ${filePath === f.filePath ? styles.active : styles.inactive}`}
                                 onClick={() => {
                                     setFilePath(f.filePath);
                                     socket.emit('file_switch', { roomId, filePath: f.filePath });
                                 }}
                             >
-                                <div className="file-item-left">
+                                <div className={styles['file-item-left']}>
                                     <File size={14} className={filePath === f.filePath ? 'text-blue-400' : 'text-gray-500'} />
-                                    <span className="file-name">{f.filePath}</span>
+                                    <span className={styles['file-name']}>{f.filePath}</span>
                                 </div>
                                 {!isViewing && f.filePath !== 'main.ts' && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleDeleteFile(f.filePath); }}
-                                        className="btn-delete"
+                                        className={styles['btn-delete']}
                                     >
                                         <Trash2 size={12} />
                                     </button>
@@ -510,10 +510,10 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
                 </div>
 
                 {isViewing && (
-                    <div className="sidebar-footer">
+                    <div className={styles['sidebar-footer']}>
                         <button
                             onClick={() => setIsFollowing(!isFollowing)}
-                            className={`btn-follow ${isFollowing ? 'following' : 'not-following'}`}
+                            className={`${styles['btn-follow']} ${isFollowing ? styles.following : styles.not_following}`}
                         >
                             <MousePointer2 size={14} />
                             {isFollowing ? 'Following' : 'Follow'}
@@ -522,12 +522,12 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
                 )}
             </div>
 
-            <div className="editor-main">
+            <div className={styles['editor-main']}>
                 {viewingLoading && (
-                    <div className="sync-overlay">
-                        <div className="sync-content">
-                            <div className="spinner"></div>
-                            <span className="sync-text">Syncing view...</span>
+                    <div className={styles['sync-overlay']}>
+                        <div className={styles['sync-content']}>
+                            <div className={styles.spinner}></div>
+                            <span className={styles['sync-text']}>Syncing view...</span>
                         </div>
                     </div>
                 )}

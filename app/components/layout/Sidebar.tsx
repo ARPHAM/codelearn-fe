@@ -22,7 +22,8 @@ import {
   ClipboardList,
   LogOut,
   User as UserIcon,
-  ChevronRight
+  ChevronRight,
+  Terminal
 } from 'lucide-react';
 
 const navGroups = [
@@ -121,12 +122,11 @@ export default function Sidebar() {
           background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
           borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 20,
           boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
           flexShrink: 0,
           color: 'white',
           fontWeight: 'bold'
-        }}>{'</>'}</div>
+        }}><Terminal size={22} strokeWidth={2.5} /></div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>CodeLearn</div>
           <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Platform</div>

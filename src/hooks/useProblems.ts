@@ -8,12 +8,13 @@ import {
   updateProblem,
   getAdminProblems,
   approveProblemVersion,
+  rejectProblemVersion,
   CreateProblemDto,
   ProblemDetailResponse,
   StudentProblemDetailResponse
 } from '@/api/problems.api';
 
-export const useLecturerProblems = (params?: { page?: number; limit?: number; search?: string; filter?: string }) => {
+export const useLecturerProblems = (params?: { page?: number; limit?: number; search?: string; filter?: string; difficulty?: string; status?: string; courseId?: string }) => {
   return useQuery({
     queryKey: ['lecturer-problems', params],
     queryFn: () => getLecturerProblems(params),
@@ -27,7 +28,14 @@ export const useStudentProblems = (params?: { page?: number; limit?: number; sea
   });
 };
 
-export const useAdminProblems = (params?: { page?: number; limit?: number; search?: string }) => {
+export const useAdminProblems = (params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  difficulty?: string;
+  status?: string;
+  authorId?: string;
+}) => {
   return useQuery({
     queryKey: ['admin-problems', params],
     queryFn: () => getAdminProblems(params),
@@ -79,6 +87,17 @@ export const useApproveProblemVersion = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-problems'] });
       queryClient.invalidateQueries({ queryKey: ['lecturer-problems'] });
       queryClient.invalidateQueries({ queryKey: ['student-problems'] });
+    },
+  });
+};
+
+export const useRejectProblemVersion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (versionId: string) => rejectProblemVersion(versionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-problems'] });
+      queryClient.invalidateQueries({ queryKey: ['lecturer-problems'] });
     },
   });
 };

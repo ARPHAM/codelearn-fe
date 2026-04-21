@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { roomApi, Room } from '@/api/room.api';
 import EditRoomModal from './_components/EditRoomModal';
-import { Loader2, Plus, Play, Users, Search, Globe, Lock, Edit2, Handshake, GraduationCap, Wind } from 'lucide-react';
+import { Loader2, Plus, Play, Users, Search, Globe, Lock, Edit2, Handshake, GraduationCap, Wind, Home } from 'lucide-react';
 
 export default function StudentRoomsLobbyPage() {
     const router = useRouter();

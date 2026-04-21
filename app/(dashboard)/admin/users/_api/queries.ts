@@ -2,15 +2,11 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import axios from '@/config/axios'
 
-type Lecturer = {
+export type Lecturer = {
 	id: string,
 	fullName: string,
 	email: string,
-	mssv: string,
 	role: string,
-	passwordHash: string,
-	major: string,
-	avatarUrl: string | null,
 	status: string,
 	rating: number,
 	xp: number,
@@ -18,7 +14,8 @@ type Lecturer = {
 	updatedAt: string,
 }
 
-type Student = {
+export type Student = {
+	id: string,
 	fullName: string,
 	email: string,
 	mssv: string,
