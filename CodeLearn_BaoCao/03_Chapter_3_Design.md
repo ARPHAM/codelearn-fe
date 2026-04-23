@@ -116,75 +116,225 @@ flowchart TD
     D --> E[Sử dụng Editor UI để bôi đen phân vùng cho sửa]
     E --> F[Sinh Metadata: locked_lines / read_only_chunks]
     F --> G[Lưu ẩn cấu trúc Test-cases vào Database nội bộ]
-    C --> H[Hoàn tất bài giảng]
-    G --> H
+    G --> H[Hoàn tất bài giảng]
     H --> End([Bài toán đưa vào Assignment / Exam])
 ```
 
 ### 3.3. Thiết kế Cấu trúc Cơ sở dữ liệu hạt nhân (Data Modeling - ERD)
+
 Cấu trúc CSDL được hệ thống hóa chuẩn 3NF (Third Normal Form) để tránh dị thường dữ liệu (Data Anomalies) trong quá trình Scale-up đón nhận hàng vạn sinh viên, xử lý truy vấn chéo (JOIN operations) với tốc độ cao. Các thực thể (Entities) cốt lõi bao gồm:
 
-1. **Thực thể USERS (Người dùng):** Chứa trường định dạng `id (UUID)`, `email (Unique)`, `hash_password`, và đặc biệt là phân loại quyền hạn `Role Enum`. Điểm lưu ý là dữ liệu hồ sơ chi tiết (Profile Info) được thiết kế nới lỏng để hỗ trợ các cập nhật rời rạc qua chuẩn PATCH.
-2. **Thực thể COURSES & PROBLEMS (Học liệu và Bài toán):** Lưu giữ quan hệ logic phân nhánh. Bảng `Problems` lưu trữ thông tin hiển thị cơ bản, trong khi bảng `Exercises/Testcases` chứa các trường định dạng JSON mở rộng nhằm đặc tả cấu trúc tham số Boilerplate và thông số Input/Expected Output bảo mật.
-3. **Thực thể SUBMISSIONS (Giao dịch nộp bài):** Đóng vai trò là trung tâm Audit (Log hệ thống). Bảng này lưu trữ `id`, `user_id_fk`, `problem_id_fk`, `status`, `score`. Điều tối quan trọng là bảng luôn bảo lưu nguyên si mã nguồn nộp tại thời điểm đó (`final_code snapshot`) nhằm mục đích tra soát lịch sử của sinh viên nếu xảy ra khiếu nại điểm số, cũng như phục vụ thuật toán dò tìm Đạo văn (Plagiarism Check) chéo giữa các dòng record.
-4. **Thực thể ENROLLMENTS (Ghi danh):** Bảng xử lý định hình quan hệ mạng lưới đa chiều (Many-to-Many), liên kết Môn học giảng viên quản lý tương ứng với từng tập hợp sinh viên một cách linh hoạt, hỗ trợ trạng thái bảo lưu, hoãn đóng học phí.
+1. **Thực thể USER (Người dùng):** Trung tâm định danh, phân quyền RBAC và quản lý hồ sơ năng lực.
+2. **Thực thể PROBLEM & TESTCASE (Học liệu):** Lưu trữ đa dạng các loại bài tập từ tiêu chuẩn đến điền vào chỗ trống, đi kèm hệ thống kiểm thử tự động.
+3. **Thực thể SUBMISSIONS (Giao dịch nộp bài):** Lưu trữ toàn bộ lịch sử code và kết quả đánh giá để phục vụ tra soát và chống đạo văn.
+4. **Thực thể EXAM & BATTLE (Đánh giá & Tương tác):** Quản lý các kỳ thi tập trung và các trận đấu đối kháng thời gian thực.
 
 ```mermaid
 erDiagram
-    USERS ||--o{ ENROLLMENTS : registers
-    USERS ||--o{ SUBMISSIONS : submit_code
-    USERS ||--o{ BATTLES : participate
-    COURSES ||--o{ ASSIGNMENTS : contains
-    EXAMS ||--o{ ASSIGNMENTS : holds
-    ASSIGNMENTS ||--o{ EXERCISES : uses_questions_from_bank
-    EXERCISES ||--o{ TESTCASES : evaluates_by
-    EXERCISES ||--o{ SUBMISSIONS : receives
-    SUBMISSIONS ||--o{ PLAGIARISM_REPORTS : audited_by
+    %% --- NHÓM NGƯỜI DÙNG & HỆ THỐNG ---
+    USER ||--o{ AUDIT_LOG : "sinh nhật ký"
+    USER ||--o{ ENROLLMENT : "đăng ký học"
+    USER ||--o{ USER_WORKSPACE : "sở hữu"
+    USER ||--o{ USER_SKILL_NODE : "phát triển kỹ năng"
+    USER ||--o{ BATTLE_SESSION : "tham gia thi đấu"
+    USER ||--o{ ROOM_PARTICIPANT : "tham gia phòng"
+    SYSTEM_SETTING ||--o{ USER : "áp dụng cho"
 
-    USERS {
+    %% --- NHÓM KHÓA HỌC & ĐÀO TẠO ---
+    COURSE ||--o{ ENROLLMENT : "có học viên"
+    COURSE ||--o{ ASSIGNMENT : "giao bài tập"
+    COURSE ||--o{ EXAM : "tổ chức kỳ thi"
+
+    %% --- NHÓM NGÂN HÀNG ĐỀ THI & BÀI TOÁN ---
+    QUESTION_BANK ||--o{ BANK_ITEM : "lưu trữ"
+    BANK_ITEM ||--o{ PROBLEM : "tham chiếu"
+    PROBLEM ||--o{ PROBLEM_VERSION : "quản lý phiên bản"
+    PROBLEM ||--o{ PROBLEM_LANGUAGE_FILE : "định nghĩa ngôn ngữ"
+    PROBLEM ||--o{ PROBLEM_STATS : "thống kê hiệu năng"
+    PROBLEM ||--o{ TESTCASE : "kiểm thử bởi"
+    PROBLEM ||--o{ ASSIGNMENT_PROBLEM : "gán vào assignment"
+    PROBLEM ||--o{ EXAM_PROBLEM : "gán vào exam"
+    PROBLEM_LANGUAGE_FILE }|--|| LANGUAGE : "sử dụng"
+    PROBLEM_LANGUAGE_FILE ||--o{ PROBLEM_FILE : "chứa mã nguồn mẫu"
+
+    %% --- NHÓM ĐÁNH GIÁ (ASSIGNMENT/EXAM) ---
+    ASSIGNMENT ||--o{ ASSIGNMENT_PROBLEM : "bao gồm"
+    EXAM ||--o{ EXAM_PROBLEM : "bao gồm"
+    EXAM ||--o{ EXAM_ATTEMPT : "lượt làm bài"
+    EXAM_ATTEMPT ||--o{ EXAM_LOG : "giám sát hành vi"
+
+    %% --- NHÓM LUỒNG CHẤM BÀI (SUBMISSION) ---
+    ASSIGNMENT_PROBLEM ||--o{ SUBMISSION : "nhận lời giải"
+    EXAM_PROBLEM ||--o{ SUBMISSION : "nhận lời giải"
+    SUBMISSION ||--o{ SUBMISSION_FILE : "mã nguồn nộp"
+    SUBMISSION ||--o{ SUBMISSION_RESULT : "kết quả chi tiết"
+    SUBMISSION ||--o{ EXECUTION_JOB : "định danh hàng đợi"
+
+    %% --- NHÓM WORKSPACE & CỘNG TÁC ---
+    USER_WORKSPACE ||--o{ WORKSPACE_FILE : "tệp tin cá nhân"
+    ROOM ||--o{ ROOM_PARTICIPANT : "thành viên"
+    ROOM ||--o{ ROOM_SESSION : "phiên làm việc"
+    ROOM_SESSION ||--o{ BATTLE_SESSION : "khởi tạo trận đấu"
+
+    USER {
         uuid id PK
         string email UK
-        string password_hash
         enum role "ADMIN, LECTURER, STUDENT"
         json profile_info "phone, university, xp, rank"
+        datetime created_at
     }
-    COURSES {
+    PROBLEM {
         uuid id PK
         string title
-        string semester
-        boolean is_active
+        enum difficulty "EASY, MEDIUM, HARD"
+        boolean is_public
+        integer time_limit_ms
     }
-    EXERCISES {
+    SUBMISSION {
         uuid id PK
-        uuid lecturer_id FK
-        enum type "STANDARD, FILL_BLANK, MULTIPLE_CHOICE"
-        json boilerplate_config "read_only, locked_lines"
-        integer difficulty_level
-    }
-    SUBMISSIONS {
-        uuid id PK
-        uuid student_id FK
+        uuid user_id FK
         uuid exercise_id FK
-        text final_code
+        enum status "AC, WA, TLE, CE, PENDING"
         float score
-        enum status "PENDING, AC, WA, TLE, CE"
+        text final_code
     }
-    PLAGIARISM_REPORTS {
-        uuid id PK
-        uuid target_submission FK
-        uuid matched_submission FK
-        float similarity_percentage
-        json ast_match_details
-    }
-    BATTLES {
+    BATTLE_SESSION {
         uuid id PK
         uuid winner_id FK
+        enum state "WAITING, IN_PROGRESS, FINISHED"
         datetime match_time
     }
+    EXAM {
+        uuid id PK
+        string title
+        datetime start_at
+        datetime end_at
+        boolean proctoring_enabled
+    }
 ```
+
 
 ### 3.4. Kiến trúc luồng Thực thi ảo hóa (Sandbox Submission Workflow)
 Nhằm bảo vệ hệ thống trước sự cố nghẽn mạng cục bộ, quy trình chấm bài code của sinh viên được thiết kế theo cơ chế Pub/Sub hoàn toàn bất đồng bộ (Asynchronous Design):
 1. **Tiếp nhận API / Hàng đợi (Queue Buffering):** Web server tiếp nhận mã nguồn, nhưng tuyệt đối không chạy lệnh ngay. Mã nguồn và bài toán được đóng gói, dán nhãn Job và đẩy vào **Redis Queue** để bảo đảm hàng đợi FIFO ổn định nhờ Engine **BullMQ**.
 2. **Worker xử lý biệt lập (Isolated Sandboxing):** Nhóm máy chủ nhận nhiệm vụ (Worker Nodes) tiến hành Consume job từ hàng đợi. Nó khởi tạo một container **Docker** ngắn hạn cách ly tài nguyên (CPU, RAM). Bên trong rào cản này, code sinh viên được biên dịch, truyền Input thông qua Pipe và xuất ra Log đầu ra trong giới hạn 2 giây (Time Limits).
 3. **Phản hồi thời gian thực qua WebSockets:** Kết quả Test-case xuất về được ghi thẳng vào Database và phát sự kiện Broadcast thông qua **Socket.io**. Phía giao diện của sinh viên sẽ tự bắt event đổi trạng thái sang hiệu ứng Màu xanh (Passed) hay Đỏ (Compiler Error) ngay lập tức mà không cần F5 trình duyệt. Đồng thời, API phụ được kích hoạt để hỏi Gemini AI nhằm giải thích chi tiết lỗi để đút kết thành log phản hồi cho sinh viên.
+
+```mermaid
+graph TB
+    subgraph Client_Layer [Tầng Giao diện (Next.js)]
+        FE(Frontend Portal)
+        WS_Client(WebSocket Client)
+    end
+
+    subgraph API_Layer [Tầng Nghiệp vụ (NestJS)]
+        Gate(Gateway / Controllers)
+        Auth(Auth Service)
+        Prob(Problem Service)
+        Exec(Execution Service)
+        AI_S(Gemini AI Service)
+    end
+
+    subgraph Data_Layer [Tầng Lưu trữ & Hàng đợi]
+        DB[(PostgreSQL)]
+        Redis_Queue{Redis Queue / BullMQ}
+    end
+
+    subgraph Execution_Layer [Tầng Thực thi Sandbox]
+        W1(Worker Node 1)
+        W2(Worker Node 2)
+        Docker1[[Docker Container 1]]
+        Docker2[[Docker Container 2]]
+    end
+
+    FE -->|HTTPS / JWT| Gate
+    Gate --> Auth
+    Gate --> Prob
+    Gate --> Exec
+    
+    Exec -->|Push Job| Redis_Queue
+    Redis_Queue -->|Pull Job| W1
+    Redis_Queue -->|Pull Job| W2
+    
+    W1 --> Docker1
+    W2 --> Docker2
+    
+    Docker1 -->|Ghi điểm| DB
+    W1 -->|Push Event| WS_Client
+    
+    Exec --> AI_S
+    AI_S -.->|Gemini AI Flash 2.0| Exec
+```
+
+#### Quy trình chấm bài Chi tiết (Submission Lifecycle Sequence)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant S as Sinh viên
+    participant FE as Frontend Portal
+    participant API as Backend API
+    participant Q as Redis Queue
+    participant W as Worker Node
+    participant D as Docker Sandbox
+    participant AI as Gemini AI
+
+    S->>FE: Bấm nút "Submit Code"
+    FE->>API: POST /submissions (Source Code + Prob ID)
+    API->>API: Kiểm tra ranh giới Boilerplate & Gộp Code
+    API->>Q: Đẩy Job vào BullMQ (Status: PENDING)
+    API-->>FE: Trả về SubmissionID (HTTP 202 Accepted)
+    FE->>S: Hiển thị trạng thái "Đang trong hàng đợi..."
+
+    loop Chờ Worker
+        W->>Q: Pull Job từ Redis
+    end
+    
+    W->>D: Khởi tạo Container (Resource Limits)
+    W->>D: Copy Code, Chạy Testcases qua Pipe
+    D-->>W: Xuất Standard Output / Error
+    W->>API: Cập nhật kết quả chấm bài (AC / WA / TLE)
+    W->>FE: Phát tín hiệu WebSocket (Submission SUCCESS / FAILED)
+    FE->>S: Đổi màu UI sang Xanh/Đỏ
+
+    opt Nếu bài làm bị lỗi
+        API->>AI: Gửi Source Code + Lỗi biên dịch
+        AI-->>API: Trả về giải thích lỗi & gợi ý hướng sửa
+        API->>FE: Đẩy gợi ý AI vào Tab "AI Assistant"
+    end
+```
+
+### 3.5. Thiết kế Logic các tính năng mở rộng (Advanced Features Logic)
+
+#### 3.5.1. Chế độ thi đấu Đối kháng (Battle Mode State-Machine)
+Tính năng thi đấu yêu cầu sự đồng bộ trạng thái cực cao giữa các người chơi thông qua nền tảng Socket.io.
+
+```mermaid
+stateDiagram-v2
+    [*] --> LOBBY: Chủ phòng tạo Battle
+    LOBBY --> LOBBY: join_room (Người chơi gia nhập)
+    LOBBY --> IN_PROGRESS: start_battle (Bắt đầu)
+    
+    state IN_PROGRESS {
+        [*] --> CODING: Nhận đề bài
+        CODING --> SUBMITTING: Nộp bài (Execution Flow)
+        SUBMITTING --> CODING: Kết quả Sai (WA/TLE)
+        SUBMITTING --> FINISHED_USER: Kết quả AC (Hoàn thành)
+    }
+    
+    IN_PROGRESS --> EVALUATING: Hết giờ (Timeout) hoặc Tất cả hoàn thành
+    EVALUATING --> COMPLETED: Tính toán Xếp hạng & Cộng điểm XP
+    COMPLETED --> [*]
+```
+
+#### 3.5.2. Lộ trình học tập cá nhân hóa (Learning Path Mastery)
+Dựa trên lịch sử Submission, hệ thống sử dụng cấu trúc cây kỹ năng (Skill Tree) để gợi ý bài tập tiếp theo.
+
+```mermaid
+graph LR
+    Sub(Lịch sử Nộp bài) --> Engine(Phân tích Score & Difficulty)
+    Engine --> SkillMap{Cập nhật Skill Node}
+    SkillMap -->|Mastered| NextLevel(Mở khóa bài tập nâng cao)
+    SkillMap -->|Weak| AI_Suggest(Gemini AI gợi ý tài liệu ôn tập)
+    NextLevel --> Dashboard(Cập nhật UI Lộ trình)
+```

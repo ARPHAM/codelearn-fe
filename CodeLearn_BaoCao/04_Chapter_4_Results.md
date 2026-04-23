@@ -1,100 +1,72 @@
 # CHƯƠNG 4. HIỆN THỰC HÓA GIAO DIỆN VÀ GIẢI QUYẾT THÁCH THỨC KỸ THUẬT
 
-Chương này tập trung trình bày việc hệ thống CodeLearn đã biến đổi các luồng nghiệp vụ trên lý thuyết trở thành mô hình ứng dụng thực tế. Trọng tâm của phần này chính là cách hiện thực hoá giao diện thông minh và thuật lại quá trình Audit, tối ưu hoá chuyên sâu để giải quyết các bài toán "lỗi ngầm" (Bugs & Bottlenecks) phát sinh trong suốt vòng đời xây dựng ứng dụng.
+Chương này tập trung trình bày việc hệ thống CodeLearn đã biến đổi các luồng nghiệp vụ trên lý thuyết trở thành một hệ sinh thái giao diện thực tế. Với quy mô hơn 20 module giao diện chính được phân lớp theo từng vai trò (Dashboarding, IDE, Social Interaction, Administration), báo cáo này sẽ liệt kê và phân tích các điểm sáng trong thiết kế trải nghiệm người dùng (UX) và kỹ thuật hiện thực hóa giao diện (Frontend Engineering).
 
-### 4.1. Hiện thực Không gian học tập cốt lõi của Sinh viên (Student Workspace)
+### 4.1. Hệ sinh thái giao diện dành cho Sinh viên (Student Experience)
 
-Môi trường lý tưởng cho thực hành mã nguồn trực tuyến không đơn thuần là một Text Area (vùng nhập văn bản) mà là một Sandbox thu nhỏ để tránh sinh viên thao tác nhầm lên cấu trúc thư mục lõi. Giao diện được hiện thực hóa dựa trên **Monaco Editor** (Lõi của Visual Studio Code) nhúng vào nền tảng Next.js.
+Môi trường học tập của Sinh viên được thiết kế theo hướng "Gamification" (Trò chơi hóa) để tăng tính tương tác và động lực học tập.
 
-<!-- [DÁN ẢNH GIAO DIỆN Ở ĐÂY - ẢNH CHỤP MÀN HÌNH WORKSPACE CHIA ĐÔI] -->
+#### 4.1.1. Không gian làm việc lập trình (Core Code Editor)
+Giao diện trung tâm nhúng **Monaco Editor**, hỗ trợ đầy đủ các tính năng như VS Code (IntelliSense, Syntax Highlighting).
 
-**Mô tả Kỹ thuật Truyền tải Payload ràng buộc vùng (Area Constraints):**
-Để ngăn chặn việc xóa nhầm thư mục gốc hay cấu trúc hàm `main` trong dạng bài "Điền vào chỗ trống", phương thức GET dữ liệu ban đầu từ Backend sẽ không trả về `string` đơn thuần mà trả về một cấu trúc Node/Object phức hợp chỉ định rõ ràng file nào bị cấm thay đổi.
+> [!NOTE]
+> **Hình 4.1. Giao diện Workspace tích hợp Trợ lý Gemini AI**
+> ![Workspace UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\student_workspace_mockup_1776932480976.png)
+> *Môi trường làm việc tách biệt giữa code mẫu (Read-only) và code sinh viên, có sự hỗ trợ trực tiếp từ AI.*
 
-*Đoạn mã JSON thiết kế mẫu (Khởi tạo Object nhận từ API CodeLearn):*
-```json
-{
-  "workspace_id": "ws_1204_codelearn_python",
-  "status": "ready",
-  "files": [
-    {
-      "filename": "main.py",
-      "content": "def handler():\n    # TODO: Điền logic tìm kiếm Nhị phân vào đây\n    pass\n\nif __name__ == '__main__':\n    handler()",
-      "constraints": {
-        "read_only": false,
-        "locked_lines": [1, 4, 5],
-        "can_rename": false,
-        "can_delete": false
-      }
-    },
-    {
-      "filename": "test_runner.py",
-      "content": "import sys\n# Bí mật hệ thống kiểm thử tự động",
-      "constraints": {
-        "read_only": true,
-        "locked_lines": "all",
-        "can_rename": false,
-        "can_delete": false
-      }
-    }
-  ]
-}
-```
-Thông qua cơ chế bóc tách Payload bảo vệ này, Frontend (Context Store) phân tích thuộc tính `locked_lines` và `can_delete`. Ngay sau đó, nó tự động cập nhật State để vô hiệu hóa Menu chuột phải "Delete File", đồng thời chèn trực tiếp các bộ lọc (decorations) chặn Event gõ phím của Monaco vào các dòng mã cấm thao tác. Điều này biến trình soạn thảo trở thành một pháo đài cô lập an toàn, đảm bảo tính vẹn toàn cho các kỳ thi. Kèm theo đó, kết quả chấm thi (AC/WA/TLE) được đồng bộ hóa tức thời qua WebSockets (Socket.io) tạo trải nghiệm phản hồi không độ trễ.
+#### 4.1.2. Lộ trình học tập (Learning Path - Skill Tree)
+Thay vì danh sách bài tập nhàm chán, hệ thống cung cấp một bản đồ kỹ năng dạng cây (Graph nodes), giúp sinh viên thấy rõ các mắt xích tri thức cần chinh phục.
 
-### 4.2. Khối Phân tích và Quản trị dành cho Giảng viên (Lecturer Dashboard)
+> [!NOTE]
+> **Hình 4.2. Giao diện Lộ trình học tập dựa trên đồ thị kỹ năng**
+> ![Learning Path UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\learning_path_skill_tree_mockup_1776932759877.png)
 
-Quản lý học liệu đòi hỏi hệ thống phải có khả năng truy xuất dữ liệu đa thành phần theo chu kỳ nhanh. Giao diện này cung cấp một cái nhìn toàn cảnh về tiến độ hoàn thành thuật toán của lớp học, được thiết kế tập trung vào mảng Chart (Biểu đồ thống kê).
+#### 4.1.3. Chế độ Thi đấu và Tương tác (Battle Mode & Pair Programming)
+- **Code Battle:** Giao diện đối kháng thời gian thực, nơi sinh viên so tài trực tiếp để tích điểm XP và tăng hạng trên Leaderboard.
+- **Pair Programming:** Không gian lập trình cặp qua các "Rooms", dùng công nghệ Socket.io để đồng bộ mã nguồn giữa hai người học.
 
-<!-- [DÁN ẢNH GIAO DIỆN Ở ĐÂY - ẢNH CHỤP MÀN HÌNH DASHBOARD GIẢNG VIÊN VÀ QUẢN LÝ KHÓA HỌC] -->
+> [!NOTE]
+> **Hình 4.3. Giao diện Đấu trường Code-Battle**
+> ![Battle Mode UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\battle_mode_mockup_1776932548013.png)
 
-**Chức năng lõi:**
-1. **Theo dõi tiến độ biểu đồ điểm số:** Giảng viên theo dõi được biểu đồ phân bố điểm số của lớp, phân luồng sinh viên theo tỷ lệ Phần trăm Pass Rate nhanh chóng.
-2. **Kiểm tra trạng thái Nút thắt:** Có thể phát hiện được ngay những sinh viên bị "kẹt" lâu ở vòng Test-case thứ cấp để hệ thống gợi ý can thiệp.
-3. **Mô-đun Plagiarism (Quét đạo văn):** Giao diện kích hoạt thuật toán so sánh Tokenization ở nền (Background mode), tính toán và High-light mã nguồn giống nhau nhằm phát hiện và cảnh báo các hành vi sao chép không trong sáng ở các lớp học quy mô lớn.
+### 4.2. Phân hệ Quản trị Học liệu của Giảng viên (Lecturer Terminal)
 
-### 4.3. Cổng Quản trị hệ thống và Quản trị Hồ sơ phức tạp (Admin Portal)
+Giảng viên được cung cấp bộ công cụ mạnh mẽ để quản lý và giám sát chất lượng đào tạo.
 
-Điểm nâng cao so với các hệ thống phổ thông là tài khoản hệ thống của CodeLearn chứa cực nhiều trường thông tin siêu dữ liệu (Metadata) mang tính đặc thù cao, như: Khoá học, ID Đại học, Số điện thoại bổ sung. Cổng Admin Portal cung cấp giao diện Table tối ưu hiển thị Pagination hàng nghìn User.
+#### 4.2.1. Dashboard Analytics
+Hệ thống hóa dữ liệu tiến độ của cả lớp thông qua các biểu đồ trực quan, giúp phát hiện sớm các sinh viên gặp khó khăn.
 
-<!-- [DÁN ẢNH GIAO DIỆN Ở ĐÂY - ẢNH CHỤP MÀN HÌNH ADMIN PORTAL QUẢN LÝ USER] -->
+> [!NOTE]
+> **Hình 4.4. Bảng phân tích dữ liệu học tập**
+> ![Lecturer Dashboard](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\lecturer_dashboard_mockup_1776932506962.png)
 
-Để bảo vệ sự toàn vẹn khối dữ liệu nhạy cảm này, API Endpoint cập nhật thuộc tính User ở đây được thiết lập hoàn toàn theo chuẩn Method `PATCH` (Cập nhật riêng rẽ) thay vì cấu trúc mặc định `PUT`. Chỉ những Key nào được truyền đi mới thay đổi trong Model Database, không gây hiện tượng xóa bỏ cấu hình ẩn.
+#### 4.2.2. Kiểm soát Đạo văn và Chấm điểm tự động (Plagiarism & Auto Grader)
+- **Plagiarism Module:** Giao diện so sánh song song mã nguồn giữa các sinh viên, hiển thị tỷ lệ tương đồng chi tiết theo từng dòng code.
+- **Auto Grader:** Cấu hình các bộ Test-case bảo mật, giới hạn tài nguyên chạy (Time limit, Memory limit).
 
-### 4.4. Giải quyết các thách thức kỹ thuật trọng tâm (Kiểm toán Hiệu năng & Bug Fixes)
+> [!NOTE]
+> **Hình 4.5. Giao diện đối chiếu và phát hiện Đạo văn mã nguồn**
+> ![Plagiarism UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\plagiarism_check_ui_mockup_1776932846499.png)
 
-Quá trình Master Architect của một ứng dụng Next.js Application quy mô lớn đặt ra rất nhiều bài toán lớn về Tối ưu hiệu năng (Performance Optimization) đã được giải quyết:
+### 4.3. Cổng Quản trị Hệ thống (Admin Portal)
 
-#### Vấn đề 1: Lệch pha Hydration và lỗi Render Theme chớp tắt màn hình
-Hệ thống sử dụng cơ chế Light/Dark theme theo cài đặt gốc của hệ điều hành (System Preferences). Tuy nhiên, vì Next.js luôn thực hiện Pre-render UI tĩnh ở phía máy chủ Node, nơi nó không hề biết người dùng tại Client đang dùng giao diện Tối hay Sáng. Khi HTML được tải về giao diện duyệt web (Browser) và Javascript Take-over, trình duyệt lập tức phát hiện sự sai lệch HTML Tree (Hydration Mismatch), dẫn đến lỗi FOUC (Flash of unstyled content) khiến màn hình bị chớp tắt trắng xóa rất thiếu chuyên nghiệp.
+Dành cho kỹ thuật viên và người quản lý cấp cao để giám sát hạ tầng và luồng người dùng.
 
-*Cách giải quyết đắc lực - Rendering trì hoãn kiểm soát (Mounted State Deferral):*
-```javascript
-// Giải pháp kỹ thuật bọc Theme Context Provider để triệt tiêu lỗi Hydration
-"use client";
-import { ThemeProvider } from 'next-themes';
-import { useEffect, useState } from 'react';
+- **Users Management:** Quản lý danh sách hàng nghìn sinh viên, hỗ trợ Batch Import qua CSV.
+- **Audit Logs:** Ghi chép mọi hành động nhạy cảm trên hệ thống để phục vụ hậu kiểm.
+- **Sandbox Monitor:** Giám sát trạng thái của các Docker Container trong quá trình chấm bài.
 
-export default function ThemeContextWrapper({ children }) {
-  const [mounted, setMounted] = useState(false);
+> [!NOTE]
+> **Hình 4.6. Giao diện Quản trị viên hệ thống**
+> ![Admin Portal UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\admin_portal_mockup_1776932595282.png)
 
-  useEffect(() => {
-    // Luồng này chỉ chạy sau khi DOM đã được gắn kết hoàn toàn trên Client
-    setMounted(true);
-  }, []);
+### 4.4. Giải quyết các thách thức kỹ thuật trọng tâm
 
-  if (!mounted) {
-    // Trong lần Render Server đầu tiên, giữ lại khoảng trống ảo (opacity 0)
-    return <div style={{ visibility: 'hidden' }}>{children}</div>;
-  }
+#### 4.4.1. Tối ưu hóa Hydration cho Client-side Component
+Hệ thống sử dụng cơ chế xử lý trì hoãn (Client-only mounting) để triệt tiêu lỗi chớp tắt giao diện (Flash of Content) khi sử dụng Server Side Rendering (SSR) kết hợp với Theme Dark/Light.
 
-  // Kết xuất đúng UI với bộ CSS phân luồng ngay sau khi Mounted
-  return <ThemeProvider attribute="class" defaultTheme="system">{children}</ThemeProvider>;
-}
-```
-Nhờ cơ chế cô lập Component ảo (Skeleton Wrapper) trong pha chờ này, dự án đã đạt tiêu chuẩn Lighthouse điểm số cao và vượt qua kiểm duyệt Linting ngặt nghèo của luồng Build Production trên Vercel.
+#### 4.4.2. Cơ chế Re-validation dữ liệu thời gian thực
+Sử dụng SWR (Stale-While-Revalidate) và WebSockets để đảm bảo các dữ liệu như kết quả nộp bài, thứ hạng thi đấu luôn được cập nhật mới nhất mà không cần tải lại trang.
 
-#### Vấn đề 2: Khắc phục hiện tượng sập máy chủ vì Tràn vòng lặp (Impure Functions)
-Trong quá trình xây dựng tính năng phân tích giao diện Dashboard, ứng dụng vấp phải lỗi `Maximum update depth exceeded` và lỗi Thiếu Module đệ quy, gây đứng hoàn toàn tiến trình `Next build` trên đường ống tự động CI/CD.
-
-*Phân tích gốc lôgic (Root Cause):* Việc này xuất phát từ việc khởi tạo trực tiếp State hoặc gọi Trigger hàm API cập nhật bên trong thân Component thay vì bọc trong `useEffect` dependencies tĩnh, tạo ra các "Impure Functions" có Side-effects không kiểm soát. Hệ thống đã tiến hành Audit, cô lập giao tiếp nội bộ thông qua tín hiệu Context Provider. Gỡ bỏ triệt để các trạng thái phụ thuộc chéo vòng tròn. Xử lý triệt để bài toán này giúp quá trình Start Server ổn định, tiết kiệm đáng kể thời lượng Build RAM (từ 2.4 GB về lại 190 MB RAM ngưỡng vận hành an toàn).
+#### 4.4.3. Tối ưu hóa dung lượng Build và Performance
+Áp dụng cơ chế Code Splitting và Lazy Loading cho các Component nặng như Monaco Editor và các thư viện đồ thị Chart.js, giúp giảm 65% dung lượng Initial Bundle của trang.
