@@ -4,25 +4,26 @@ import { redirect, usePathname } from 'next/navigation';
 import { useCurrentUserInfo } from '../_api/queries';
 import { useState } from 'react';
 import { useLogout } from '../_api/mutations';
-import { 
-  LayoutDashboard, 
-  Zap, 
-  Search, 
-  FolderLock, 
-  Database, 
-  Target, 
-  Users, 
-  Swords, 
-  Map, 
-  Trophy, 
-  Home, 
-  Settings, 
-  ShieldCheck, 
-  Box, 
+import {
+  LayoutDashboard,
+  Zap,
+  Search,
+  FolderLock,
+  Database,
+  Target,
+  Users,
+  Swords,
+  Map,
+  Trophy,
+  Home,
+  Settings,
+  ShieldCheck,
+  Box,
   ClipboardList,
   LogOut,
   User as UserIcon,
   ChevronRight,
+  ChevronLeft,
   Terminal
 } from 'lucide-react';
 
@@ -65,18 +66,11 @@ const navGroups = [
       { href: '/admin/rooms', icon: Home, label: 'Quản lý Phòng học' },
     ],
   },
-  {
-    label: 'Chỉ dẫn',
-    role: 'ALL',
-    color: '#94a3b8',
-    items: [
-      { href: '/', icon: Home, label: 'Trang chủ hệ thống' },
-    ],
-  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDropdownHovered, setIsDropdownHovered] = useState(false);
   const [isDropdownClicked, setIsDropdownClicked] = useState(false);
 
@@ -88,16 +82,16 @@ export default function Sidebar() {
 
   const rawRole = user.role;
   const userRole = typeof rawRole === 'string' ? rawRole.toUpperCase() : '';
-  const filteredGroups = navGroups.filter(g => 
-    g.role === 'ALL' || 
-    g.role === userRole || 
+  const filteredGroups = navGroups.filter(g =>
+    g.role === 'ALL' ||
+    g.role === userRole ||
     (Array.isArray(rawRole) && rawRole.some(r => r.toUpperCase() === g.role))
   );
 
   return (
     <aside style={{
-      width: 'var(--sidebar-width)',
-      minWidth: 'var(--sidebar-width)',
+      width: isCollapsed ? 80 : 260,
+      minWidth: isCollapsed ? 80 : 260,
       height: '100vh',
       background: 'rgba(13, 17, 23, 0.95)',
       backdropFilter: 'blur(20px)',
@@ -106,16 +100,19 @@ export default function Sidebar() {
       flexDirection: 'column',
       position: 'sticky',
       top: 0,
-      overflow: 'hidden',
-      zIndex: 100,
+      zIndex: 200,
+      transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      willChange: 'width',
+      boxShadow: isCollapsed ? '4px 0 24px rgba(0,0,0,0.3)' : 'none',
     }}>
-      {/* Logo Section */}
       <div style={{
-        padding: '24px 20px',
+        padding: isCollapsed ? '24px 0' : '24px 20px',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: isCollapsed ? 'center' : 'flex-start',
         gap: 12,
-        marginBottom: 10
+        marginBottom: 10,
+        position: 'relative'
       }}>
         <div style={{
           width: 40, height: 40,
@@ -127,24 +124,55 @@ export default function Sidebar() {
           color: 'white',
           fontWeight: 'bold'
         }}><Terminal size={22} strokeWidth={2.5} /></div>
-        <div>
+        <div style={{
+          opacity: isCollapsed ? 0 : 1,
+          width: isCollapsed ? 0 : 'auto',
+          overflow: 'hidden',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          whiteSpace: 'nowrap'
+        }}>
           <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>CodeLearn</div>
           <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Platform</div>
         </div>
+
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          style={{
+            position: 'absolute',
+            right: isCollapsed ? -12 : -12, // Always slightly out for better visual balance
+            top: 32,
+            width: 24,
+            height: 24,
+            borderRadius: '50%',
+            background: '#1c2333',
+            border: '1px solid rgba(255, 255, 255, 0.14)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#94a3b8',
+            cursor: 'pointer',
+            zIndex: 210,
+            transition: 'all 0.2s',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = 'var(--text-primary)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = '#94a3b8';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
       </div>
 
-      {/* Navigation */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }} className="custom-scrollbar">
         {filteredGroups.map((group) => (
           <div key={group.label} style={{ marginBottom: 24 }}>
-            <div style={{
-              padding: '0 12px 10px',
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#64748b',
-            }}>{group.label}</div>
             {group.items.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + '/');
               const Icon = item.icon;
@@ -153,7 +181,8 @@ export default function Sidebar() {
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
+                    justifyContent: isCollapsed ? 'center' : 'flex-start',
+                    gap: isCollapsed ? 0 : 12,
                     padding: '10px 12px',
                     marginBottom: 4,
                     borderRadius: 10,
@@ -178,8 +207,16 @@ export default function Sidebar() {
                         e.currentTarget.style.color = '#94a3b8';
                       }
                     }}>
-                    <Icon size={18} strokeWidth={active ? 2.5 : 2} style={{ transition: 'transform 0.2s' }} />
-                    <span style={{ flex: 1 }}>{item.label}</span>
+                    <Icon size={18} strokeWidth={active ? 2.5 : 2} style={{ transition: 'transform 0.2s', flexShrink: 0 }} />
+                    <span style={{
+                      flex: 1,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      opacity: isCollapsed ? 0 : 1,
+                      width: isCollapsed ? 0 : 'auto',
+                      transition: 'opacity 0.2s, width 0.2s',
+                      marginLeft: isCollapsed ? 0 : 12,
+                    }}>{item.label}</span>
                     {active && (
                       <div style={{
                         position: 'absolute',
@@ -199,7 +236,6 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* User info */}
       <div
         style={{
           padding: '16px',
@@ -210,11 +246,14 @@ export default function Sidebar() {
         onMouseEnter={() => setIsDropdownHovered(true)}
         onMouseLeave={() => setIsDropdownHovered(false)}
       >
-        <div 
+        <div
           onClick={() => setIsDropdownClicked(!isDropdownClicked)}
           style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
+            gap: isCollapsed ? 0 : 12,
+            padding: isCollapsed ? '8px 0' : '8px',
             borderRadius: 12,
             cursor: 'pointer',
             transition: 'background 0.2s',
@@ -222,42 +261,55 @@ export default function Sidebar() {
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
-          <div className="avatar" style={{ 
-            background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)', 
+          <div className="avatar" style={{
+            background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
             color: 'white',
             width: 36, height: 36,
             fontSize: 14,
             fontWeight: 'bold',
-            borderRadius: 10
+            borderRadius: 10,
+            flexShrink: 0
           }}>
             {user?.avatar ? user?.avatar?.charAt(0).toUpperCase() : user?.role?.slice(0, 2).toUpperCase()}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ 
-              fontSize: 13, 
-              fontWeight: 600, 
-              color: 'var(--text-primary)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis' 
-            }}>{user.name || 'Người dùng'}</div>
-            <div style={{ fontSize: 11, color: '#64748b' }}>{user.role}</div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            flex: 1,
+            opacity: isCollapsed ? 0 : 1,
+            width: isCollapsed ? 0 : 'auto',
+            overflow: 'hidden',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            whiteSpace: 'nowrap'
+          }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>{user.name || 'Người dùng'}</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>{user.role}</div>
+            </div>
+            <ChevronRight size={16} color="#64748b" style={{
+              transform: isDropdownClicked ? 'rotate(-90deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s'
+            }} />
           </div>
-          <ChevronRight size={16} color="#64748b" style={{ 
-            transform: isDropdownClicked ? 'rotate(-90deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s'
-          }} />
         </div>
 
-        {/* Dropdown menu */}
         {(isDropdownHovered || isDropdownClicked) && (
           <div
             style={{
               position: 'absolute',
               bottom: '100%',
-              left: 16,
-              right: 16,
-              marginBottom: 8,
+              left: isCollapsed ? 12 : 16,
+              right: isCollapsed ? 'auto' : 16,
+              width: isCollapsed ? 220 : 'auto',
+              paddingBottom: 12, // Invisible bridge to maintain hover state
               zIndex: 50,
             }}
           >
@@ -272,16 +324,16 @@ export default function Sidebar() {
               gap: 2
             }}>
               <div
-                style={{ 
-                  padding: '10px 12px', 
-                  fontSize: 13, 
-                  color: '#e6edf3', 
-                  cursor: 'pointer', 
+                style={{
+                  padding: '10px 12px',
+                  fontSize: 13,
+                  color: '#e6edf3',
+                  cursor: 'pointer',
                   borderRadius: 8,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  transition: 'background 0.2s' 
+                  transition: 'background 0.2s'
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -291,16 +343,16 @@ export default function Sidebar() {
                 Thông tin cá nhân
               </div>
               <div
-                style={{ 
-                  padding: '10px 12px', 
-                  fontSize: 13, 
-                  color: '#f87171', 
-                  cursor: 'pointer', 
+                style={{
+                  padding: '10px 12px',
+                  fontSize: 13,
+                  color: '#f87171',
+                  cursor: 'pointer',
                   borderRadius: 8,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  transition: 'background 0.2s' 
+                  transition: 'background 0.2s'
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
