@@ -2,10 +2,10 @@
 
 import { usePathname } from 'next/navigation';
 import { useCurrentUserInfo } from "../_api/queries";
-import { 
-  Search, 
-  Bell, 
-  ChevronRight, 
+import {
+  Search,
+  Bell,
+  ChevronRight,
   Command,
   LayoutGrid
 } from 'lucide-react';
@@ -30,6 +30,7 @@ const routeLabels: Record<string, string> = {
   'system-config': 'Cấu hình',
   'create': 'Tạo mới',
   'edit': 'Chỉnh sửa',
+  'code-editor': 'Soạn thảo code',
 };
 
 export default function Topbar() {
@@ -37,7 +38,7 @@ export default function Topbar() {
   const pathname = usePathname();
 
   const pathSegments = pathname.split('/').filter(Boolean);
-  
+
   return (
     <header style={{
       height: 'var(--topbar-height)',
@@ -67,7 +68,7 @@ export default function Topbar() {
         }}>
           <LayoutGrid size={18} />
         </div>
-        
+
         <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500 }}>
           {pathSegments.map((segment, index) => {
             const label = routeLabels[segment] || segment;
@@ -77,9 +78,9 @@ export default function Topbar() {
             return (
               <div key={href} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <ChevronRight size={14} color="#475569" />
-                <Link 
+                <Link
                   href={href}
-                  style={{ 
+                  style={{
                     textDecoration: 'none',
                     color: isLast ? 'var(--text-primary)' : '#64748b',
                     transition: 'color 0.2s',

@@ -21,7 +21,7 @@ export const useLecturerProblems = (params?: { page?: number; limit?: number; se
   });
 };
 
-export const useStudentProblems = (params?: { page?: number; limit?: number; search?: string; filter?: string; difficulty?: string }) => {
+export const useStudentProblems = (params?: { page?: number; limit?: number; search?: string; filter?: string; difficulty?: string; status?: string }) => {
   return useQuery({
     queryKey: ['student-problems', params],
     queryFn: () => getStudentProblems(params),

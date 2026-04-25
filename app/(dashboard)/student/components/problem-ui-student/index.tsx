@@ -95,19 +95,19 @@ export default function ProblemUiStudent({ blocks, title, description, difficult
     return (
         <div className={`${styles['page-container']} student-view`}>
             {title && (
-                <div className={styles['header-section']} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                <div className={styles['header-section']} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6, padding: '16px 16px 12px' }}>
+                    <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.4 }}>
                         {title}
                     </h2>
-                    <div className="problem-meta" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div className="problem-meta" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                         {difficulty && (
-                            <span className={`${styles.badge} ${styles[`difficulty-${difficulty.toLowerCase()}`]}`}>
-                                {difficulty === 'EASY' ? 'Dễ' : difficulty === 'MEDIUM' ? 'Trung bình' : 'Khó'}
+                            <span className={`${styles.badge} ${styles[`difficulty-${difficulty.toLowerCase()}`]}`} style={{ fontSize: '0.7rem', padding: '2px 6px' }}>
+                                {difficulty === 'EASY' ? 'Dễ' : difficulty === 'MEDIUM' ? 'T.Bình' : 'Khó'}
                             </span>
                         )}
                         {stats && (
-                            <span className="stats-text" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                Lượt nộp: <strong>{stats.totalSubmissions}</strong> &nbsp;|&nbsp; Tỷ lệ đỗ: <strong>{stats.acceptanceRate}%</strong>
+                            <span className="stats-text" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                                {stats.totalSubmissions} lượt nộp · {stats.acceptanceRate}% đỗ
                             </span>
                         )}
                     </div>

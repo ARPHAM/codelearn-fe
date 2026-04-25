@@ -103,7 +103,7 @@ export const getLecturerProblems = async (params?: { page?: number; limit?: numb
   return response.data.data;
 };
 
-export const getStudentProblems = async (params?: { page?: number; limit?: number; search?: string; filter?: string; difficulty?: string }): Promise<{items: ProblemSummary[], total: number, page: number, limit: number}> => {
+export const getStudentProblems = async (params?: { page?: number; limit?: number; search?: string; filter?: string; difficulty?: string; status?: string }): Promise<{items: ProblemSummary[], total: number, page: number, limit: number}> => {
   const response = await axios.get('/problem', { params });
   return response.data.data;
 };

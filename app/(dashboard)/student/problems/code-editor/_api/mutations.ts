@@ -6,6 +6,7 @@ import { useLanguages } from '@/src/hooks/useLanguages'
 export interface SubmitCodeRequest {
     problemVersionId?: string;
     language: string;
+    languageId?: number;
     entryFile: string;
     files: {
         filename: string;
