@@ -24,7 +24,9 @@ import {
   User as UserIcon,
   ChevronRight,
   ChevronLeft,
-  Terminal
+  Terminal,
+  GraduationCap,
+  BookOpen
 } from 'lucide-react';
 
 const navGroups = [
@@ -34,8 +36,8 @@ const navGroups = [
     color: '#a78bfa',
     items: [
       { href: '/lecturer/analytics', icon: LayoutDashboard, label: 'Thống kê & Phân tích' },
+      { href: '/lecturer/courses', icon: BookOpen, label: 'Lớp học giảng dạy' },
       { href: '/lecturer/auto-grader', icon: Zap, label: 'Chấm điểm Tự động' },
-      { href: '/lecturer/plagiarism', icon: Search, label: 'Kiểm tra Đạo văn' },
       { href: '/lecturer/problems', icon: FolderLock, label: 'Quản lý Bài tập' },
       { href: '/lecturer/question-bank', icon: Database, label: 'Ngân hàng Câu hỏi' },
     ],
@@ -46,6 +48,7 @@ const navGroups = [
     color: '#22d3ee',
     items: [
       { href: '/student/problems', icon: Target, label: 'Luyện tập (Bài tập)' },
+      { href: '/student/courses', icon: GraduationCap, label: 'Lớp học của tôi' },
       { href: '/student/pair-programming', icon: Users, label: 'Lập trình Cặp' },
       { href: '/student/code-battle', icon: Swords, label: 'Code Battle' },
       { href: '/student/learning-path', icon: Map, label: 'Lộ trình Học tập' },
@@ -59,6 +62,7 @@ const navGroups = [
     color: '#fbbf24',
     items: [
       { href: '/admin/users', icon: Users, label: 'Quản lý Người dùng' },
+      { href: '/admin/courses', icon: GraduationCap, label: 'Quản lý Lớp học' },
       { href: '/admin/problems', icon: ShieldCheck, label: 'Phê duyệt Bài tập' },
       { href: '/admin/sandbox', icon: Box, label: 'Tài nguyên Sandbox' },
       { href: '/admin/audit-log', icon: ClipboardList, label: 'Nhật ký hệ thống' },

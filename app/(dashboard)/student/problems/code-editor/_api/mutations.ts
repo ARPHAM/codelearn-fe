@@ -14,6 +14,7 @@ export interface SubmitCodeRequest {
         content: string;
     }[];
     answers?: Record<string, string[]>;
+    battleId?: string;
 }
 
 export const useSubmitCode = () => {
@@ -51,7 +52,8 @@ export const useSubmitCode = () => {
                 languageId,
                 entryFile: entryFile.includes('.') ? entryFile : entryFile + ext,
                 files: mappedFiles,
-                answers: payload.answers
+                answers: payload.answers,
+                battleId: payload.battleId
             };
 
             const response = await axios.post('/submission', submitPayload);

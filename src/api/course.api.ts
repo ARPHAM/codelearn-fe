@@ -17,4 +17,16 @@ export const courseApi = {
     const response = await axios.get('/course/me');
     return response.data.data;
   },
+  createCourse: async (data: any) => {
+    const response = await axios.post('/course', data);
+    return response.data.data;
+  },
+  assignUsers: async (id: string, data: any) => {
+    const response = await axios.post(`/course/${id}/users`, data);
+    return response.data.data;
+  },
+  getCourseStudents: async (id: string) => {
+    const response = await axios.get(`/course/${id}/students`);
+    return response.data.data;
+  },
 };

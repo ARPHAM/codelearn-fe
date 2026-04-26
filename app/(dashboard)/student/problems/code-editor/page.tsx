@@ -8,11 +8,12 @@ import { JetBrains_Mono } from 'next/font/google'
 import { io, Socket } from 'socket.io-client'
 import { useSubmitCode, useRunCode } from './_api/mutations'
 import { getRunResult, getSubmissionResult } from '@/features/problems/mutations'
-import { useLanguages } from '@/src/hooks/useLanguages'
-import { useStudentProblemDetail } from '@/src/hooks/useProblems'
+import { useLanguages } from '@/hooks/useLanguages'
+import { useStudentProblemDetail } from '@/hooks/useProblems'
+import { examApi } from '@/api/exam.api'
 import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
 import { toast } from '@/components/ui/Toast'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import ProblemUiStudent from '../../components/problem-ui-student'
 import { Bot, Send, Target, ClipboardList, Code2, Play, Upload, Edit2, Star, X, Plus, Database, Terminal, Loader2, Sparkles, ChevronLeft, ChevronRight, PanelLeftOpen, PanelRightOpen, MessageSquareText } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -80,8 +81,11 @@ const initialAiMessages = [
 ]
 
 export default function CodeEditorPage() {
+    const router = useRouter()
     const searchParams = useSearchParams()
     const slug = searchParams.get('slug')
+    const battleId = searchParams.get('battleId')
+    const examId = searchParams.get('examId')
     const { data: problemData, isLoading: isLoadingProblem } = useStudentProblemDetail(slug || '', !!slug)
 
     const editorRef = useRef<any>(null)
@@ -95,77 +99,8 @@ export default function CodeEditorPage() {
 
     const { data: languages = [] } = useLanguages()
 
-    const [isInitialized, setIsInitialized] = useState(false)
-    useEffect(() => {
-        if (languages.length === 0) return;
-
-        if (!slug) {
-            if (!isInitialized) {
-                console.log("Initializing Free Code mode...");
-                const defaultFiles = [{
-                    filename: "main.py",
-                    language: "python",
-                    content: languages.find(l => l.name.toLowerCase() === 'python')?.template || "",
-                    type: "NORMAL"
-                }];
-                setFiles(defaultFiles);
-                setActiveFileName("main.py");
-                setMainFileName("main.py");
-                setLanguage("python");
-                setIsInitialized(true);
-            }
-            return;
-        }
-
-        if (!isInitialized && !isLoadingProblem && problemData) {
-            console.log("Initializing Problem mode...", { problemData });
-
-            const allFiles = problemData.languageFiles || [];
-            if (allFiles.length > 0) {
-                const mappedFiles = allFiles.map(f => {
-                    const l = languages.find(lx => lx.id === f.languageId) || f.language;
-                    const langName = l?.name?.toLowerCase() || 'text';
-                    return {
-                        filename: f.path,
-                        language: langName,
-                        content: f.content,
-                        type: f.type
-                    }
-                });
-
-                setFiles(mappedFiles);
-                setActiveFileName(mappedFiles[0].filename);
-                const entry = problemData?.version?.entryFile || mappedFiles[0].filename;
-                setMainFileName(entry);
-
-                const entryFileObj = mappedFiles.find(f => f.filename === entry) || mappedFiles[0];
-                if (entryFileObj.language !== 'text') {
-                    setLanguage(entryFileObj.language);
-                }
-                setIsInitialized(true);
-            } else {
-                const defaultEntryName = problemData?.version?.entryFile || "main.py";
-                const ext = getExt(defaultEntryName);
-                const langObj = languages.find(l => l.ext === ext) || languages.find(l => l.name.toLowerCase() === 'python') || languages[0];
-
-                const defaultFiles = [{
-                    filename: defaultEntryName,
-                    language: langObj.name.toLowerCase(),
-                    content: langObj.template || "",
-                    type: "NORMAL"
-                }];
-
-                setFiles(defaultFiles);
-                setActiveFileName(defaultEntryName);
-                setMainFileName(defaultEntryName);
-                setLanguage(langObj.name.toLowerCase());
-                setIsInitialized(true);
-            }
-        }
-    }, [slug, problemData, languages, isInitialized, isLoadingProblem])
-
     const [language, setLanguage] = useState('python')
-    const [files, setFiles] = useState<{ filename: string, language: string, content: string, type?: string }[]>([
+    const [files, setFiles] = useState<{ filename: string, language: string, content: string, type?: string, languageId?: number }[]>([
         {
             filename: "main.py",
             language: "python",
@@ -186,6 +121,143 @@ export default function CodeEditorPage() {
         cancelText?: string,
         onConfirm: (val?: string) => void
     } | null>(null);
+
+    const [isInitialized, setIsInitialized] = useState(false)
+    useEffect(() => {
+        if (languages.length === 0) return;
+
+        if (!slug) {
+            if (!isInitialized) {
+                const defaultFiles = [{
+                    filename: "main.py",
+                    language: "python",
+                    content: languages.find(l => l.name.toLowerCase() === 'python')?.template || "",
+                    type: "NORMAL"
+                }];
+                setFiles(defaultFiles);
+                setActiveFileName("main.py");
+                setMainFileName("main.py");
+                setLanguage("python");
+                setIsInitialized(true);
+            }
+            return;
+        }
+
+        if (!isInitialized && !isLoadingProblem && problemData) {
+            // Lọc file theo quy tắc: Ẩn HIDDEN/SOLUTION, chỉ lấy TEMPLATE/NEUTRAL
+            // Lọc theo ngôn ngữ: Neutral (null) hoặc khớp với entry file language
+            const allFiles = (problemData.languageFiles || []).filter((f: any) => 
+                f.type !== 'HIDDEN' && f.type !== 'SOLUTION'
+            );
+
+            if (allFiles.length > 0) {
+                // Thử khôi phục từ localStorage
+                const storageKey = `code-cache-${problemData.id}`;
+                const cached = localStorage.getItem(storageKey);
+                let initialFiles = [];
+
+                if (cached) {
+                    try {
+                        initialFiles = JSON.parse(cached);
+                        console.log("Restored from localStorage", initialFiles);
+                    } catch (e) {
+                        console.error("Failed to parse cached code", e);
+                    }
+                }
+
+                if (initialFiles.length === 0) {
+                    initialFiles = allFiles.map(f => {
+                        const l = languages.find(lx => lx.id === f.languageId) || f.language;
+                        const langName = l?.name?.toLowerCase() || 'text';
+                        return {
+                            filename: f.path,
+                            language: langName,
+                            content: f.content,
+                            type: f.type,
+                            languageId: f.languageId
+                        }
+                    });
+                }
+
+                setFiles(initialFiles);
+                setActiveFileName(initialFiles[0].filename);
+                const entry = problemData?.version?.entryFile || initialFiles[0].filename;
+                setMainFileName(entry);
+
+                const entryFileObj = initialFiles.find((f: any) => f.filename === entry) || initialFiles[0];
+                if (entryFileObj.language !== 'text') {
+                    setLanguage(entryFileObj.language);
+                }
+                setIsInitialized(true);
+            } else {
+                // Fallback nếu không có file nào (hiếm)
+                const defaultEntryName = problemData?.version?.entryFile || "main.py";
+                const ext = getExt(defaultEntryName);
+                const langObj = languages.find(l => l.ext === ext) || languages.find(l => l.name.toLowerCase() === 'python') || languages[0];
+
+                const defaultFiles = [{
+                    filename: defaultEntryName,
+                    language: langObj.name.toLowerCase(),
+                    content: langObj.template || "",
+                    type: "NORMAL"
+                }];
+
+                setFiles(defaultFiles);
+                setActiveFileName(defaultEntryName);
+                setMainFileName(defaultEntryName);
+                setLanguage(langObj.name.toLowerCase());
+                setIsInitialized(true);
+            }
+        }
+    }, [slug, problemData, languages, isInitialized, isLoadingProblem])
+
+    // Auto-save to localStorage
+    useEffect(() => {
+        if (isInitialized && problemData?.id) {
+            const timer = setTimeout(() => {
+                localStorage.setItem(`code-cache-${problemData.id}`, JSON.stringify(files));
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [files, isInitialized, problemData?.id]);
+
+    // Timer logic cho Kỳ thi
+    const [timeLeft, setTimeLeft] = useState<number | null>(null);
+    useEffect(() => {
+        if (examId && !timeLeft) {
+            // Fetch exam detail để lấy endTime
+            examApi.getExamDetail(examId).then(data => {
+                if (data.endTime) {
+                    const end = new Date(data.endTime).getTime();
+                    const now = new Date().getTime();
+                    const diff = Math.max(0, Math.floor((end - now) / 1000));
+                    setTimeLeft(diff);
+                }
+            });
+        }
+    }, [examId]);
+
+    useEffect(() => {
+        if (timeLeft !== null && timeLeft > 0) {
+            const interval = setInterval(() => {
+                setTimeLeft(prev => {
+                    if (prev === null || prev <= 1) {
+                        clearInterval(interval);
+                        if (prev === 1) handleAutoSubmit();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+    }, [timeLeft]);
+
+    const handleAutoSubmit = () => {
+        toast({ type: 'warning', title: 'Hết giờ!', message: 'Hệ thống đang tự động nộp bài làm của bạn.' });
+        if (submitRef.current) submitRef.current();
+    };
+
 
     const handleAddFile = () => {
         setModal({
@@ -459,10 +531,20 @@ export default function CodeEditorPage() {
                 entryFile: safeMainFileName,
                 files: otherFiles,
                 answers,
-                problemVersionId: problemData?.version?.id as string
+                problemVersionId: problemData?.version?.id as string,
+                battleId: battleId as string
             })
             setStatus("QUEUED")
-            listenToResult(resp.submissionId, 'SUBMIT')
+            // Nếu là Kỳ thi, xóa cache và điều hướng sau khi nộp
+            if (problemData?.id) localStorage.removeItem(`code-cache-${problemData.id}`);
+            if (examId) {
+                toast({ type: 'success', title: 'Thành công', message: 'Bài làm đã được nộp. Đang chuyển tới màn hình kết quả...' });
+                setTimeout(() => {
+                    router.push(`/student/exams/${examId}/result`);
+                }, 1500);
+            } else {
+                listenToResult(resp.submissionId, 'SUBMIT')
+            }
         } catch (err) { setStatus("ERROR") }
     }
 
@@ -512,6 +594,8 @@ export default function CodeEditorPage() {
     const [leftCollapsed, setLeftCollapsed] = useState(false)
     const [rightCollapsed, setRightCollapsed] = useState(false)
 
+    const workspaceConfig = (!slug) ? { canCreateFile: true, canChangeMainFile: true } : (problemData?.version?.workspaceConfig || { canCreateFile: false, canChangeMainFile: false });
+
     return (
         <>
             <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 124px)', gap: 14, minHeight: 0 }}>
@@ -526,6 +610,14 @@ export default function CodeEditorPage() {
                         <p className="page-subtitle">{problemData?.title ? `Bài: ${problemData.title}` : 'Chế độ Code Tự Do'} · {currentFile?.language}</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        {timeLeft !== null && (
+                            <div style={{ marginRight: 20, textAlign: 'center' }}>
+                                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700 }}>BÀI THI KẾT THÚC SAU</div>
+                                <div style={{ fontSize: 18, fontWeight: 900, color: timeLeft < 60 ? 'var(--accent-red)' : 'var(--accent-purple)', fontFamily: 'monospace' }}>
+                                    {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+                                </div>
+                            </div>
+                        )}
                         <select
                             className="btn"
                             style={{ background: '#1c212e', fontSize: 13, border: '1px solid var(--border)' }}
@@ -583,6 +675,8 @@ export default function CodeEditorPage() {
                                             testcases={problemData.testcases}
                                             difficulty={problemData.difficulty as any}
                                             stats={problemData.stats as any}
+                                            timeLimit={problemData.timeLimit}
+                                            memoryLimit={problemData.memoryLimit}
                                         />
                                     )}
                                     {!isLoadingProblem && !problemData && (
@@ -605,7 +699,6 @@ export default function CodeEditorPage() {
                                     const isUnsupported = isMain && !languages.find(l => l.ext === fileExt);
                                     const dbFile = problemData?.languageFiles?.find((lf: any) => lf.path === f.filename);
                                     const isTemplateFile = dbFile && dbFile.type === 'TEMPLATE';
-                                    const workspaceConfig = (!slug) ? { canCreateFile: true, canChangeMainFile: true } : (problemData?.version?.workspaceConfig || { canCreateFile: false, canChangeMainFile: false });
 
                                     return (
                                         <div key={f.filename}

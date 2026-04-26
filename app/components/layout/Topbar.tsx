@@ -16,6 +16,7 @@ const routeLabels: Record<string, string> = {
   'lecturer': 'Giảng viên',
   'admin': 'Quản trị viên',
   'problems': 'Bài tập',
+  'courses': 'Lớp học',
   'leaderboard': 'Bảng xếp hạng',
   'learning-path': 'Lộ trình học tập',
   'code-battle': 'Code Battle',

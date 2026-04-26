@@ -86,6 +86,8 @@ export type StudentProblemDetailResponse = {
   slug: string;
   difficulty: string;
   type: string;
+  timeLimit: number;
+  memoryLimit: number;
   stats?: any;
   version?: { 
     id: string; 

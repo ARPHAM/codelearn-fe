@@ -1,7 +1,7 @@
-
 'use client';
 
 import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useLecturerProblems } from '@/hooks/useProblems';
 import { plagiarismApi, PlagiarismPair } from '@/api/plagiarism.api';
@@ -14,7 +14,8 @@ import {
   FileCode,
   ShieldAlert,
   Target,
-  CheckCircle2
+  CheckCircle2,
+  ChevronLeft
 } from 'lucide-react';
 
 function RiskBadge({ similarity }: { similarity: number }) {
@@ -43,11 +44,15 @@ function RiskBadge({ similarity }: { similarity: number }) {
 }
 
 export default function PlagiarismPage() {
+  const params = useParams();
+  const router = useRouter();
+  const courseId = params.id as string;
+  
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
   const [threshold, setThreshold] = useState(70);
 
-  // 1. Fetch lecturer's problems
-  const { data: problemsData } = useLecturerProblems();
+  // 1. Fetch lecturer's problems for THIS course
+  const { data: problemsData } = useLecturerProblems({ courseId });
 
   // 2. Fetch plagiarism results
   const { data: resultsData, isLoading: loadingResults, refetch } = useQuery({
@@ -73,12 +78,22 @@ export default function PlagiarismPage() {
 
   return (
     <div className="page-container animate-in">
+      <div style={{ marginBottom: 20 }}>
+        <button 
+          className="btn btn-ghost" 
+          onClick={() => router.push(`/lecturer/courses/${courseId}`)}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: 0 }}
+        >
+          <ChevronLeft size={16} /> Quay lại lớp học
+        </button>
+      </div>
+
       <div className="page-header">
         <div>
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Search size={28} color="var(--accent-purple-light)" /> Phát hiện Đạo văn
+            <Search size={28} color="var(--accent-purple-light)" /> Kiểm tra Đạo văn
           </h1>
-          <p className="page-subtitle">Phân tích tương đồng mã nguồn giữa các sinh viên trên cùng một bài tập</p>
+          <p className="page-subtitle">Phân tích tương đồng mã nguồn trong khóa học này</p>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
           <select 
@@ -87,7 +102,7 @@ export default function PlagiarismPage() {
             onChange={(e) => setSelectedExerciseId(e.target.value)}
             style={{ minWidth: 260, height: 44, borderRadius: 12 }}
           >
-            <option value="">-- Chọn bài tập để phân tích --</option>
+            <option value="">-- Chọn bài tập trong lớp --</option>
             {problemsData?.items?.map((p: any) => (
               <option key={p.id} value={p.id}>{p.title}</option>
             ))}
@@ -176,7 +191,7 @@ export default function PlagiarismPage() {
                            </span>
                         </td>
                         <td style={{ textAlign: 'right' }}>
-                           <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }}>Xem mã nguồn</button>
+                           <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }}>Xem chi tiết</button>
                         </td>
                       </tr>
                     ))}
@@ -194,7 +209,7 @@ export default function PlagiarismPage() {
                    Cơ chế phân tích AST
                 </h3>
                 <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--text-secondary)', margin: 0 }}>
-                   Hệ thống không chỉ so sánh văn bản đơn thuần mà sử dụng **Abstract Syntax Tree (AST)** để phát hiện các hành vi đổi tên biến, thay đổi cấu trúc vòng lặp nhưng giữ nguyên logic thuật toán.
+                   Hệ thống sử dụng **Abstract Syntax Tree (AST)** để phát hiện hành vi đổi tên biến, thay đổi cấu trúc vòng lặp nhưng giữ nguyên logic thuật toán.
                 </p>
                 <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
                    {['Bỏ qua khoảng trắng', 'Chuẩn hóa tên biến', 'Nhận diện hoán đổi câu lệnh'].map((f, i) => (
@@ -208,10 +223,10 @@ export default function PlagiarismPage() {
 
              <div className="card" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, color: '#f87171', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <AlertTriangle size={16} /> Lưu ý về ngưỡng (Threshold)
+                  <AlertTriangle size={16} /> Lưu ý về ngưỡng
                 </h3>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                   Các bài tập đơn giản có thể có độ tương đồng cao một cách tự nhiên. Giảng viên nên cân nhắc kỹ trước khi đánh dấu vi phạm đối với các tỷ lệ dưới 70%.
+                   Các bài tập đơn giản có thể có độ tương đồng cao tự nhiên. Giảng viên nên cân nhắc kỹ trước khi đánh dấu vi phạm đối với các tỷ lệ dưới 70%.
                 </p>
              </div>
           </div>

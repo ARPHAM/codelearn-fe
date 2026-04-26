@@ -21,6 +21,7 @@ import { useLanguages } from '@/hooks/useLanguages'
 import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
 import { PlusSquare, RotateCcw, Trash2, ArrowUp, ArrowDown, Cpu, Zap, Timer, Circle, Paperclip, Star } from 'lucide-react'
 import styles from './editor.module.css'
+import CustomSelect from '@/components/ui/Select'
 
 // ---------------- TOGGLE NODE ----------------
 const ToggleComponent = () => {
@@ -617,18 +618,28 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                                 </div>
                                 <div className={styles['form-group']}>
                                     <label>Độ khó</label>
-                                    <select value={problemState.difficulty} onChange={e => setProblemState(s => ({ ...s, difficulty: e.target.value as any}))}>
-                                        <option value="EASY">Dễ</option>
-                                        <option value="MEDIUM">Trung bình</option>
-                                        <option value="HARD">Khó</option>
-                                    </select>
+                                    <CustomSelect 
+                                        value={problemState.difficulty} 
+                                        onChange={val => setProblemState(s => ({ ...s, difficulty: val as any}))}
+                                        options={[
+                                            { value: 'EASY', label: 'Dễ' },
+                                            { value: 'MEDIUM', label: 'Trung bình' },
+                                            { value: 'HARD', label: 'Khó' },
+                                        ]}
+                                        minWidth="100%"
+                                    />
                                 </div>
                                 <div className={`${styles['form-group']} ${styles['full-width']}`}>
                                     <label>Loại hình</label>
-                                    <select value={problemState.type} onChange={e => setProblemState(s => ({ ...s, type: e.target.value as any}))}>
-                                        <option value="CODE">Lập trình (CODE)</option>
-                                        <option value="SQL">Truy vấn (SQL)</option>
-                                    </select>
+                                    <CustomSelect 
+                                        value={problemState.type} 
+                                        onChange={val => setProblemState(s => ({ ...s, type: val as any}))}
+                                        options={[
+                                            { value: 'CODE', label: 'Lập trình (CODE)' },
+                                            { value: 'SQL', label: 'Truy vấn (SQL)' },
+                                        ]}
+                                        minWidth="100%"
+                                    />
                                 </div>
                                 <div className={`${styles['form-group']} ${styles['full-width']}`}>
                                     <label>Tùy chỉnh IDE Học viên</label>
@@ -656,16 +667,26 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                                 {languageFiles.map(file => (
                                     <div key={file.id} className={styles['code-file-item']}>
                                         <div className={styles['code-file-header']} style={{ padding: '8px 12px' }}>
-                                            <select value={file.languageId} onChange={e => updateFile(file.id as string, 'languageId', parseInt(e.target.value))} style={{ fontSize: 12 }}>
-                                                <option value={0}>Đính kèm</option>
-                                                {languages.map(l => (
-                                                    <option key={l.id} value={l.id}>{l.name}</option>
-                                                ))}
-                                            </select>
-                                            <select value={file.type} onChange={e => updateFile(file.id as string, 'type', e.target.value)} style={{ fontSize: 12 }}>
-                                                <option value="TEMPLATE">TEMPLATE</option>
-                                                <option value="SOLUTION">SOLUTION</option>
-                                            </select>
+                                            <CustomSelect 
+                                                value={file.languageId} 
+                                                onChange={val => updateFile(file.id as string, 'languageId', val)}
+                                                options={[
+                                                    { value: 0, label: 'Đính kèm' },
+                                                    ...languages.map(l => ({ value: l.id, label: l.name }))
+                                                ]}
+                                                minWidth={130}
+                                                height={36}
+                                            />
+                                            <CustomSelect 
+                                                value={file.type} 
+                                                onChange={val => updateFile(file.id as string, 'type', val)}
+                                                options={[
+                                                    { value: 'TEMPLATE', label: 'TEMPLATE' },
+                                                    { value: 'SOLUTION', label: 'SOLUTION' },
+                                                ]}
+                                                minWidth={120}
+                                                height={36}
+                                            />
                                             <input value={file.path} onChange={e => updateFile(file.id as string, 'path', e.target.value)} placeholder="Tên file" style={{ flex: 1, fontSize: 12 }} />
                                             <button 
                                                 className={styles['btn-icon']} 

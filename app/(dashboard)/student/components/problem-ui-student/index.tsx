@@ -34,6 +34,8 @@ interface ProblemUiStudentProps {
         acceptanceRate: number
     }
     testcases?: TestCase[]
+    timeLimit?: number
+    memoryLimit?: number
     
     // Fallback cho UI cũ
     blocks?: Block[]
@@ -90,7 +92,7 @@ function StudentEditorBlock({ content }: { content: string }) {
 
 // ---------------- MAIN COMPONENT ----------------
 
-export default function ProblemUiStudent({ blocks, title, description, difficulty, stats, testcases }: ProblemUiStudentProps) {
+export default function ProblemUiStudent({ blocks, title, description, difficulty, stats, testcases, timeLimit, memoryLimit }: ProblemUiStudentProps) {
 
     return (
         <div className={`${styles['page-container']} student-view`}>
@@ -108,6 +110,16 @@ export default function ProblemUiStudent({ blocks, title, description, difficult
                         {stats && (
                             <span className="stats-text" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
                                 {stats.totalSubmissions} lượt nộp · {stats.acceptanceRate}% đỗ
+                            </span>
+                        )}
+                        {timeLimit !== undefined && (
+                            <span className={`${styles.badge} ${styles['difficulty-medium']}`} style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(124,58,237,0.1)', color: 'var(--accent-purple-light)' }}>
+                                {timeLimit} ms
+                            </span>
+                        )}
+                        {memoryLimit !== undefined && (
+                            <span className={`${styles.badge} ${styles['difficulty-medium']}`} style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(6,182,212,0.1)', color: 'var(--accent-cyan)' }}>
+                                {memoryLimit} MB
                             </span>
                         )}
                     </div>
