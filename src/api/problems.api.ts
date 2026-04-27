@@ -18,8 +18,11 @@ export type LanguageFile = {
   id?: string;
   languageId: number;
   path: string;
-  type: 'TEMPLATE' | 'SOLUTION';
+  type: 'TEMPLATE' | 'SOLUTION' | 'NEUTRAL' | 'HIDDEN';
   content: string;
+  isReadonly?: boolean;
+  isFillInTheBlank?: boolean;
+  isEntryFile?: boolean;
   language?: {
     id: number;
     name: string;
@@ -35,15 +38,17 @@ export type CreateProblemDto = {
   type: 'CODE' | 'SQL';
   visibility: 'PUBLIC' | 'PRIVATE';
   source?: string;
+  status?: string;
   workspaceConfig?: {
     canCreateFile: boolean;
     canChangeMainFile: boolean;
   };
   description: Block[];
   testcases: TestCase[];
-  languageFiles: LanguageFile[];
+  problemFiles: LanguageFile[];
   entryFile?: string;
-  problemFiles?: any[];
+  timeLimit?: number;
+  memoryLimit?: number;
 };
 
 export type ProblemSummary = {
