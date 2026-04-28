@@ -8,6 +8,10 @@ type User = {
     role: string,
     email: string,
     avatar?: string,
+    mssv?: string,
+    major?: string,
+    rating?: number,
+    xp?: number,
 }
 
 export const useCurrentUserInfo = () => {

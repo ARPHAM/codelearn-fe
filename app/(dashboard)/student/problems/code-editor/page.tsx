@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, Suspense } from 'react'
 
 import Editor from '@monaco-editor/react'
 import './styles.module.css'
@@ -81,6 +81,14 @@ const initialAiMessages = [
 ]
 
 export default function CodeEditorPage() {
+    return (
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#94a3b8' }}>Đang tải trình soạn thảo...</div>}>
+            <CodeEditorContent />
+        </Suspense>
+    )
+}
+
+function CodeEditorContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const slug = searchParams.get('slug')

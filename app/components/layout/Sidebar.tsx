@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { redirect, usePathname } from 'next/navigation';
+import { redirect, usePathname, useRouter } from 'next/navigation';
 import { useCurrentUserInfo } from '../_api/queries';
 import { useState } from 'react';
 import { useLogout } from '../_api/mutations';
@@ -74,6 +74,7 @@ const navGroups = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDropdownHovered, setIsDropdownHovered] = useState(false);
   const [isDropdownClicked, setIsDropdownClicked] = useState(false);
@@ -341,7 +342,11 @@ export default function Sidebar() {
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                onClick={() => { setIsDropdownClicked(false); setIsDropdownHovered(false); }}
+                onClick={() => { 
+                  setIsDropdownClicked(false); 
+                  setIsDropdownHovered(false); 
+                  router.push('/profile');
+                }}
               >
                 <UserIcon size={16} />
                 Thông tin cá nhân

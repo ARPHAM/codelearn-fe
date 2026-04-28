@@ -20,3 +20,33 @@ export const useLogout = () => {
 		},
 	})
 }
+export const useUpdateProfile = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: async (data: { fullName?: string, mssv?: string, major?: string, avatarUrl?: string }) => {
+			return axios.patch('/user/profile', data)
+		},
+		onSuccess: () => {
+			toast({ type: 'success', title: 'Cập nhật thành công!', message: 'Thông tin cá nhân đã được cập nhật.' });
+			queryClient.invalidateQueries({ queryKey: ['useCurrentUserInfo'] })
+		},
+		onError: (error: any) => {
+			toast({ type: 'error', title: 'Cập nhật thất bại!', message: error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật.' });
+		},
+	})
+}
+
+export const useChangePassword = () => {
+	return useMutation({
+		mutationFn: async (data: { currentPassword: string, newPassword: string }) => {
+			return axios.patch('/user/change-password', data)
+		},
+		onSuccess: () => {
+			toast({ type: 'success', title: 'Thành công!', message: 'Mật khẩu đã được thay đổi.' });
+		},
+		onError: (error: any) => {
+			toast({ type: 'error', title: 'Lỗi!', message: error.response?.data?.message || 'Không thể đổi mật khẩu.' });
+		},
+	})
+}
