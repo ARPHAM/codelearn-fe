@@ -130,8 +130,8 @@ export const getProblemDetail = async (id: string): Promise<ProblemDetailRespons
   return response.data.data;
 };
 
-export const getStudentProblemDetail = async (slug: string): Promise<StudentProblemDetailResponse> => {
-  const response = await axios.get(`/problem/${slug}`);
+export const getStudentProblemDetail = async (slug: string, languageId?: number, examId?: string): Promise<StudentProblemDetailResponse> => {
+  const response = await axios.get(`/problem/${slug}`, { params: { languageId, examId } });
   return response.data.data;
 };
 export const getAdminProblems = async (params?: {

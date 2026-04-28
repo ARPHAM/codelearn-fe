@@ -19,12 +19,13 @@ import { runApi, RunResult } from '@/api/run.api'
 import { useLanguages } from '@/hooks/useLanguages'
 import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
 import Modal from '@/components/ui/Modal'
-import { 
-    PlusSquare, RotateCcw, Trash2, ArrowUp, ArrowDown, Cpu, Zap, Timer, 
+import {
+    PlusSquare, RotateCcw, Trash2, ArrowUp, ArrowDown, Cpu, Zap, Timer,
     Circle, Star, Play, Copy, Lock, Unlock, FileCode, Plus, X, Edit3, Settings, BookOpen, AlertCircle
 } from 'lucide-react'
 import styles from './editor.module.css'
 import CustomSelect from '@/components/ui/Select'
+import { useRouter } from 'next/navigation'
 
 // ---------------- TOGGLE NODE (Tiptap) ----------------
 const ToggleComponent = () => (
@@ -64,11 +65,11 @@ const getDefaultContent = (ext: string) => {
 }
 
 // ---------------- LANGUAGE WORKSPACE ----------------
-const LanguageWorkspace = memo(function LanguageWorkspace({ 
-    languageId, 
-    languages, 
-    files, 
-    updateFiles, 
+const LanguageWorkspace = memo(function LanguageWorkspace({
+    languageId,
+    languages,
+    files,
+    updateFiles,
     onRemoveLanguage,
     onRunCode,
     openConfirm,
@@ -77,10 +78,10 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
     entryFile,
     setAsEntryFile,
     updateSingleFile
-}: { 
-    languageId: number, 
-    languages: any[], 
-    files: LanguageFile[], 
+}: {
+    languageId: number,
+    languages: any[],
+    files: LanguageFile[],
     updateFiles: (newFiles: LanguageFile[]) => void,
     updateSingleFile: (langId: number, path: string, type: 'TEMPLATE' | 'SOLUTION', updates: Partial<LanguageFile>) => void,
     onRemoveLanguage: () => void,
@@ -93,20 +94,20 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
 }) {
     const lang = useMemo(() => languages.find(l => l.id === languageId), [languages, languageId])
     const [activePath, setActivePath] = useState<string>(files[0]?.path || '')
-    
+
     const templateRef = useRef<any>(null)
     const solutionRef = useRef<any>(null)
     const [blankStatus, setBlankStatus] = useState({ canWrap: true, isInside: false, isInvalid: false })
 
     const paths = useMemo(() => Array.from(new Set(files.map(f => f.path))), [files])
-    
+
     useEffect(() => {
         if (!paths.includes(activePath) && paths.length > 0) {
             setActivePath(paths[0])
         }
     }, [paths, activePath])
 
-    const getFile = useCallback((path: string, type: 'TEMPLATE' | 'SOLUTION') => 
+    const getFile = useCallback((path: string, type: 'TEMPLATE' | 'SOLUTION') =>
         files.find(f => f.path === path && f.type === type), [files])
 
     const updateFileContent = useCallback((path: string, type: 'TEMPLATE' | 'SOLUTION', content: string) => {
@@ -198,8 +199,8 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
 
                     <div className={styles['file-tabs-container']}>
                         {paths.map(p => (
-                            <div 
-                                key={p} 
+                            <div
+                                key={p}
                                 className={`${styles['file-tab']} ${p === activePath ? styles['file-tab-active'] : ''}`}
                                 onClick={() => setActivePath(p)}
                             >
@@ -207,8 +208,8 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
                                 {p}
                                 {p === activePath && (
                                     <div style={{ display: 'flex', gap: 4, marginLeft: 4 }}>
-                                        <button 
-                                            onClick={(e) => { e.stopPropagation(); setAsEntryFile(p) }} 
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setAsEntryFile(p) }}
                                             className={`${styles['btn-icon']} ${getFile(p, 'TEMPLATE')?.isEntryFile ? styles['active-entry'] : ''}`}
                                             style={{ color: getFile(p, 'TEMPLATE')?.isEntryFile ? '#f59e0b' : '' }}
                                             title="Đặt làm file chính"
@@ -226,14 +227,14 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
                     {activeTemplate && (
                         <>
                             <div className={styles['editor-actions']}>
-                                <button 
+                                <button
                                     onClick={() => toggleFlag(activePath, 'isReadonly')}
                                     className={`${styles['action-btn']} ${activeTemplate.isReadonly ? styles['active'] : ''}`}
                                     title={activeTemplate.isReadonly ? "Tập tin chỉ đọc" : "Tập tin có thể sửa chuyên sâu"}
                                 >
                                     {activeTemplate.isReadonly ? <Lock size={12} /> : <Unlock size={12} />} Chỉ đọc
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         // Luôn đảm bảo flag FillInTheBlank được bật khi thao tác chèn
                                         if (!activeTemplate.isFillInTheBlank) {
@@ -258,15 +259,15 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
                                     {blankStatus.isInside && <div style={{ position: 'absolute', top: -4, right: -4, width: 10, height: 10, background: '#10b981', borderRadius: '50%', boxShadow: '0 0 10px #10b981', border: '2px solid #0b0f1a' }} />}
                                 </button>
                             </div>
-                                <FillInTheBlankEditor 
-                                    ref={templateRef}
-                                    file={activeTemplate} 
-                                    updateFile={(_, __, val) => updateFileContent(activePath, 'TEMPLATE', val)}
-                                    languages={languages}
-                                    height="320px"
-                                    isStudent={false}
-                                    onStatusChange={setBlankStatus}
-                                />
+                            <FillInTheBlankEditor
+                                ref={templateRef}
+                                file={activeTemplate}
+                                updateFile={(_, __, val) => updateFileContent(activePath, 'TEMPLATE', val)}
+                                languages={languages}
+                                height="320px"
+                                isStudent={false}
+                                onStatusChange={setBlankStatus}
+                            />
                         </>
                     )}
                 </div>
@@ -283,8 +284,8 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
 
                     <div className={styles['file-tabs-container']}>
                         {paths.map(p => (
-                            <div 
-                                key={p} 
+                            <div
+                                key={p}
                                 className={`${styles['file-tab']} ${p === activePath ? styles['file-tab-active'] : ''}`}
                                 onClick={() => setActivePath(p)}
                             >
@@ -304,9 +305,9 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
                                     <Copy size={12} /> Đồng bộ
                                 </button>
                             </div>
-                            <FillInTheBlankEditor 
+                            <FillInTheBlankEditor
                                 ref={solutionRef}
-                                file={activeSolution} 
+                                file={activeSolution}
                                 updateFile={(_, __, val) => updateFileContent(activePath, 'SOLUTION', val)}
                                 languages={languages}
                                 height="320px"
@@ -329,6 +330,7 @@ interface ProblemEditorProps {
 }
 
 export default function ProblemEditor({ initialData, onSubmit, isSubmitting, disableSave }: ProblemEditorProps) {
+    const router = useRouter()
     const { data: languagesData } = useLanguages()
     const languages = useMemo(() => languagesData || [], [languagesData])
 
@@ -366,7 +368,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
         title: '',
         message: '',
         value: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
     })
 
     const openConfirm = useCallback((title: string, message: string, onConfirm: () => void) => {
@@ -378,7 +380,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
     }, [])
 
     const openAlert = useCallback((title: string, message: string) => {
-        setModal({ isOpen: true, type: 'alert', title, message, value: '', onConfirm: () => {} })
+        setModal({ isOpen: true, type: 'alert', title, message, value: '', onConfirm: () => { } })
     }, [])
 
     const closeModal = useCallback(() => setModal(prev => ({ ...prev, isOpen: false })), [])
@@ -418,7 +420,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
             setTestcases(prev => prev.filter(tc => tc.id !== id))
         })
     }, [openConfirm])
-    
+
     const activeLanguages = useMemo(() => Array.from(new Set(languageFiles.map(f => f.languageId))), [languageFiles])
 
     const addNewLanguage = useCallback((langId: number) => {
@@ -436,7 +438,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
 
     const removeLanguage = useCallback((langId: number) => {
         openConfirm('Gỡ ngôn ngữ', 'Toàn bộ mã nguồn Boilerplate và Lời giải của ngôn ngữ này sẽ bị xóa. Bạn chắc chắn chứ?', () => {
-             setLanguageFiles(prev => prev.filter(f => f.languageId !== langId))
+            setLanguageFiles(prev => prev.filter(f => f.languageId !== langId))
         })
     }, [openConfirm])
 
@@ -474,14 +476,14 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
             ...problemState,
             workspaceConfig,
             description: [{ id: 'main-description', content: editor?.getHTML() || '' }] as Block[],
-            testcases: testcases.map(({ input, expectedOutput, score, isHidden, order }) => ({ 
-                input, 
-                expectedOutput, 
-                score, 
-                isHidden: !!isHidden, 
-                order 
+            testcases: testcases.map(({ input, expectedOutput, score, isHidden, order }) => ({
+                input,
+                expectedOutput,
+                score,
+                isHidden: !!isHidden,
+                order
             })),
-            problemFiles: languageFiles.map((f: LanguageFile) => ({ 
+            problemFiles: languageFiles.map((f: LanguageFile) => ({
                 languageId: f.languageId,
                 path: f.path,
                 type: f.type,
@@ -512,13 +514,13 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
             runtime: 0
         }))
         setRunResults(initialResults)
-        
+
         console.log(`%c === BẮT ĐẦU CHẠY THỬ (${lang.name}) === `, 'background: #8b5cf6; color: white; padding: 4px; border-radius: 4px;')
         let passCount = 0
 
         for (let i = 0; i < testcases.length; i++) {
             const tc = testcases[i]
-            
+
             // Cập nhật trạng thái đang chạy cho testcase hiện tại
             setRunResults(prev => prev ? prev.map((r, idx) => idx === i ? { ...r, status: 'RUNNING' } : r) : null)
 
@@ -532,13 +534,13 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
             try {
                 const runExecution = await runApi.executeCode(runPayload)
                 const result = await runApi.waitForResult(runExecution.id)
-                
+
                 const actualOutput = (result.stdout || '').trim()
                 const expectedOutput = (tc.expectedOutput || '').trim()
                 const isMatch = actualOutput === expectedOutput
-                
+
                 if (isMatch) passCount++
-                
+
                 const finalResult = {
                     input: tc.input,
                     expected: expectedOutput,
@@ -568,7 +570,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
     }, [languages, openAlert, testcases])
 
     return (
-        <div className={styles['page-container']} style={{ padding: '24px 24px 60px' }}>
+        <div className={styles['page-container']}>
             <div className={styles['layout-split']}>
                 <div className={styles['left-panel']}>
                     <div className={styles['panel-header']}>
@@ -658,19 +660,19 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                             Cấu hình chung
                         </h3>
                     </div>
-                        <div className={styles['tab-content']}>
-                            <div className={styles['form-group']} style={{ marginBottom: 20 }}>
-                                <div className={styles['main-title-group']}>
-                                    <label>Tên bài tập</label>
-                                    <input 
-                                        type="text"
-                                        value={problemState.title} 
-                                        onChange={e => setProblemState(s => ({ ...s, title: e.target.value }))} 
-                                        placeholder="Nhập tên bài tập..." 
-                                    />
-                                </div>
+                    <div className={styles['tab-content']}>
+                        <div className={styles['form-group']} style={{ marginBottom: 20 }}>
+                            <div className={styles['main-title-group']}>
+                                <label>Tên bài tập</label>
+                                <input
+                                    type="text"
+                                    value={problemState.title}
+                                    onChange={e => setProblemState(s => ({ ...s, title: e.target.value }))}
+                                    placeholder="Nhập tên bài tập..."
+                                />
                             </div>
-                            <div className={styles['form-grid']} style={{ gridTemplateColumns: '1fr', gap: 16 }}>
+                        </div>
+                        <div className={styles['form-grid']} style={{ gridTemplateColumns: '1fr', gap: 16 }}>
                             <div className={styles['form-group']}>
                                 <label>Đường dẫn bài tập (Slug)</label>
                                 <input value={problemState.slug} onChange={e => setProblemState(s => ({ ...s, slug: e.target.value }))} placeholder="vi-du-ten-bai-viet" />
@@ -678,19 +680,19 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div className={styles['form-group']}>
                                     <label>Độ khó</label>
-                                    <CustomSelect 
-                                        value={problemState.difficulty} 
-                                        onChange={val => setProblemState(s => ({ ...s, difficulty: val as any}))}
+                                    <CustomSelect
+                                        value={problemState.difficulty}
+                                        onChange={val => setProblemState(s => ({ ...s, difficulty: val as any }))}
                                         options={[{ value: 'EASY', label: 'Dễ' }, { value: 'MEDIUM', label: 'Trung bình' }, { value: 'HARD', label: 'Khó' }]}
                                     />
                                 </div>
                                 <div className={styles['form-group']}>
                                     <label>Chế độ hiển thị</label>
-                                    <CustomSelect 
-                                        value={problemState.visibility} 
-                                        onChange={val => setProblemState(s => ({ ...s, visibility: val as any}))}
+                                    <CustomSelect
+                                        value={problemState.visibility}
+                                        onChange={val => setProblemState(s => ({ ...s, visibility: val as any }))}
                                         options={[
-                                            { value: 'PUBLIC', label: 'Công khai (Public)' }, 
+                                            { value: 'PUBLIC', label: 'Công khai (Public)' },
                                             { value: 'PRIVATE', label: 'Riêng tư (Private)' }
                                         ]}
                                     />
@@ -744,7 +746,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                     </div>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                         <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Thêm ngôn ngữ:</span>
-                        <CustomSelect 
+                        <CustomSelect
                             value=""
                             onChange={v => addNewLanguage(Number(v))}
                             options={languages.filter(l => !activeLanguages.includes(l.id)).map(l => ({ value: l.id, label: l.name }))}
@@ -762,7 +764,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                 )}
 
                 {activeLanguages.map(langId => (
-                    <LanguageWorkspace 
+                    <LanguageWorkspace
                         key={langId}
                         languageId={langId}
                         languages={languages}
@@ -780,8 +782,8 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                 ))}
             </div>
 
-            <div style={{ marginTop: 40, padding: '24px 0', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
-                <button className="btn btn-ghost" style={{ border: '1px solid var(--border)', minWidth: 120, height: 48, borderRadius: 12 }} onClick={() => window.history.back()}>Hủy bỏ</button>
+            <div style={{ padding: '24px 0', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
+                <button className="btn btn-ghost" style={{ border: '1px solid var(--border)', minWidth: 120, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' }} onClick={() => router.back()}>Hủy bỏ</button>
                 <button className={`${styles['add-block-btn']} ${disableSave ? 'disabled' : ''}`} onClick={handleSave} disabled={isSubmitting || disableSave} style={{ minWidth: 200, height: 48, fontSize: 16, borderRadius: 12, boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)' }}>{isSubmitting ? 'Đang lưu...' : 'Lưu bài tập ngay'}</button>
             </div>
 
@@ -855,8 +857,8 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                     <>
                         <button className="btn btn-ghost" onClick={closeModal} style={{ border: '1px solid var(--border)', padding: '6px 16px', borderRadius: 8, fontSize: 13 }}>Đóng</button>
                         {modal.type !== 'alert' && (
-                            <button 
-                                className="btn btn-primary" 
+                            <button
+                                className="btn btn-primary"
                                 style={{ background: 'var(--accent-purple)', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600 }}
                                 onClick={() => {
                                     modal.onConfirm(modal.value);
@@ -877,7 +879,7 @@ export default function ProblemEditor({ initialData, onSubmit, isSubmitting, dis
                         <p style={{ margin: 0, lineHeight: 1.6 }}>{modal.message}</p>
                     </div>
                     {modal.type === 'input' && (
-                        <input 
+                        <input
                             autoFocus
                             value={modal.value}
                             onChange={e => setModal(prev => ({ ...prev, value: e.target.value }))}

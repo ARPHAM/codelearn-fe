@@ -63,12 +63,12 @@ export default function ProblemsListPage() {
     return (
         <>
             <div className="page-container animate-in">
-                <div className="page-header" style={{ padding: '0 24px', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                         <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <Folder size={28} color="var(--accent-purple)" /> Quản lý Bài Tập
                         </h1>
-                        <p className="page-subtitle">Danh sách các câu hỏi lập trình và vấn đáp bạn đang quản lý</p>
+                        <p className="page-subtitle">Danh sách các câu hỏi lập trình.</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                         <Link href="/lecturer/problems/create">
@@ -81,7 +81,7 @@ export default function ProblemsListPage() {
                     </div>
                 </div>
 
-                <div style={{ padding: '0 24px' }}>
+                <div>
                     <div className="card" style={{ padding: '14px 16px', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 20 }}>
                         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
                             <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -190,9 +190,11 @@ export default function ProblemsListPage() {
                                     </div>
                                     <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                                         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                                            <button className="btn" style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => router.push(`/student/code-editor?slug=${p.slug}`)}>
-                                                <Eye size={14} /> Xem thử
-                                            </button>
+                                            {p.status === 'ACTIVE' && (
+                                                <button className="btn" style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => router.push(`/student/code-editor?slug=${p.slug}`)}>
+                                                    <Eye size={14} /> Xem thử
+                                                </button>
+                                            )}
                                             <button className="btn" style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: 'var(--accent-purple-light)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => router.push(`/lecturer/problems/${p.id}/edit`)}>
                                                 <Edit2 size={14} /> Sửa
                                             </button>

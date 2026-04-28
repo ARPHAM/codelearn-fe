@@ -50,10 +50,10 @@ export const useProblemDetail = (id: string, enabled: boolean = true) => {
   });
 };
 
-export const useStudentProblemDetail = (slug: string, enabled: boolean = true) => {
+export const useStudentProblemDetail = (slug: string, languageId?: number, examId?: string, enabled: boolean = true) => {
   return useQuery<StudentProblemDetailResponse>({
-    queryKey: ['student-problem-detail', slug],
-    queryFn: () => getStudentProblemDetail(slug),
+    queryKey: ['student-problem-detail', slug, languageId, examId],
+    queryFn: () => getStudentProblemDetail(slug, languageId, examId),
     enabled: !!slug && enabled,
   });
 };

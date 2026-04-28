@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminProblems } from '@/hooks/useProblems';
 import { getProblemAuthors, UserSummary } from '@/api/user.api';
-import { 
-    ShieldCheck, 
-    Search, 
-    Filter, 
-    User as UserIcon, 
-    ChevronLeft, 
+import {
+    ShieldCheck,
+    Search,
+    Filter,
+    User as UserIcon,
+    ChevronLeft,
     ChevronRight,
     RotateCcw,
     Eye
@@ -17,7 +17,7 @@ import {
 
 export default function AdminProblemsPage() {
     const router = useRouter();
-    
+
     // Filters & Pagination State
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
@@ -25,7 +25,7 @@ export default function AdminProblemsPage() {
     const [status, setStatus] = useState<string>('');
     const [difficulty, setDifficulty] = useState<string>('');
     const [authorId, setAuthorId] = useState<string>('');
-    
+
     // Data
     const [authors, setAuthors] = useState<UserSummary[]>([]);
     const { data, isLoading } = useAdminProblems({
@@ -60,19 +60,17 @@ export default function AdminProblemsPage() {
 
     return (
         <div className="page-container animate-in">
-            <div className="page-header" style={{ padding: '24px' }}>
+            <div className="page-header">
                 <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <ShieldCheck size={32} color="var(--accent-blue)" />
-                    Quản lý Duyệt Bài Tập
+                    Quản lý bài tập
                 </h1>
-                <p className="page-subtitle">Duyệt các bài tập mới tạo từ Giảng viên để kích hoạt cho Học sinh.</p>
             </div>
 
             {/* Filters Bar */}
-            <div style={{ padding: '0 24px 24px' }}>
-                <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'minmax(200px, 1.5fr) 1fr 1fr 1fr 100px', 
+            <div>
+                <div style={{
+                    display: 'flex',
                     gap: 12,
                     background: 'var(--bg-secondary)',
                     padding: 16,
@@ -80,9 +78,9 @@ export default function AdminProblemsPage() {
                     border: '1px solid var(--border)'
                 }}>
                     {/* Search */}
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ flex: 3, position: 'relative' }}>
                         <Search size={18} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                        <input 
+                        <input
                             className="input"
                             placeholder="Tìm theo tiêu đề hoặc slug..."
                             value={search}
@@ -92,15 +90,15 @@ export default function AdminProblemsPage() {
                     </div>
 
                     {/* Status */}
-                    <select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                    <select className="input" style={{ flex: 1 }} value={status} onChange={(e) => setStatus(e.target.value)}>
                         <option value="">Tất cả trạng thái</option>
-                        <option value="ACTIVE">Hoạt động (Active)</option>
-                        <option value="INACTIVE">Chờ duyệt (Inactive)</option>
-                        <option value="REJECTED">Đã từ chối (Rejected)</option>
+                        <option value="ACTIVE">Hoạt động</option>
+                        <option value="INACTIVE">Chờ duyệt</option>
+                        <option value="REJECTED">Đã từ chối</option>
                     </select>
 
                     {/* Difficulty */}
-                    <select className="input" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+                    <select className="input" style={{ flex: 1 }} value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
                         <option value="">Tất cả độ khó</option>
                         <option value="EASY">Dễ</option>
                         <option value="MEDIUM">Trung bình</option>
@@ -108,7 +106,7 @@ export default function AdminProblemsPage() {
                     </select>
 
                     {/* Author */}
-                    <select className="input" value={authorId} onChange={(e) => setAuthorId(e.target.value)}>
+                    <select className="input" style={{ flex: 1 }} value={authorId} onChange={(e) => setAuthorId(e.target.value)}>
                         <option value="">Tất cả tác giả</option>
                         {Array.isArray(authors) && authors.map(l => (
                             <option key={l.id} value={l.id}>{l.fullName}</option>
@@ -121,7 +119,7 @@ export default function AdminProblemsPage() {
                 </div>
             </div>
 
-            <div style={{ padding: '0 24px' }}>
+            <div>
                 {isLoading ? (
                     <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Đang tải danh sách...</div>
                 ) : (
@@ -131,15 +129,13 @@ export default function AdminProblemsPage() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-                                            <span className={`badge ${
-                                                p.difficulty === 'EASY' ? 'badge-green' : 
+                                            <span className={`badge ${p.difficulty === 'EASY' ? 'badge-green' :
                                                 p.difficulty === 'MEDIUM' ? 'badge-yellow' : 'badge-red'
-                                            }`}>{p.difficulty}</span>
-                                            
-                                            <span className={`badge ${
-                                                p.status === 'ACTIVE' ? 'badge-green' : 
+                                                }`}>{p.difficulty}</span>
+
+                                            <span className={`badge ${p.status === 'ACTIVE' ? 'badge-green' :
                                                 p.status === 'REJECTED' ? 'badge-red' : 'badge-yellow'
-                                            }`}>
+                                                }`}>
                                                 {p.status === 'INACTIVE' ? 'Chờ duyệt' : p.status}
                                             </span>
 
@@ -152,7 +148,7 @@ export default function AdminProblemsPage() {
                                         <p style={{ margin: '4px 0', fontSize: 13, color: 'var(--text-secondary)' }}>Slug: {p.slug}</p>
                                     </div>
 
-                                    <button 
+                                    <button
                                         className="btn btn-primary"
                                         style={{ display: 'flex', alignItems: 'center', gap: 8 }}
                                         onClick={() => router.push(`/admin/problems/${p.id}`)}
@@ -165,7 +161,7 @@ export default function AdminProblemsPage() {
                         ))}
 
                         {data?.items?.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: 60, border: '1px dashed var(--border)', borderRadius: 12, color: 'var(--text-muted)' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: 60, border: '1px dashed var(--border)', borderRadius: 12, color: 'var(--text-muted)' }}>
                                 <Filter size={48} style={{ marginBottom: 12, opacity: 0.3 }} />
                                 <p>Không tìm thấy bài tập nào phù hợp với bộ lọc.</p>
                             </div>
@@ -176,8 +172,8 @@ export default function AdminProblemsPage() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 32, paddingBottom: 40 }}>
-                        <button 
-                            className="btn btn-secondary" 
+                        <button
+                            className="btn btn-secondary"
                             disabled={page === 1}
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                         >
@@ -186,8 +182,8 @@ export default function AdminProblemsPage() {
                         <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
                             Trang <strong>{page}</strong> / {totalPages}
                         </span>
-                        <button 
-                            className="btn btn-secondary" 
+                        <button
+                            className="btn btn-secondary"
                             disabled={page === totalPages}
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                         >

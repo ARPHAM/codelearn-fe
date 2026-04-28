@@ -12,9 +12,13 @@ export interface RunResult {
 export const runApi = {
   executeCode: async (data: {
     languageId: number;
+    language?: string;
     entryFile: string;
     files: Array<{ filePath: string; content: string }>;
     input?: string;
+    problemVersionId?: string;
+    examId?: string;
+    answers?: Record<string, string[]>;
   }) => {
     const response = await axios.post('/run', data);
     return response.data.data;
