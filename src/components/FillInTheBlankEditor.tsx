@@ -332,11 +332,13 @@ const FillInTheBlankEditor = forwardRef<any, FillInTheBlankEditorProps>(({ file,
     const renderWidgetsRef = useRef(renderWidgets);
     renderWidgetsRef.current = renderWidgets;
     const latestContentRef = useRef(file.content);
+    const latestFileIdRef = useRef(file.id?.toString() || '');
     
     useEffect(() => { 
         latestContentRef.current = file.content;
+        latestFileIdRef.current = file.id?.toString() || '';
         renderWidgets(); 
-    }, [renderWidgets, showWidgets, file.content]);
+    }, [renderWidgets, showWidgets, file.content, file.id]);
 
     const handleMount = (editor: any, monaco: any) => {
         editorRef.current = editor;
@@ -353,7 +355,8 @@ const FillInTheBlankEditor = forwardRef<any, FillInTheBlankEditorProps>(({ file,
                 return;
             }
             renderWidgetsRef.current();
-            updateFile(file.id?.toString() || '', 'content', newVal);
+            // Sử dụng Ref để lấy ID mới nhất, tránh stale closure
+            updateFile(latestFileIdRef.current, 'content', newVal);
         });
 
         // TẮT TOÀN BỘ VALIDATION CHO JS/TS (Để tránh báo lỗi giả cho Boilerplate/Fill-in-the-blank)
@@ -477,6 +480,7 @@ const FillInTheBlankEditor = forwardRef<any, FillInTheBlankEditorProps>(({ file,
 
             <Editor
                 height={height}
+                path={file.path}
                 language={lang}
                 defaultValue={file.content}
                 onMount={handleMount}

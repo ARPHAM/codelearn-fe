@@ -5,7 +5,7 @@ export interface RoomData {
     name: string;
     description?: string;
     type: 'MEETING' | 'CODE';
-    problemId?: number | null;
+    problemSlug?: string | null;
     status: 'OPEN' | 'CLOSED';
     createdBy: string;
     maxParticipants: number;
@@ -22,13 +22,15 @@ export interface ParticipantUser {
 export interface ParticipantData {
     roomId: string;
     userId: string;
-    user: ParticipantUser;
     role: 'HOST' | 'GUEST';
+    status: 'PENDING' | 'JOINED';
     workspaceId: string;
     joinedAt: string;
+    user?: ParticipantUser;
 }
 
 export interface WorkspaceFile {
+    id?: string;
     filePath: string;
     content: string;
 }
@@ -44,13 +46,14 @@ export interface RoomSessionResponse {
     room: RoomData;
     session: SessionData | null;
     currentUserRole: 'HOST' | 'GUEST' | null;
+    currentUserStatus: 'PENDING' | 'JOINED' | null;
 }
 
 /**
  * Fetch initial room metadata
  */
 export const getRoom = async (roomId: string): Promise<RoomSessionResponse> => {
-    const res = await axios.get(`/rooms/${roomId}/session`);
+    const res = await axios.get(`/room/${roomId}/session`);
     return res.data.data;
 };
 
@@ -58,7 +61,7 @@ export const getRoom = async (roomId: string): Promise<RoomSessionResponse> => {
  * Fetch initial participants in the room
  */
 export const getParticipants = async (roomId: string): Promise<ParticipantData[]> => {
-    const res = await axios.get(`/rooms/${roomId}/participants`);
+    const res = await axios.get(`/room/${roomId}/participants`);
     return res.data.data;
 };
 
@@ -78,29 +81,37 @@ export const getWorkspaceFiles = async (workspaceId: string): Promise<WorkspaceF
  * Create a new room
  */
 export const createRoomApi = async (data: { name: string; description?: string; type?: 'MEETING' | 'CODE' }): Promise<RoomData> => {
-    const res = await axios.post('/rooms', data);
+    const res = await axios.post('/room', data);
     return res.data.data;
 };
 
 /**
  * Track user join (REST)
  */
-export const joinRoomApi = async (roomId: string): Promise<void> => {
-    await axios.post(`/rooms/${roomId}/join`);
+export const joinRoomApi = async (roomId: string): Promise<ParticipantData> => {
+    const res = await axios.post(`/room/${roomId}/join`, {});
+    return res.data.data;
 };
 
 /**
  * Track user leave (REST)
  */
 export const leaveRoomApi = async (roomId: string): Promise<void> => {
-    await axios.post(`/rooms/${roomId}/leave`);
+    await axios.post(`/room/${roomId}/leave`);
+};
+
+/**
+ * Approve a participant (Host only)
+ */
+export const approveParticipantApi = async (roomId: string, userId: string): Promise<void> => {
+    await axios.post(`/room/${roomId}/approve/${userId}`);
 };
 
 /**
  * Fetch my rooms
  */
 export const getMyRoomsApi = async (): Promise<RoomData[]> => {
-    const res = await axios.get('/rooms/my-rooms');
+    const res = await axios.get('/room/my-rooms');
     return res.data.data;
 };
 
@@ -108,7 +119,7 @@ export const getMyRoomsApi = async (): Promise<RoomData[]> => {
  * Update room info
  */
 export const updateRoomApi = async (id: string, data: Partial<RoomData>): Promise<RoomData> => {
-    const res = await axios.patch(`/rooms/${id}`, data);
+    const res = await axios.patch(`/room/${id}`, data);
     return res.data.data;
 };
 
@@ -125,7 +136,13 @@ export const createFileApi = async (workspaceId: string, filePath: string, conte
  * Delete a file from workspace
  */
 export const deleteFileApi = async (workspaceId: string, filePath: string): Promise<void> => {
-    // filePath can contain slashes, so it might need careful URL encoding or use a query param/body
-    // But according to spec: DELETE /workspaces/:workspaceId/files/*
-    await axios.delete(`/workspaces/${workspaceId}/files/${filePath}`);
+    // Encode filePath because it may contain dots or slashes
+    await axios.delete(`/workspaces/${workspaceId}/files/${encodeURIComponent(filePath)}`);
+};
+/**
+ * Update a file (Rename or update content)
+ */
+export const updateFileApi = async (fileId: string, data: { filePath?: string; content?: string }): Promise<WorkspaceFile> => {
+    const res = await axios.patch(`/files/${fileId}`, data);
+    return res.data.data;
 };

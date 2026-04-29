@@ -15,9 +15,22 @@ export interface ToastItem {
 // Global toast store
 let _addToast: ((t: Omit<ToastItem, 'id'>) => void) | null = null;
 
-export function toast(item: Omit<ToastItem, 'id'>) {
-  _addToast?.(item);
+export interface ToastFunction {
+  (item: Omit<ToastItem, 'id'>): void;
+  success: (title: string, message?: string) => void;
+  error: (title: string, message?: string) => void;
+  warning: (title: string, message?: string) => void;
+  info: (title: string, message?: string) => void;
 }
+
+export const toast: ToastFunction = (item: Omit<ToastItem, 'id'>) => {
+  _addToast?.(item);
+};
+
+toast.success = (title: string, message?: string) => toast({ type: 'success', title, message });
+toast.error = (title: string, message?: string) => toast({ type: 'error', title, message });
+toast.warning = (title: string, message?: string) => toast({ type: 'warning', title, message });
+toast.info = (title: string, message?: string) => toast({ type: 'info', title, message });
 
 const toastCfg: Record<ToastType, { icon: any; color: string; border: string }> = {
   success: { icon: CheckCircle2, color: '#10b981', border: 'rgba(16,185,129,0.35)' },

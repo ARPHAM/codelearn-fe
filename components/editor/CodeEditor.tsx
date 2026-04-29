@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+
 import Editor from '@monaco-editor/react';
 import { socket } from '@/features/realtime/socket';
 import { ParticipantData, WorkspaceFile, createFileApi, deleteFileApi, getWorkspaceFiles } from '@/features/room/api';
 import { useCurrentUserInfo } from '@/app/components/_api/queries';
-import { File, Plus, Trash2, ChevronRight, MousePointer2 } from 'lucide-react';
+import { File, Plus, Trash2, Pencil, MousePointer2 } from 'lucide-react';
 import styles from './CodeEditor.module.css';
 
 interface CodeEditorProps {
@@ -12,6 +13,17 @@ interface CodeEditorProps {
     workspaceId?: string;
     initialContent?: string;
     defaultFilePath?: string;
+    hideSidebar?: boolean;
+    activeFilePath?: string;
+    onRenameFile?: (path: string) => void;
+    onDeleteFile?: (path: string) => void;
+    onSetMain?: (path: string) => void;
+    onAddFile?: () => void;
+    files?: WorkspaceFile[];
+    onFilesChange?: (files: WorkspaceFile[]) => void;
+    mainFilePath?: string;
+    onActiveFileChange?: (path: string) => void;
+    isViewing?: boolean;
 }
 
 export interface FileStorage {
@@ -40,13 +52,57 @@ const setFileStorage = (roomId: string, filePath: string, data: FileStorage) => 
     localStorage.setItem(key, JSON.stringify(data));
 };
 
-export default function CodeEditor({ roomId, viewingUser, workspaceId, initialContent = '// Write your code here...', defaultFilePath = 'main.ts' }: CodeEditorProps) {
-    const isViewing = !!viewingUser;
-    const { data: currentUser } = useCurrentUserInfo();
+const getLanguage = (path: string) => {
+    if (path.endsWith('.py')) return 'python';
+    if (path.endsWith('.js')) return 'javascript';
+    if (path.endsWith('.ts')) return 'typescript';
+    if (path.endsWith('.cpp')) return 'cpp';
+    if (path.endsWith('.java')) return 'java';
+    if (path.endsWith('.sql')) return 'sql';
+    return 'text';
+};
 
-    const [files, setFiles] = useState<WorkspaceFile[]>([]);
+export default function CodeEditor({ 
+    roomId, 
+    viewingUser, 
+    workspaceId, 
+    initialContent = '// Write your code here...', 
+    defaultFilePath = 'main.ts',
+    hideSidebar = false,
+    activeFilePath,
+    onRenameFile,
+    onDeleteFile,
+    onSetMain,
+    onAddFile,
+    files: propsFiles,
+    onFilesChange,
+    mainFilePath,
+    onActiveFileChange,
+    isViewing: isViewingProp = false
+}: CodeEditorProps) {
+    const { data: currentUser } = useCurrentUserInfo();
+    const isViewing = isViewingProp || (!!viewingUser && viewingUser.userId !== currentUser?.id);
+
+    const [internalFiles, setInternalFiles] = useState<WorkspaceFile[]>([]);
     const [content, setContent] = useState<string>('');
-    const [filePath, setFilePath] = useState<string>(defaultFilePath);
+    const [filePath, setFilePath] = useState<string>(activeFilePath || defaultFilePath);
+
+    const files = propsFiles || internalFiles;
+    
+    const updateFiles = useCallback((updater: (prev: WorkspaceFile[]) => WorkspaceFile[]) => {
+        if (onFilesChange && propsFiles) {
+            onFilesChange(updater(propsFiles));
+        } else {
+            setInternalFiles(updater);
+        }
+    }, [onFilesChange, propsFiles]);
+    
+    // Sync internal filePath with prop
+    useEffect(() => {
+        if (activeFilePath && activeFilePath !== filePath) {
+            setFilePath(activeFilePath);
+        }
+    }, [activeFilePath]);
     const [viewingLoading, setViewingLoading] = useState(false);
     const [isAddingFile, setIsAddingFile] = useState(false);
     const [newFileName, setNewFileName] = useState('');
@@ -128,11 +184,12 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
 
     useEffect(() => {
         const fetchFiles = async () => {
+            if (propsFiles) return; 
             const targetWorkspaceId = isViewing ? viewingUser?.workspaceId : workspaceId;
             if (targetWorkspaceId) {
                 try {
                     const remoteFiles = await getWorkspaceFiles(targetWorkspaceId);
-                    setFiles(remoteFiles);
+                    updateFiles(() => remoteFiles);
                     if (remoteFiles.length > 0 && !remoteFiles.find(f => f.filePath === filePath)) {
                         setFilePath(remoteFiles[0].filePath);
                     }
@@ -142,45 +199,9 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
             }
         };
         fetchFiles();
-    }, [isViewing, viewingUser?.workspaceId, workspaceId]);
+    }, [isViewing, viewingUser?.workspaceId, workspaceId, !!propsFiles]);
 
-    const handleAddFile = async () => {
-        if (!newFileName) return;
-        if (isViewing) return;
-        if (!workspaceId) return;
-
-        if (files.some(f => f.filePath === newFileName)) {
-            alert("Tên file đã tồn tại");
-            return;
-        }
-
-        try {
-            const newFile = await createFileApi(workspaceId, newFileName);
-            setFiles(prev => {
-                if (prev.some(f => f.filePath === newFile.filePath)) return prev;
-                return [...prev, newFile];
-            });
-            setIsAddingFile(false);
-            setNewFileName('');
-            setFilePath(newFile.filePath);
-            socket.emit('file_switch', { roomId, filePath: newFile.filePath });
-        } catch (err: any) {
-            console.error("Failed to create file", err);
-        }
-    };
-
-    const handleDeleteFile = async (pathToDelete: string) => {
-        if (isViewing || !workspaceId) return;
-        try {
-            await deleteFileApi(workspaceId, pathToDelete);
-            setFiles(prev => prev.filter(f => f.filePath !== pathToDelete));
-            if (filePath === pathToDelete) {
-                setFilePath(files[0]?.filePath || 'main.ts');
-            }
-        } catch (err) {
-            console.error("Failed to delete file", err);
-        }
-    };
+    // Removed redundant handleAddFile and handleDeleteFile as they are handled by props/parent
 
     useEffect(() => {
         if (isViewing) {
@@ -217,15 +238,26 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
                 clearTimeout(timeout);
             };
         } else {
-            let storage = getFileStorage(roomId, filePath);
-            if (!storage) {
-                storage = { content: initialContent, lastSavedContent: initialContent, updatedAt: Date.now() };
-                setFileStorage(roomId, filePath, storage);
+            const file = files.find(f => f.filePath === filePath);
+            if (file) {
+                // CRITICAL FIX: Only update content if it's different AND we're not currently typing
+                // This prevents the "2 characters" bug where local updates trigger a remote-like block
+                if (file.content !== currentContentRef.current && !timeoutRef.current) {
+                    isRemoteUpdateRef.current = true;
+                    setContent(file.content);
+                }
+            } else {
+                // Fallback to storage only if not in files
+                let storage = getFileStorage(roomId, filePath);
+                if (!storage) {
+                    storage = { content: initialContent, lastSavedContent: initialContent, updatedAt: Date.now() };
+                    setFileStorage(roomId, filePath, storage);
+                }
+                isRemoteUpdateRef.current = true;
+                setContent(storage.content);
             }
-            isRemoteUpdateRef.current = true;
-            setContent(storage.content);
         }
-    }, [roomId, filePath, isViewing, viewingUser?.userId]);
+    }, [roomId, filePath, isViewing, viewingUser?.userId, files]);
 
     useEffect(() => {
         const handleCodeRequest = (data: { requesterId: string; filePath: string }) => {
@@ -254,29 +286,7 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
             }
         };
 
-        const handleFileCreate = (data: { userId: string, workspaceId: string, filePath: string, id: string }) => {
-            const targetWorkspaceId = isViewing ? viewingUser?.workspaceId : workspaceId;
-            if (data.workspaceId === targetWorkspaceId) {
-                setFiles(prev => {
-                    if (prev.some(f => f.filePath === data.filePath)) return prev;
-                    return [...prev, { id: data.id, filePath: data.filePath, content: '' }];
-                });
-                if (isFollowing) setFilePath(data.filePath);
-            }
-        };
-
-        const handleFileDelete = (data: { userId: string, workspaceId: string, filePath: string }) => {
-            const targetWorkspaceId = isViewing ? viewingUser?.workspaceId : workspaceId;
-            if (data.workspaceId === targetWorkspaceId) {
-                setFiles(prev => prev.filter(f => f.filePath !== data.filePath));
-                if (currentFilePathRef.current === data.filePath) {
-                    setFilePath(prev => {
-                        const remaining = files.filter(f => f.filePath !== data.filePath);
-                        return remaining[0]?.filePath || 'main.ts';
-                    });
-                }
-            }
-        };
+        // File created/deleted are now handled by the parent RoomPage to ensure single source of truth
 
         const handleFileSwitched = (data: { userId: string, filePath: string }) => {
             if (isViewing && data.userId === viewingUser?.userId) {
@@ -321,8 +331,6 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
 
         socket.on('request_user_code', handleCodeRequest);
         socket.on('code_update', handleCodeUpdate);
-        socket.on('file_create', handleFileCreate);
-        socket.on('file_delete', handleFileDelete);
         socket.on('file_switched', handleFileSwitched);
         socket.on('cursor_moved', handleCursorMoved);
         socket.on('selection_moved', handleSelectionMoved);
@@ -332,8 +340,6 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
         return () => {
             socket.off('request_user_code', handleCodeRequest);
             socket.off('code_update', handleCodeUpdate);
-            socket.off('file_create', handleFileCreate);
-            socket.off('file_delete', handleFileDelete);
             socket.off('file_switched', handleFileSwitched);
             socket.off('cursor_moved', handleCursorMoved);
             socket.off('selection_moved', handleSelectionMoved);
@@ -374,13 +380,43 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
         }
     };
 
+    const flushChanges = useCallback(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            const storage = getFileStorage(roomId, currentFilePathRef.current);
+            setFileStorage(roomId, currentFilePathRef.current, {
+                content: currentContentRef.current,
+                lastSavedContent: storage?.lastSavedContent ?? initialContent,
+                updatedAt: Date.now()
+            });
+            socket.emit('code_change', { 
+                roomId: roomIdRef.current, 
+                filePath: currentFilePathRef.current, 
+                content: currentContentRef.current 
+            });
+            timeoutRef.current = null;
+        }
+    }, [roomId, initialContent]);
+
+    // Flush changes when filePath changes
+    useEffect(() => {
+        return () => {
+            flushChanges();
+        };
+    }, [filePath, flushChanges]);
+
     const handleEditorChange = (value: string | undefined) => {
         const newContent = value || '';
         setContent(newContent);
+        
         if (isRemoteUpdateRef.current || isViewing) {
             isRemoteUpdateRef.current = false;
             return;
         }
+
+        // Sync back to parent state immediately for consistency
+        updateFiles(prev => prev.map(f => f.filePath === filePath ? { ...f, content: newContent } : f));
+
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
             const storage = getFileStorage(roomId, filePath);
@@ -390,10 +426,20 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
                 updatedAt: Date.now()
             });
             socket.emit('code_change', { roomId, filePath, content: newContent });
-        }, 400);
+            timeoutRef.current = null;
+        }, 100);
     };
 
-    const onMount = (editor: any, monaco: any) => {
+    // Last-second save on refresh/tab close
+    useEffect(() => {
+        const handleUnload = () => {
+            flushChanges();
+        };
+        window.addEventListener('beforeunload', handleUnload);
+        return () => window.removeEventListener('beforeunload', handleUnload);
+    }, [flushChanges]);
+
+    const handleEditorMount = (editor: any, monaco: any) => {
         editorRef.current = editor;
         monacoRef.current = monaco;
 
@@ -435,119 +481,148 @@ export default function CodeEditor({ roomId, viewingUser, workspaceId, initialCo
     };
 
     return (
-        <div 
-            className={styles['editor-container']}
-            style={{ '--remote-user-name': `"${viewingUser?.user?.fullName || 'User'}"` } as any}
-        >
-            <div className={styles['editor-sidebar']}>
-                <div className={styles['sidebar-header']}>
-                    <span className={styles['sidebar-title']}>Explorer</span>
-                    {!isViewing && (
-                        <button onClick={() => setIsAddingFile(true)} className={styles['btn-icon']}>
-                            <Plus size={16} />
-                        </button>
-                    )}
-                </div>
-
-                <div className={styles['sidebar-content']}>
-                    {isAddingFile && (
-                        <div className={styles['add-file-container']}>
-                            <input
-                                autoFocus
-                                className={styles['add-file-input']}
-                                placeholder="filename.ts"
-                                value={newFileName}
-                                onChange={(e) => setNewFileName(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleAddFile();
-                                    if (e.key === 'Escape') {
-                                        setIsAddingFile(false);
-                                        setNewFileName('');
-                                    }
-                                }}
-                                onBlur={() => {
-                                    if (newFileName.trim() === '') {
-                                        setIsAddingFile(false);
-                                    }
-                                }}
-                            />
-                            <button
-                                onClick={handleAddFile}
-                                onMouseDown={(e) => e.preventDefault()}
-                                className={styles['btn-confirm']}
-                                title="Add File"
-                            >
-                                <ChevronRight size={14} />
-                            </button>
-                        </div>
-                    )}
-
-                    <div className={styles['file-list']}>
-                        {files.map((f) => (
-                            <div
-                                key={f.filePath}
-                                className={`${styles['file-item']} ${filePath === f.filePath ? styles.active : styles.inactive}`}
-                                onClick={() => {
-                                    setFilePath(f.filePath);
-                                    socket.emit('file_switch', { roomId, filePath: f.filePath });
-                                }}
-                            >
-                                <div className={styles['file-item-left']}>
-                                    <File size={14} className={filePath === f.filePath ? 'text-blue-400' : 'text-gray-500'} />
-                                    <span className={styles['file-name']}>{f.filePath}</span>
-                                </div>
-                                {!isViewing && f.filePath !== 'main.ts' && (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteFile(f.filePath); }}
-                                        className={styles['btn-delete']}
-                                    >
-                                        <Trash2 size={12} />
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {isViewing && (
-                    <div className={styles['sidebar-footer']}>
-                        <button
-                            onClick={() => setIsFollowing(!isFollowing)}
-                            className={`${styles['btn-follow']} ${isFollowing ? styles.following : styles.not_following}`}
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0b0f1a', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
+            {/* FILE TABS (Horizontal) */}
+            <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                background: '#0b0f1a', 
+                borderBottom: '1px solid var(--border)',
+                overflowX: 'auto',
+                scrollbarWidth: 'none',
+                height: 38
+            }}>
+                {files.map((file) => {
+                    const isActive = file.filePath === filePath;
+                    const isMain = file.filePath === mainFilePath;
+                    
+                    return (
+                        <div
+                            key={file.id || file.filePath}
+                            onClick={() => {
+                                if (isViewing) return;
+                                setFilePath(file.filePath);
+                                onActiveFileChange?.(file.filePath);
+                                // Emit event to notify observers
+                                socket.emit('file_switch', { roomId, filePath: file.filePath });
+                            }}
+                            style={{
+                                padding: '0 12px',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                cursor: isViewing ? 'default' : 'pointer',
+                                background: isActive ? '#1e293b' : 'transparent',
+                                borderRight: '1px solid var(--border)',
+                                color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                                fontSize: 13,
+                                fontWeight: isActive ? 600 : 400,
+                                transition: 'all 0.2s',
+                                position: 'relative',
+                                minWidth: 'fit-content'
+                            }}
                         >
-                            <MousePointer2 size={14} />
-                            {isFollowing ? 'Following' : 'Follow'}
-                        </button>
-                    </div>
+                            {isMain && <div style={{ color: '#eab308', marginRight: -2 }}>★</div>}
+                            <File size={13} color={isActive ? 'var(--accent-purple)' : 'var(--text-muted)'} />
+                            <span style={{ whiteSpace: 'nowrap' }}>{file.filePath}</span>
+                            
+                            {!isViewing && isActive && (
+                                <div style={{ display: 'flex', gap: 6, marginLeft: 4, animation: 'fadeIn 0.2s ease' }}>
+                                    {onRenameFile && (
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); onRenameFile(file.filePath); }}
+                                            style={{ background: 'none', border: 'none', padding: 2, color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}
+                                            title="Đổi tên"
+                                        >
+                                            <Pencil size={11} />
+                                        </button>
+                                    )}
+                                    {onSetMain && !isMain && (
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); onSetMain(file.filePath); }}
+                                            style={{ background: 'none', border: 'none', padding: 2, color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}
+                                            title="Đặt làm file chính"
+                                        >
+                                            <div style={{ fontSize: 10 }}>★</div>
+                                        </button>
+                                    )}
+                                    {onDeleteFile && files.length > 1 && !isMain && (
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); onDeleteFile(file.filePath); }}
+                                            style={{ background: 'none', border: 'none', padding: 2, color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}
+                                            title="Xóa"
+                                        >
+                                            <Trash2 size={11} />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                            
+                            {isActive && (
+                                <div style={{ 
+                                    position: 'absolute', bottom: 0, left: 0, right: 0, 
+                                    height: 2, background: 'var(--accent-purple)' 
+                                }} />
+                            )}
+                        </div>
+                    );
+                })}
+                
+                {!isViewing && onAddFile && (
+                    <button 
+                        onClick={onAddFile}
+                        style={{ padding: '0 12px', background: 'none', border: 'none', color: 'var(--accent-purple)', cursor: 'pointer', height: '100%', display: 'flex', alignItems: 'center' }}
+                    >
+                        <Plus size={18} />
+                    </button>
                 )}
             </div>
 
-            <div className={styles['editor-main']}>
+            {/* EDITOR AREA */}
+            <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
                 {viewingLoading && (
                     <div className={styles['sync-overlay']}>
                         <div className={styles['sync-content']}>
                             <div className={styles.spinner}></div>
-                            <span className={styles['sync-text']}>Syncing view...</span>
+                            <span className={styles['sync-text']}>Đang đồng bộ workspace...</span>
                         </div>
                     </div>
                 )}
-
+                
                 <Editor
                     height="100%"
-                    language={(filePath || '').endsWith('.ts') ? 'typescript' : 'javascript'}
-                    theme="aiDark"
+                    path={filePath}
+                    language={getLanguage(filePath)}
                     value={content}
+                    theme="aiDark"
                     onChange={handleEditorChange}
-                    onMount={onMount}
+                    onMount={handleEditorMount}
                     options={{
                         minimap: { enabled: false },
                         fontSize: 14,
-                        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                        fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+                        fontLigatures: true,
                         wordWrap: 'on',
                         automaticLayout: true,
                         readOnly: isViewing,
                         scrollBeyondLastLine: false,
-                        padding: { top: 14 },
+                        padding: { top: 16, bottom: 16 },
+                        lineHeight: 22,
+                        letterSpacing: 0.5,
+                        cursorBlinking: 'smooth',
+                        cursorSmoothCaretAnimation: 'on',
+                        smoothScrolling: true,
+                        renderLineHighlight: 'all',
+                        scrollbar: {
+                            vertical: 'visible',
+                            horizontal: 'visible',
+                            verticalScrollbarSize: 10,
+                            horizontalScrollbarSize: 10,
+                        },
+                        bracketPairColorization: {
+                            enabled: true
+                        }
                     }}
                 />
             </div>

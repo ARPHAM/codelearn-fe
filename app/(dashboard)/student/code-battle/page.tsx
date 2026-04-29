@@ -27,7 +27,7 @@ export default function CodeBattlePage() {
   const { data: boardData, isLoading: isLoadingOpponents } = useQuery({
     queryKey: ['opponents-lobby'],
     queryFn: async () => {
-      const resp = await leaderboardApi.getLeaderboard('ALL_TIME', 10);
+      const resp = await leaderboardApi.getLeaderboard('ALL_TIME', 'RATING', 10);
       return resp;
     },
   });

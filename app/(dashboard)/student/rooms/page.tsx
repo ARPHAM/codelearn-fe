@@ -1,16 +1,52 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { roomApi, Room } from '@/api/room.api';
 import EditRoomModal from './_components/EditRoomModal';
 import { Loader2, Plus, Play, Users, Search, Globe, Lock, Edit2, Handshake, GraduationCap, Wind, Home } from 'lucide-react';
+import { useSocket } from '@/features/realtime/useSocket';
 
 export default function StudentRoomsLobbyPage() {
     const router = useRouter();
     const [tab, setTab] = useState<'mine' | 'public'>('public');
     const [searchTerm, setSearchTerm] = useState('');
+    const socket = useSocket();
+    const queryClient = useQueryClient();
+
+    console.log("[Lobby] Socket state:", { exists: !!socket, connected: socket?.connected });
+
+    // Real-time Lobby Updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const joinLobby = () => {
+            console.log("[Lobby] Emitting join_lobby...");
+            socket.emit('join_lobby');
+        };
+
+        if (socket.connected) {
+            joinLobby();
+        } else {
+            socket.on('connect', joinLobby);
+        }
+
+        const handleRoomUpdated = (data: any) => {
+            console.log("[Lobby] Room updated real-time:", data);
+            // Invalidate queries to get fresh data
+            queryClient.invalidateQueries({ queryKey: ['my-rooms'] });
+            queryClient.invalidateQueries({ queryKey: ['public-rooms'] });
+        };
+
+        socket.on('room_updated', handleRoomUpdated);
+
+        return () => {
+            socket.emit('leave_lobby');
+            socket.off('connect', joinLobby);
+            socket.off('room_updated', handleRoomUpdated);
+        };
+    }, [socket, queryClient]);
 
     // Fetch My Rooms
     const { data: myRoomsData, isLoading: isMyRoomsLoading } = useQuery({

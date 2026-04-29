@@ -340,7 +340,7 @@ function CodeEditorContent() {
                 setFiles(prev => [...prev, {
                     filename: uniqueName,
                     language: langObjFound?.name.toLowerCase() || 'text',
-                    content: langObjFound?.template || ""
+                    content: ""
                 }]);
                 setActiveFileName(uniqueName);
             }

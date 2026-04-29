@@ -49,7 +49,6 @@ const navGroups = [
     items: [
       { href: '/student/problems', icon: Target, label: 'Luyện tập (Bài tập)' },
       { href: '/student/courses', icon: GraduationCap, label: 'Lớp học của tôi' },
-      { href: '/student/pair-programming', icon: Users, label: 'Lập trình Cặp' },
       { href: '/student/code-battle', icon: Swords, label: 'Code Battle' },
       { href: '/student/learning-path', icon: Map, label: 'Lộ trình Học tập' },
       { href: '/student/leaderboard', icon: Trophy, label: 'Bảng xếp hạng' },
