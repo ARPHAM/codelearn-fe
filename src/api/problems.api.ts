@@ -73,6 +73,8 @@ export type ProblemSummary = {
       id: string;
       fullName: string;
   };
+  timeLimit?: number;
+  memoryLimit?: number;
   solvedLanguages?: string[];
   maxScore?: number;
   studentScore?: number;

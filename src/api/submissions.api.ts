@@ -13,10 +13,23 @@ export interface Submission {
   };
   language: string;
   score: number;
-  status: 'PENDING' | 'PASS' | 'FAIL' | 'PARTIAL';
+  maxScore: number;
+  status: 'accepted' | 'wrong_answer' | 'time_limit' | 'memory_limit' | 'runtime_error' | 'compile_error' | 'queued' | 'pending' | 'running';
   executionTime?: number;
   memoryUsage?: number;
-  results?: any;
+  results?: {
+      passed: boolean;
+      input: string;
+      output: string;
+      expected: string;
+      error?: string;
+      runtime?: number;
+      memory?: number;
+  }[];
+  code: {
+      entryFile: string;
+      files: { filePath: string; content: string }[];
+  } | null;
   createdAt: string;
 }
 
