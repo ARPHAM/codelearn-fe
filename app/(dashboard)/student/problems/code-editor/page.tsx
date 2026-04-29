@@ -106,7 +106,7 @@ function CodeEditorContent() {
 
     const { data: languages = [] } = useLanguages()
 
-    const [language, setLanguage] = useState('python')
+    const [language, setLanguage] = useState('')
     const [selectedLanguageId, setSelectedLanguageId] = useState<number | undefined>(undefined);
 
     // Tìm languageId dựa trên tên ngôn ngữ
@@ -119,23 +119,23 @@ function CodeEditorContent() {
         }
     }, [language, languages, selectedLanguageId]);
 
-    const { data: problemData, isLoading: isLoadingProblem } = useStudentProblemDetail(slug || '', selectedLanguageId, examId || undefined, !!slug)
-
     const isPracticeMode = !examId;
-    const workspaceConfig = (isPracticeMode || !slug) 
-        ? { canCreateFile: true, canChangeMainFile: true } 
+
+    // Không gửi selectedLanguageId khi ở chế độ luyện tập để tránh fetch template của bài
+    const { data: problemData, isLoading: isLoadingProblem } = useStudentProblemDetail(
+        slug || '',
+        isPracticeMode ? undefined : selectedLanguageId,
+        examId || undefined,
+        !!slug
+    )
+
+    const workspaceConfig = (isPracticeMode || !slug)
+        ? { canCreateFile: true, canChangeMainFile: true }
         : (problemData?.version?.workspaceConfig || { canCreateFile: false, canChangeMainFile: false });
 
-    const [files, setFiles] = useState<{ filename: string, language: string, content: string, type?: string, languageId?: number }[]>([
-        {
-            filename: "main.py",
-            language: "python",
-            content: "",
-            type: "NORMAL"
-        }
-    ])
+    const [files, setFiles] = useState<{ filename: string, language: string, content: string, type?: string, languageId?: number }[]>([])
 
-    const [activeFileName, setActiveFileName] = useState<string>("main.py")
+    const [activeFileName, setActiveFileName] = useState<string>("")
     const [mainFileName, setMainFileName] = useState<string>("")
 
     const [modal, setModal] = useState<{
@@ -157,16 +157,18 @@ function CodeEditorContent() {
 
         if (!slug) {
             if (!isInitialized) {
+                const defaultLangObj = languages[0];
+                const defaultEntryName = `main${defaultLangObj.ext}`;
                 const defaultFiles = [{
-                    filename: "main.py",
-                    language: "python",
-                    content: languages.find(l => l.name.toLowerCase() === 'python')?.template || "",
+                    filename: defaultEntryName,
+                    language: defaultLangObj.name.toLowerCase(),
+                    content: defaultLangObj.template || "",
                     type: "NORMAL"
                 }];
                 setFiles(defaultFiles);
-                setActiveFileName("main.py");
-                setMainFileName("main.py");
-                setLanguage("python");
+                setActiveFileName(defaultEntryName);
+                setMainFileName(defaultEntryName);
+                setLanguage(defaultLangObj.name.toLowerCase());
                 setIsInitialized(true);
             }
             return;
@@ -175,48 +177,62 @@ function CodeEditorContent() {
         // Nếu có data mới từ BE (khi đổi ngôn ngữ hoặc load lần đầu)
         if (!isLoadingProblem && problemData) {
             const currentVersionId = problemData.version?.id;
-            
+
             // Khởi tạo lại nếu:
             // 1. Chưa khởi tạo
             // 2. VersionId thay đổi (có bản cập nhật mới)
-            // 3. LanguageId thay đổi (người dùng chọn ngôn ngữ khác)
-            const shouldReinit = !isInitialized || 
-                                (currentVersionId !== lastProblemVersionId) || 
-                                (selectedLanguageId !== lastLanguageId);
+            // 3. LanguageId thay đổi (người dùng chọn ngôn ngữ khác) VÀ không phải chế độ luyện tập
+            const shouldReinit = !isInitialized ||
+                (currentVersionId !== lastProblemVersionId) ||
+                (!isPracticeMode && selectedLanguageId !== lastLanguageId);
 
             if (shouldReinit) {
                 // Lọc file theo quy tắc: Ẩn HIDDEN/SOLUTION, chỉ lấy TEMPLATE/NEUTRAL
-                const allFiles = (problemData.languageFiles || []).filter((f: any) => 
-                    f.type !== 'HIDDEN' && f.type !== 'SOLUTION'
-                );
+                // Trong chế độ luyện tập, ta bỏ qua languageFiles của bài tập
+                const allFiles = isPracticeMode
+                    ? []
+                    : (problemData.languageFiles || []).filter((f: any) =>
+                        f.type !== 'HIDDEN' && f.type !== 'SOLUTION'
+                    );
 
-                if (allFiles.length > 0) {
-                    // Thử khôi phục từ localStorage
-                    const storageKey = `code-cache-${problemData.id}-${selectedLanguageId}`;
-                    const cached = localStorage.getItem(storageKey);
-                    let initialFiles = [];
+                // Thử khôi phục từ localStorage
+                const storageKey = `code-cache-${problemData.id}-${selectedLanguageId}`;
+                const cached = localStorage.getItem(storageKey);
+                let initialFiles: any[] = [];
 
-                    if (cached) {
-                        try {
-                            initialFiles = JSON.parse(cached);
-                        } catch (e) {
-                            console.error("Failed to parse cached code", e);
+                if (cached) {
+                    try {
+                        initialFiles = JSON.parse(cached);
+                    } catch (e) {
+                        console.error("Failed to parse cached code", e);
+                    }
+                }
+
+                if (initialFiles.length > 0) {
+                    setFiles(initialFiles);
+                    setActiveFileName(initialFiles[0].filename);
+                    const entry = problemData?.version?.entryFile || initialFiles[0].filename;
+                    setMainFileName(entry);
+
+                    const entryFileObj = initialFiles.find((f: any) => f.filename === entry) || initialFiles[0];
+                    if (entryFileObj.language !== 'text') {
+                        setLanguage(entryFileObj.language);
+                    }
+                    setIsInitialized(true);
+                    setLastProblemVersionId(currentVersionId as string);
+                    setLastLanguageId(selectedLanguageId);
+                } else if (allFiles.length > 0) {
+                    initialFiles = allFiles.map((f: any) => {
+                        const l = languages.find(lx => lx.id === f.languageId) || f.language;
+                        const langName = l?.name?.toLowerCase() || 'text';
+                        return {
+                            filename: f.path,
+                            language: langName,
+                            content: f.content,
+                            type: f.type,
+                            languageId: f.languageId
                         }
-                    }
-
-                    if (initialFiles.length === 0) {
-                        initialFiles = allFiles.map(f => {
-                            const l = languages.find(lx => lx.id === f.languageId) || f.language;
-                            const langName = l?.name?.toLowerCase() || 'text';
-                            return {
-                                filename: f.path,
-                                language: langName,
-                                content: f.content,
-                                type: f.type,
-                                languageId: f.languageId
-                            }
-                        });
-                    }
+                    });
 
                     setFiles(initialFiles);
                     setActiveFileName(initialFiles[0].filename);
@@ -232,27 +248,28 @@ function CodeEditorContent() {
                     setLastLanguageId(selectedLanguageId);
                 } else {
                     // Fallback nếu không có file nào (Dùng template mặc định của ngôn ngữ)
-                    const langObj = languages.find(l => l.id === selectedLanguageId) || languages.find(l => l.name.toLowerCase() === 'python') || languages[0];
-                    const defaultEntryName = problemData?.version?.entryFile || `main${langObj.ext || '.py'}`;
+                    const defaultLangObj = languages.find(l => l.id === selectedLanguageId) || languages[0];
+                    const defaultEntryName = `main${defaultLangObj.ext}`;
 
                     const defaultFiles = [{
                         filename: defaultEntryName,
-                        language: langObj.name.toLowerCase(),
-                        content: langObj.template || "",
+                        language: defaultLangObj.name.toLowerCase(),
+                        content: defaultLangObj.template || "",
                         type: "NORMAL"
                     }];
 
                     setFiles(defaultFiles);
                     setActiveFileName(defaultEntryName);
                     setMainFileName(defaultEntryName);
-                    setLanguage(langObj.name.toLowerCase());
+                    setLanguage(defaultLangObj.name.toLowerCase());
+
                     setIsInitialized(true);
                     setLastProblemVersionId(currentVersionId as string);
                     setLastLanguageId(selectedLanguageId);
                 }
             }
         }
-    }, [slug, problemData, languages, isInitialized, isLoadingProblem, selectedLanguageId, lastProblemVersionId, lastLanguageId])
+    }, [slug, problemData, languages, isInitialized, isLoadingProblem, selectedLanguageId, lastProblemVersionId, lastLanguageId, isPracticeMode])
 
     // Auto-save to localStorage
     useEffect(() => {
@@ -430,7 +447,7 @@ function CodeEditorContent() {
     const [runResult, setRunResult] = useState<any>(null)
     const [submitResult, setSubmitResult] = useState<any>(null)
     const [customInput, setCustomInput] = useState<string>("")
-    const [resultTab, setResultTab] = useState<'output' | 'input'>('output')
+    const [resultTab, setResultTab] = useState<'output' | 'input'>('input')
 
     const [chatMessages, setChatMessages] = useState<any[]>(initialAiMessages)
     const [userMsg, setUserMsg] = useState("")
@@ -521,7 +538,7 @@ function CodeEditorContent() {
                 answers[f.filename] = fileAnswers;
             }
             otherFiles.push({
-                filePath: f.filename,
+                filename: f.filename,
                 content: f.content,
                 language: f.language
             });
@@ -529,7 +546,7 @@ function CodeEditorContent() {
 
         try {
             const resp = await runMutation.mutateAsync({
-                languageId: langObj?.id,
+                languageId: langObj?.id || 1,
                 language: mainFileObj.language,
                 entryFile: safeMainFileName,
                 files: otherFiles,
@@ -562,7 +579,7 @@ function CodeEditorContent() {
                 answers[f.filename] = fileAnswers;
             }
             otherFiles.push({
-                filePath: f.filename,
+                filename: f.filename,
                 content: f.content,
                 language: f.language
             });
@@ -570,7 +587,7 @@ function CodeEditorContent() {
 
         try {
             const resp = await submitMutation.mutateAsync({
-                languageId: langObj?.id,
+                languageId: langObj?.id || 1,
                 language: mainFileObj.language || 'python',
                 entryFile: safeMainFileName,
                 files: otherFiles,
@@ -580,6 +597,7 @@ function CodeEditorContent() {
                 examId: examId as string
             })
             setStatus("QUEUED")
+            setResultTab('output')
             // Nếu là Kỳ thi, xóa cache và điều hướng sau khi nộp
             if (problemData?.id) localStorage.removeItem(`code-cache-${problemData.id}`);
             if (examId) {
@@ -607,7 +625,11 @@ function CodeEditorContent() {
         handlerRef.current = (data: any) => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current)
             setStatus("COMPLETED")
-            if (data.score !== undefined) { setSubmitResult(data); setRunResult(null); }
+            if (data.score !== undefined) { 
+                setSubmitResult(data); 
+                setRunResult(null);
+                toast({ type: 'success', title: 'Hoàn tất chấm điểm', message: `Bạn đạt ${data.score}/${data.maxScore} điểm (${data.testcasesPassed}/${data.testcasesTotal} testcases).` });
+            }
             else { setRunResult(data); setSubmitResult(null); }
         }
 
@@ -789,7 +811,7 @@ function CodeEditorContent() {
                                         </div>
                                     );
                                 })}
-                                {((!slug) || (problemData?.version?.workspaceConfig?.canCreateFile ?? false)) && (
+                                {workspaceConfig.canCreateFile && (
                                     <button onClick={handleAddFile} style={{ padding: '4px 8px', background: 'none', border: 'none', color: 'var(--accent-purple)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Thêm file mới">
                                         <Plus size={18} />
                                     </button>
@@ -825,31 +847,30 @@ function CodeEditorContent() {
 
                         <div style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)', height: 230, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                             <div style={{ display: 'flex', gap: 20, padding: '0 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+                                <div onClick={() => setResultTab('input')} style={{ padding: '10px 4px', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: resultTab === 'input' ? 'var(--accent-purple)' : 'var(--text-muted)', borderBottom: resultTab === 'input' ? '2px solid var(--accent-purple)' : '2px solid transparent', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Terminal size={14} /> Đầu vào
+                                </div>
                                 <div onClick={() => setResultTab('output')} style={{ padding: '10px 4px', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: resultTab === 'output' ? 'var(--accent-purple)' : 'var(--text-muted)', borderBottom: resultTab === 'output' ? '2px solid var(--accent-purple)' : '2px solid transparent', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <Database size={14} /> Kết quả
-                                </div>
-                                <div onClick={() => setResultTab('input')} style={{ padding: '10px 4px', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: resultTab === 'input' ? 'var(--accent-purple)' : 'var(--text-muted)', borderBottom: resultTab === 'input' ? '2px solid var(--accent-purple)' : '2px solid transparent', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <Terminal size={14} /> Custom Input
                                 </div>
                             </div>
 
                             <div style={{ flex: 1, padding: 12, overflowY: 'auto' }}>
                                 {resultTab === 'input' ? (
-                                    <textarea value={customInput} onChange={(e) => setCustomInput(e.target.value)} placeholder="Nhập dữ liệu đầu vào tại đây (stdin)..." style={{ width: '100%', height: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: 12, resize: 'none', fontFamily: 'monospace', lineHeight: 1.6 }} />
+                                    <textarea value={customInput} onChange={(e) => setCustomInput(e.target.value)} style={{ width: '100%', height: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: 12, resize: 'none', fontFamily: 'monospace', lineHeight: 1.6 }} />
                                 ) : (
                                     <>
                                         {status === "QUEUED" && <div style={{ color: 'var(--accent-cyan)', fontSize: 13 }} className="blink">Đang chờ chấm...</div>}
                                         {runResult && (
                                             <div style={{ fontSize: 12 }}>
-                                                <div style={{ fontWeight: 'bold', color: runResult.status === 'ACCEPTED' ? 'var(--accent-green)' : 'var(--accent-red)' }}>Trạng thái: {runResult.status}</div>
-                                                {runResult.runtime && <div>Thời gian: {runResult.runtime}ms</div>}
+                                                {runResult.runtime && <div style={{ fontWeight: 'bold', color: runResult.status.toLowerCase() === 'accepted' ? 'var(--accent-green)' : 'var(--accent-red)' }}>Thời gian: {runResult.runtime}ms</div>}
                                                 {runResult.compileOutput && <pre style={{ background: '#000', padding: 8, marginTop: 4, color: '#f87171' }}>{runResult.compileOutput}</pre>}
-                                                {runResult.output && <pre style={{ background: '#000', padding: 8, marginTop: 4 }}>{runResult.output}</pre>}
+                                                {!runResult.compileOutput && runResult.output && <pre style={{ background: '#000', padding: 8, marginTop: 4 }}>{runResult.output}</pre>}
                                             </div>
                                         )}
                                         {submitResult && (
                                             <div style={{ fontSize: 12 }}>
-                                                <div style={{ fontSize: 18, fontWeight: 'bold', color: 'var(--accent-purple)' }}>Điểm: {submitResult.score} / 100</div>
+                                                <div style={{ fontSize: 18, fontWeight: 'bold', color: 'var(--accent-purple)' }}>Điểm: {submitResult.score} / {submitResult.maxScore}</div>
                                                 <div style={{ marginBottom: 8 }}>Vượt qua: {submitResult.testcasesPassed} / {submitResult.testcasesTotal} testcases</div>
                                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: 8 }}>
                                                     {submitResult.results?.map((res: any, idx: number) => (
@@ -859,7 +880,6 @@ function CodeEditorContent() {
                                                 {submitResult.error && <div style={{ color: 'var(--accent-red)', marginTop: 8 }}>{submitResult.error}</div>}
                                             </div>
                                         )}
-                                        {!runResult && !submitResult && status === "IDLE" && <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>Chưa có kết quả. Nhấn Chạy code hoặc Nộp bài.</div>}
                                     </>
                                 )}
                             </div>

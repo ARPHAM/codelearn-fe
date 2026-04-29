@@ -255,11 +255,12 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
                                         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                                     }}
                                 >
-                                    {`{{ }}`} Ô điền khuyết
+                                    {`{{ }}`} điền khuyết
                                     {blankStatus.isInside && <div style={{ position: 'absolute', top: -4, right: -4, width: 10, height: 10, background: '#10b981', borderRadius: '50%', boxShadow: '0 0 10px #10b981', border: '2px solid #0b0f1a' }} />}
                                 </button>
                             </div>
                             <FillInTheBlankEditor
+                                key={`template-${activePath}`}
                                 ref={templateRef}
                                 file={activeTemplate}
                                 updateFile={(_, __, val) => updateFileContent(activePath, 'TEMPLATE', val)}
@@ -306,6 +307,7 @@ const LanguageWorkspace = memo(function LanguageWorkspace({
                                 </button>
                             </div>
                             <FillInTheBlankEditor
+                                key={`solution-${activePath}`}
                                 ref={solutionRef}
                                 file={activeSolution}
                                 updateFile={(_, __, val) => updateFileContent(activePath, 'SOLUTION', val)}

@@ -11,9 +11,9 @@ export interface LeaderboardItem {
 }
 
 export const leaderboardApi = {
-  getLeaderboard: async (period: string = 'ALL_TIME', limit: number = 10) => {
+  getLeaderboard: async (period: string = 'ALL_TIME', type: string = 'RATING', limit: number = 10) => {
     const response = await axios.get(
-      `/leaderboard?period=${period}&limit=${limit}`,
+      `/leaderboard?period=${period}&type=${type}&limit=${limit}`,
     );
     return response.data.data;
   },

@@ -343,15 +343,29 @@ export default function StudentProblemsListPage() {
                                         {diffLabels[p.difficulty] || p.difficulty}
                                     </span>
                                 </div>
-                                <div style={{ display: 'flex', gap: 20, fontSize: 13, color: 'var(--text-secondary)' }}>
+                                <div style={{ display: 'flex', gap: 20, fontSize: 13, color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                         <Users size={14} style={{ opacity: 0.6 }} />
                                         <span>Lượt nộp: <strong style={{ color: 'var(--text-primary)' }}>{p.stats?.totalSubmissions || 0}</strong></span>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                         <Zap size={14} className="text-yellow-400" style={{ opacity: 0.8 }} />
-                                        <span>Trúng tuyển: <strong style={{ color: 'var(--text-primary)' }}>{p.stats?.acceptanceRate || 0}%</strong></span>
+                                        <span>Trúng tuyển: <strong style={{ color: 'var(--text-primary)' }}>{Number(p.stats?.acceptanceRate || 0).toFixed(1)}%</strong></span>
                                     </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                        <Target size={14} style={{ opacity: 0.6 }} />
+                                        <span>Điểm: <strong style={{ color: p.status === 'SOLVED' ? '#10b981' : 'var(--text-primary)' }}>{p.studentScore || 0} / {p.maxScore || 0}</strong></span>
+                                    </div>
+                                    {p.solvedLanguages && p.solvedLanguages.length > 0 && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                            <span style={{ opacity: 0.6 }}>Đã giải bằng:</span>
+                                            <div style={{ display: 'flex', gap: 4 }}>
+                                                {p.solvedLanguages.map((lang: string) => (
+                                                    <span key={lang} style={{ padding: '2px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: 4, fontSize: 11, color: 'var(--text-primary)' }}>{lang}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

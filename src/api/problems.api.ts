@@ -73,6 +73,9 @@ export type ProblemSummary = {
       id: string;
       fullName: string;
   };
+  solvedLanguages?: string[];
+  maxScore?: number;
+  studentScore?: number;
 };
 
 export type ProblemDetailResponse = {

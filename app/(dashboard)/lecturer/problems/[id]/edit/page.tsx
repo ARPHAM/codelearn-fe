@@ -52,8 +52,8 @@ export default function EditProblemPage() {
     }
 
     return (
-        <>
-            <div className="page-header" style={{ padding: '0 24px', paddingTop: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div className="page-header">
                 <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <Edit2 size={28} color="var(--accent-purple-light)" /> Chỉnh Sửa Bài Tập
                 </h1>
@@ -64,7 +64,7 @@ export default function EditProblemPage() {
                     </div>
                 )}
             </div>
-            <div className="layout-split" style={{ padding: '0 24px', marginBottom: 20 }}>
+            <div className="layout-split">
                 <div className="card" style={{ padding: 16, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 12 }}>
                     <h3 style={{ margin: '0 0 12px 0', fontSize: 14, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                         <History size={16} /> Lịch sử các phiên bản
@@ -84,8 +84,8 @@ export default function EditProblemPage() {
                     </div>
                 </div>
             </div>
-            
-            <ProblemEditor 
+
+            <ProblemEditor
                 initialData={initialData}
                 isSubmitting={isPending}
                 disableSave={!canEdit}
@@ -104,8 +104,8 @@ export default function EditProblemPage() {
                             console.error(error);
                         }
                     })
-                }} 
+                }}
             />
-        </>
+        </div>
     )
 }

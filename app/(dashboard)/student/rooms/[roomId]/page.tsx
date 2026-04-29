@@ -193,7 +193,7 @@ export default function RoomPage({ params }: PageProps) {
             const langObj = languages.find(l => l.ext.replace('.', '') === ext) || languages[0];
 
             const resp = await submitMutation.mutateAsync({
-                language: langObj?.name || 'python',
+                languageId: langObj?.id || 1,
                 entryFile: mainFile.filePath,
                 files: files.map(f => ({
                     filePath: f.filePath,

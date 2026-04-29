@@ -20,7 +20,7 @@ export interface RunCodeResponse {
 
 export interface SubmitCodeRequest {
     problemVersionId?: string;
-    language: string;
+    languageId: number;
     entryFile: string;
     files: {
         filePath: string;
@@ -37,7 +37,7 @@ export interface SubmitCodeResponse {
 export const useRunCode = () => {
     return useMutation({
         mutationFn: async (payload: RunCodeRequest) => {
-            const { data } = await axios.post<RunCodeResponse>('/runs', payload);
+            const { data } = await axios.post<RunCodeResponse>('/run', payload);
             return data;
         },
         onError: (error: any) => {
@@ -48,14 +48,14 @@ export const useRunCode = () => {
 
 export const getRunResult = async (id: string) => {
     console.log("getRunResult", id);
-    const { data } = await axios.get(`/runs/${id}`);
+    const { data } = await axios.get(`/run/${id}`);
     return data;
 }
 
 export const useSubmitCode = () => {
     return useMutation({
         mutationFn: async (payload: SubmitCodeRequest) => {
-            const { data } = await axios.post<SubmitCodeResponse>('/submissions', payload);
+            const { data } = await axios.post<SubmitCodeResponse>('/submission', payload);
             return data;
         },
         onSuccess: (res) => {
@@ -68,6 +68,6 @@ export const useSubmitCode = () => {
 };
 
 export const getSubmissionResult = async (id: string) => {
-    const { data } = await axios.get(`/submissions/${id}/result`);
+    const { data } = await axios.get(`/submission/${id}/result`);
     return data;
 }

@@ -16,12 +16,12 @@ const badges = [
 ];
 
 export default function LeaderboardPage() {
-  const [period, setPeriod] = useState<string>('ALL_TIME');
+  const [boardType, setBoardType] = useState<'RATING' | 'XP'>('RATING');
 
   const { data: leaderboardData, isLoading } = useQuery({
-    queryKey: ['leaderboard', period],
+    queryKey: ['leaderboard', boardType],
     queryFn: async () => {
-      const resp = await leaderboardApi.getLeaderboard(period, 20);
+      const resp = await leaderboardApi.getLeaderboard('ALL_TIME', boardType, 20);
       return resp;
     },
   });
@@ -54,20 +54,22 @@ export default function LeaderboardPage() {
             <p className="page-subtitle">Bảng xếp hạng thực tế từ hệ thống — Cập nhật thời gian thực</p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            {[
-              { id: 'WEEK', label: 'Tuần này' },
-              { id: 'MONTH', label: 'Tháng này' },
-              { id: 'ALL_TIME', label: 'All-time' }
-            ].map((t) => (
+            <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 8, padding: 4, gap: 4 }}>
               <button 
-                key={t.id} 
-                className={period === t.id ? 'btn btn-primary' : 'btn btn-ghost'} 
-                style={{ padding: '7px 14px' }}
-                onClick={() => setPeriod(t.id)}
+                className={boardType === 'RATING' ? 'btn btn-primary' : 'btn btn-ghost'} 
+                style={{ padding: '7px 14px', borderRadius: 6, fontSize: 13 }}
+                onClick={() => setBoardType('RATING')}
               >
-                {t.label}
+                <Swords size={16} style={{ display: 'inline', marginRight: 6 }} /> Thi đấu (Rating)
               </button>
-            ))}
+              <button 
+                className={boardType === 'XP' ? 'btn btn-primary' : 'btn btn-ghost'} 
+                style={{ padding: '7px 14px', borderRadius: 6, fontSize: 13 }}
+                onClick={() => setBoardType('XP')}
+              >
+                <Flame size={16} style={{ display: 'inline', marginRight: 6 }} /> Cày cuốc (XP)
+              </button>
+            </div>
           </div>
         </div>
 
@@ -126,7 +128,7 @@ export default function LeaderboardPage() {
                   </thead>
                   <tbody>
                     {items.map(sv => (
-                      <tr key={sv.userId} style={{ background: sv.rank === currentUser?.rank ? 'rgba(124,58,237,0.06)' : 'transparent' }}>
+                      <tr key={sv.userId} style={{ background: sv.userId === currentUser?.userId ? 'rgba(124,58,237,0.06)' : 'transparent' }}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontWeight: 800, fontSize: 14, color: sv.rank <= 3 ? '#f59e0b' : 'var(--text-muted)' }}>{sv.rank}</span>
@@ -139,7 +141,7 @@ export default function LeaderboardPage() {
                             </div>
                             <div>
                               <div style={{ fontWeight: 600, fontSize: 13 }}>{sv.name}</div>
-                              {sv.rank === currentUser?.rank && (
+                              {sv.userId === currentUser?.userId && (
                                 <span style={{ fontSize: 10, color: 'var(--accent-purple-light)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                                   <Star size={8} fill="currentColor" /> Bạn
                                 </span>

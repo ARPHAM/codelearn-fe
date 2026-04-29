@@ -417,6 +417,20 @@ const FillInTheBlankEditor = forwardRef<any, FillInTheBlankEditorProps>(({ file,
         }
     }, [file.id, file.path, file.content, renderWidgets]);
 
+    useEffect(() => {
+        return () => {
+            if (editorRef.current) {
+                try {
+                    widgetsCacheRef.current.forEach(val => {
+                        try { editorRef.current.removeContentWidget(val.widget); } catch (e) {}
+                    });
+                } catch(e) {}
+            }
+            editorRef.current = null;
+            monacoRef.current = null;
+        };
+    }, []);
+
     const ext = getExt(file.path || '');
     const lang = getMonacoLanguage(ext, languages, file.languageId);
 

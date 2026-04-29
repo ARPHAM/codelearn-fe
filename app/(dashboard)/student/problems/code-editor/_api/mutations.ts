@@ -5,8 +5,8 @@ import { useLanguages } from '@/src/hooks/useLanguages'
 
 export interface SubmitCodeRequest {
     problemVersionId?: string;
-    language: string;
-    languageId?: number;
+    language?: string;
+    languageId: number;
     entryFile: string;
     files: {
         filename: string;
@@ -23,21 +23,18 @@ export const useSubmitCode = () => {
 
     return useMutation({
         mutationFn: async (payload: SubmitCodeRequest) => {
-            const { language, entryFile, files, problemVersionId } = payload;
+            const { entryFile, files, problemVersionId } = payload;
             
-            // Tìm kiếm ngôn ngữ chính xác hơn
-            const langObj = languages.find(l => 
-                l.name.toLowerCase() === language.toLowerCase() || 
-                l.ext.toLowerCase() === (language.startsWith('.') ? language.toLowerCase() : '.' + language.toLowerCase())
-            );
+            // Tìm kiếm ngôn ngữ (để lấy ext)
+            const langObj = languages.find(l => l.id === payload.languageId);
 
             if (!langObj && languages.length > 0) {
-                console.error("Language not found in list:", language, languages);
-                throw new Error(`Ngôn ngữ "${language}" không được hỗ trợ. Vui lòng kiểm tra lại.`);
+                console.error("Language not found in list for id:", payload.languageId);
+                throw new Error(`Ngôn ngữ không được hỗ trợ. Vui lòng kiểm tra lại.`);
             }
 
             const ext = langObj?.ext || '.py';
-            const languageId = langObj?.id;
+            const languageId = payload.languageId;
 
             // Mapping files sang cấu trúc backend mong muốn và thêm extension
             const mappedFiles = files.map(f => {
@@ -49,8 +46,7 @@ export const useSubmitCode = () => {
 
             const submitPayload = {
                 problemVersionId,
-                language,
-                languageId,
+                languageId: languageId,
                 entryFile: entryFile.includes('.') ? entryFile : entryFile + ext,
                 files: mappedFiles,
                 answers: payload.answers,
@@ -83,16 +79,13 @@ export const useRunCode = () => {
 
     return useMutation({
         mutationFn: async (payload: RunCodeRequest) => {
-            const { language, entryFile, files, problemVersionId, input } = payload;
+            const { entryFile, files, problemVersionId, input } = payload;
             
-            const langObj = languages.find(l => 
-                l.name.toLowerCase() === language.toLowerCase() || 
-                l.ext.toLowerCase() === (language.startsWith('.') ? language.toLowerCase() : '.' + language.toLowerCase())
-            );
+            const langObj = languages.find(l => l.id === payload.languageId);
             
             if (!langObj && languages.length > 0) {
-                console.error("Language not found in list:", language, languages);
-                throw new Error(`Ngôn ngữ "${language}" không được hỗ trợ. Vui lòng kiểm tra lại.`);
+                console.error("Language not found in list for id:", payload.languageId);
+                throw new Error(`Ngôn ngữ không được hỗ trợ. Vui lòng kiểm tra lại.`);
             }
 
             const ext = langObj?.ext || '.py';
@@ -106,7 +99,7 @@ export const useRunCode = () => {
 
             const runPayload = {
                 problemVersionId,
-                languageId: langObj?.id,
+                languageId: payload.languageId,
                 entryFile: entryFile.includes('.') ? entryFile : entryFile + ext,
                 files: mappedFiles,
                 input,
