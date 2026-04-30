@@ -1,340 +1,459 @@
-# CHƯƠNG 3. PHÂN TÍCH NGHIỆP VỤ VÀ THIẾT KẾ YÊU CẦU HỆ THỐNG
+# CHƯƠNG 3. PHÂN TÍCH MÔ HÌNH NGHIỆP VỤ VÀ CHI TIẾT THỰC THỂ HỆ THỐNG
 
-Chương này đi sâu vào việc giải phẫu các luồng nghiệp vụ (Business Logic) nhằm số hóa chính xác các tác vụ giảng dạy tại môi trường đại học vào nền tảng CodeLearn. Yêu cầu đặt ra không chỉ là một ứng dụng web CRUD (Create, Read, Update, Delete) thông thường, mà là một hệ thống xử lý logic rẽ nhánh, bảo vệ tính toàn vẹn trạng thái và phân quyền một cách cực kỳ sát sao đối với từng đối tượng sử dụng.
+Chương này tập trung vào việc giải phẫu toàn diện kiến trúc dữ liệu và các luồng nghiệp vụ của CodeLearn. Thay vì tiếp cận theo hướng mô tả chức năng, chúng tôi đi sâu vào từng thuộc tính (field) của các thực thể (entities), các mối quan hệ (relationships) và các quy trình rẽ nhánh logic nhằm đảm bảo hệ thống có khả năng vận hành ổn định, bảo mật và đáp ứng các tiêu chuẩn khắt khe của một đồ án tốt nghiệp chuyên sâu.
 
-### 3.1. Định nghĩa các tác nhân và Kịch bản sử dụng hệ thống (Use-Case Analysis)
+### 3.1. Phân tích chi tiết các Phân hệ Thực thể (Detailed Entities Analysis)
 
-Hệ thống được thiết kế hoàn toàn dựa trên sự phân tần đặc quyền (Privilege separation) của 3 nhóm tác nhân (Actors) cốt lõi, đảm bảo sự bảo mật và không dẫm chân lên vai trò của nhau:
+Để quản lý một lượng lớn dữ liệu phát sinh từ hàng ngàn sinh viên và hàng triệu lượt nộp bài, CodeLearn quy hoạch dữ liệu thành 5 phân hệ thực thể hạt nhân. Dưới đây là phân tích chi tiết từng trường dữ liệu và ý nghĩa kỹ thuật của chúng.
 
-1. **Sinh viên (Student):**
-    - *Đặc điểm:* Là đối tượng thụ hưởng chính, tham gia vào các khóa học đã được phân bổ định danh. 
-    - *Nhiệm vụ trên hệ thống:* Sinh viên tương tác chủ yếu qua Workspace (môi trường gõ mã nội bộ). Họ thực thi bài code, nhận đánh giá tự động tức thời từ hệ thống (Passed/Failed), tra cứu lịch sử nộp bài (Submission History), đọc giải thích từ Trợ lý ảo Gemini AI, và tự tiến hành trích xuất báo cáo kết quả đánh giá (Export Report tới định dạng PDF).
-2. **Giảng viên (Lecturer / Instructor):**
-    - *Đặc điểm:* Là tác nhân xây dựng tri thức và điều phối lớp học. 
-    - *Nhiệm vụ trên hệ thống:* Người trực tiếp tạo mới các khóa học (Courses), thiết lập thành phần "bộ xương" bài tập (Boilerplate) cho cấu trúc "Điền vào chỗ trống". Giảng viên quản lý các bài toán (Problems), cấu hình dữ liệu đầu vào chuẩn (Test-case inputs), và giám sát theo thời gian thực (Real-time Analytics) quá trình làm bài của sinh viên trên Dashboard thông minh để kịp thời điều chỉnh giáo án. Bên cạnh đó, thao tác quét kiểm tra Đạo văn (Plagiarism Check) cũng thuộc thẩm quyền nhóm này.
-3. **Quản trị viên hệ thống (System Administrator):**
-    - *Đặc điểm:* Là kỹ sư phần mềm hoặc chuyên viên Phòng Đào tạo, đóng vai trò Cầu nối kỹ thuật. 
-    - *Nhiệm vụ trên hệ thống:* Giám sát trạng thái hoạt động của hệ thống phần cứng (Service Health check), nắm quyền cao nhất trong luồng quản lý người dùng (User Management). Họ chịu trách nhiệm khởi tạo tập hồ sơ người dùng lớn, cấu hình phân lớp Role RBAC (Student/Lecturer) và giải quyết các vấn đề sự cố tài khoản.
+#### 3.1.1. Phân hệ Quản trị Người dùng và Lộ trình (User & Learning Path Module)
 
-```mermaid
-flowchart LR
-    Student((Sinh viên))
-    Lecturer((Giảng viên))
-    Admin((Quản trị viên))
+Phân hệ này không chỉ lưu trữ thông tin cá nhân mà còn theo dõi sự phát triển kỹ năng của sinh viên thông qua cấu trúc cây (Tree structure).
 
-    subgraph Tầng Tương tác Hệ thống CodeLearn [Hệ sinh thái CodeLearn]
-        direction TB
-        subgraph Core Học tập
-            UC1(Đăng nhập / Đăng ký & Kích hoạt Email)
-            UC2(Làm bài tập Web-IDE / Sandbox)
-            UC3(Tham gia thi khảo sát - Exam / Assignment)
-        end
-        subgraph Tính năng Nâng cao
-            UC4(Sử dụng AI Trợ lý - Gemini AI Companion)
-            UC5(Thi đấu Battle / Xem Bảng xếp hạng Leaderboard)
-            UC6(Tương tác nhóm Pair Rooms)
-        end
-        subgraph Quản trị Giáo án
-            UC7(Biên soạn Boilerplate Code)
-            UC8(Kiểm tra Đạo văn - Plagiarism Check)
-            UC9(Quản lý Ngân hàng câu hỏi - Problem Bank)
-            UC10(Xem Analytics & Thống kê sinh viên)
-        end
-        subgraph Quản trị Tổng
-            UC11(Cấu hình hệ thống & Duyệt Onboarding)
-            UC12(Xuất Report PDF/Docx - PrinceXML Engine)
-        end
-    end
+**A. Thực thể USER (Người dùng)**
+Thực thể trung tâm, định danh mọi tác nhân tham gia hệ thống.
 
-    Student ---> UC1
-    Student ---> UC2
-    Student ---> UC3
-    Student ---> UC4
-    Student ---> UC5
-    Student ---> UC6
+| Tên trường | Kiểu dữ liệu | Đặc điểm | Ý nghĩa & Vai trò |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PK, Unique | Định danh duy nhất toàn cầu, tránh việc đoán ID qua URL. |
+| `email` | String(150) | Unique, Index | Email chính quy do nhà trường cấp, dùng để Onboarding. |
+| `fullName` | String(100) | Not Null | Họ và tên đầy đủ để xuất báo cáo PDF/Word. |
+| `mssv` | String(20) | Nullable | Mã số sinh viên phục vụ việc đối soát với Phòng Đào tạo. |
+| `role` | Enum | ADMIN, LECTURER, STUDENT | Phân quyền truy cập tài nguyên (RBAC). |
+| `passwordHash` | String | Encrypted | Lưu trữ mật khẩu đã mã hóa, đảm bảo an toàn tuyệt đối. |
+| `status` | String | Default: 'active' | Trạng thái tài khoản (Active, Pending, Blocked). |
+| `rating` | Integer | Default: 1500 | Chỉ số Elo phản ánh trình độ thi đấu Code Battle. |
+| `xp` | Integer | Default: 0 | Điểm kinh nghiệm tích lũy từ các bài tập tự luyện. |
 
-    Lecturer ---> UC1
-    Lecturer ---> UC7
-    Lecturer ---> UC8
-    Lecturer ---> UC9
-    Lecturer ---> UC10
-    Lecturer ---> UC12
+**B. Thực thể USER_SKILL_NODE (Nút kỹ năng)**
+Đại diện cho một kỹ năng (ví dụ: "Mảng 1 chiều", "Đệ quy") trong cây lộ trình học tập.
 
-    Admin ---> UC1
-    Admin ---> UC11
-    Admin ---> UC12
-```
+| Tên trường | Kiểu dữ liệu | Ý nghĩa kỹ thuật |
+| :--- | :--- | :--- |
+| `parentId` | UUID | Khóa ngoại tham chiếu đến chính nó, tạo cấu trúc phân cấp cây. |
+| `tag` | String | Nhãn kỹ năng dùng để lọc bài tập gợi ý từ Gemini AI. |
+| `progress` | Float | Tỷ lệ hoàn thành các bài tập thuộc kỹ năng này (0.0 - 1.0). |
+| `status` | Enum | `LOCKED` (Chưa đạt điều kiện), `ACTIVE` (Đang học), `DONE` (Đã nắm vững). |
+| `position_x/y` | Float | Tọa độ để vẽ sơ đồ Skill Tree trên giao diện Frontend (Canvas/SVG). |
 
-### 3.2. Thiết kế luồng nghiệp vụ cốt lõi (Core Business Flows)
+***
 
-Để giải quyết triệt để các "nỗi đau" (Pain points) đã nêu ở Phần 1, CodeLearn quy hoạch và pháp lý hóa hai nhóm luồng xử lý trọng tâm đặc biệt sau:
+#### 3.1.2. Phân hệ Quản lý Bài tập và Tài nguyên (Problem & Asset Module)
 
-#### Nhóm 1: Tiến trình Đăng ký Sinh viên khép kín và An toàn (Closed Onboarding System)
-Việc cho phép người dùng trên Internet tự do "Sign Up" thường dẫn đến lượng lớn dữ liệu rác. CodeLearn giải quyết bài toán định danh này theo tiêu chuẩn đại học bằng quy trình Onboarding xác thực vòng kín:
-- **Bước 1 (Khởi tạo hàng loạt - Batch Import):** Quản trị viên (Admin) đẩy Upload danh sách sinh viên qua định dạng chuẩn file `.CSV` vào hệ thống. Các tài khoản này thay vì được Active ngay, sẽ được cơ sở dữ liệu (PostgreSQL) ghi nhận cẩn thận ở trạng thái chờ cấu hình (`Status: Pending Users`).
-- **Bước 2 (Gửi Token Xác thực):** Hệ thống Event-Emitter tự động Trigger kích hoạt một tiến trình nền bất đồng bộ (Background job). Tiến trình này sinh ra các Mã bảo mật ngẫu nhiên mã hóa JWT (Temporary Credentials Token) có thời hạn 48 giờ và gửi qua giao thức SMTP đến hệ thống Email của từng sinh viên.
-- **Bước 3 (Tiếp nhận và Định danh):** Sinh viên nhận email báo nhập học, bấm vào đường link chứa Query String kích hoạt. Tại đây, luồng Frontend chuyển hướng người dùng vào trang Profile Setup, yêu cầu sinh viên khai báo tính pháp lý (ví dụ: Ngày sinh, Chuyên ngành, Trường đại học, SĐT).
-- **Bước 4 (Kích hoạt - Activate):** Khi Form được Submit, lời gọi API mang Payload cùng Token này được gửi về Backend. Node server giải mã Token, đối chiếu chữ ký (Signature), nếu mọi thứ an toàn nó tiến hành cập nhật Data, thay đổi trạng thái vòng đời tài khoản thành `Active` và cấp quyền đăng nhập chính thức.
+Phân hệ này được thiết kế theo mô hình **Versioning** (Quản lý phiên bản) để đảm bảo tính lịch sử và không làm gãy các lượt nộp bài cũ khi đề bài thay đổi.
 
-```mermaid
-sequenceDiagram
-    actor Admin as Quản trị viên
-    participant FE as Frontend Portal
-    participant API as Auth API & User Module
-    participant Email as Email Service
-    participant DB as PostgreSQL DB
-    actor Student as Sinh viên
+**A. Thực thể PROBLEM (Bài toán)**
+Thực thể gốc chứa các thông tin định danh bài tập.
 
-    Admin->>FE: Upload file CSV danh sách Sinh viên đợt mới
-    FE->>API: POST /admin/users/onboarding/batch
-    API->>DB: Map & Lưu dữ liệu vào bảng tạm (Status: Pending)
-    API-->>API: Async Workers: Tạo Temporary JWT Credentials 
-    API->>Email: Trigger Event Gửi Thư mời học + Token
-    Email->>Student: Sinh viên nhận Email chứa Activation Link
-    Student->>FE: Click Link, mở giao diện Hoàn thiện Hồ sơ
-    FE->>Student: Yêu cầu Cập nhật Mật khẩu, SĐT, Mã Đại học
-    Student->>FE: Submit Form (Kèm Temporary Token)
-    FE->>API: PATCH /auth/activate-profile
-    API->>DB: Xác thực Token, Update Profile, cấp quyền Role = 'STUDENT'
-    DB-->>API: Success
-    API-->>FE: Trả về AccessToken (Đăng nhập chính thức)
-    FE->>Student: Chuyển hướng vào Dashboard Học tập
-```
+| Tên trường | Kiểu dữ liệu | Vai trò |
+| :--- | :--- | :--- |
+| `slug` | String | Chuỗi định danh URL (ví dụ: `giai-thuat-sap-xep`), hỗ trợ SEO và dễ nhớ. |
+| `difficulty` | String | Phân cấp độ khó: EASY, MEDIUM, HARD để tính toán điểm thưởng. |
+| `visibility` | Enum | PUBLIC (Tất cả thấy), PRIVATE (Chỉ lớp học thấy). |
+| `current_version_id` | UUID | Trỏ tới phiên bản mới nhất đang được sử dụng để chấm điểm. |
 
-#### Nhóm 2: Thuật toán quy hoạch bài tập "Điền vào chỗ trống" (Boilerplate Protection Workspace Flow)
-Đây là quy trình độc quyền có hàm lượng sáng tạo cao nhất của CodeLearn, bảo vệ tính toàn vẹn của mã nguồn mẫu.
-- **Bước 1 (Thiết lập ranh giới - Marking chunk):** Giảng viên tạo khung bài tập chuẩn (Boilerplate) trên UI. Bằng cách thao tác phủ khối trực quan, hệ thống thu thập tọa độ (Start-line, End-line) ghi ranh giới cho phép sinh viên tác động thành một Metadata JSON riêng biệt.
-- **Bước 2 (Kiểm soát môi trường Client):** Khi Sinh viên mở Workspace để học, hệ thống API tiến hành khóa cứng (Read-only lock) lên toàn bộ các DOM thao tác File Tree. Biến thể UI (Monaco Editor Context) cấu hình lại, buộc sinh viên chỉ có thể chèn code vào các khối ranh giới (Editor boundaries). Mọi thao tác Ctrl+X, Delete ngoài lề đều bị Event Listener gạt bỏ.
-- **Bước 3 (Đồng bộ lắp ghép An toàn - Server Secure Merge):** Trong quá trình nộp bài (Submit), để phòng ngừa sinh viên sử dụng Postman hay cURL giả mạo Request sửa đổi lõi, Payload API chỉ cho phép chứa phần Code thuộc block hợp lệ. Payload cục bộ gửi lên sẽ được chặn ở tầng Service Backend. Dữ liệu đoạn code rời rạc của sinh viên sẽ được dịch ngược về Server, sau đó Engine Merge tiến hành nội suy, trộn "khéo léo" vào khung Boilerplate vô hình giấu mặt tại tầng Backend. Đoạn mã "nguyên vẹn và không chứa mã độc sửa Test-case" này mới được đóng gói gửi vào Sandbox Docker để chấm điểm tự động.
+**B. Thực thể PROBLEM_VERSION (Phiên bản bài tập)**
+Lưu trữ nội dung chi tiết của một lần cập nhật đề bài.
 
-```mermaid
-flowchart TD
-    Start([Bắt đầu tiến trình bảo vệ bài tập]) --> A[Giáo viên nhập yêu cầu, điểm số vào Ngân hàng câu hỏi]
-    A --> B{Xác định dạng cấu trúc Code?}
-    B -->|Mã nguồn Tự do| C[Hệ thống cấp phát File trống]
-    B -->|Điền vào chỗ trống| D[Khởi tạo Hệ thống Boilerplate Code]
-    D --> E[Sử dụng Editor UI để bôi đen phân vùng cho sửa]
-    E --> F[Sinh Metadata: locked_lines / read_only_chunks]
-    F --> G[Lưu ẩn cấu trúc Test-cases vào Database nội bộ]
-    G --> H[Hoàn tất bài giảng]
-    H --> End([Bài toán đưa vào Assignment / Exam])
-```
+| Tên trường | Kiểu dữ liệu | Ý nghĩa |
+| :--- | :--- | :--- |
+| `description` | JSONB | Chứa nội dung đề bài định dạng Markdown (hỗ trợ công thức Toán, Code). |
+| `workspaceConfig` | JSONB | Cấu hình các tab file mặc định khi sinh viên mở Editor. |
+| `entryFile` | String | Đường dẫn file chính (ví dụ: `main.cpp`) mà Sandbox sẽ thực thi. |
+| `isVerified` | Boolean | Đánh dấu phiên bản đã được Giảng viên chạy thử thành công (Safe to deploy). |
 
-### 3.3. Thiết kế Cấu trúc Cơ sở dữ liệu hạt nhân (Data Modeling - ERD)
+**C. Thực thể PROBLEM_FILE (Tệp tin mã nguồn mẫu)**
+Lưu trữ các tệp tin cấu thành nên một bài tập, đặc biệt quan trọng cho dạng bài "Điền vào chỗ trống".
 
-Cấu trúc CSDL được hệ thống hóa chuẩn 3NF (Third Normal Form) để tránh dị thường dữ liệu (Data Anomalies) trong quá trình Scale-up đón nhận hàng vạn sinh viên, xử lý truy vấn chéo (JOIN operations) với tốc độ cao. Các thực thể (Entities) cốt lõi bao gồm:
+| Tên trường | Kiểu dữ liệu | Mô tả chi tiết |
+| :--- | :--- | :--- |
+| `path` | String | Đường dẫn file trong cấu trúc thư mục ảo của sinh viên. |
+| `content` | Text | Nội dung mã nguồn mẫu (Boilerplate). |
+| `type` | Enum | `TEMPLATE` (Cho phép sửa), `SOLUTION` (Lời giải ẩn), `NEUTRAL` (Chỉ đọc). |
+| `isReadonly` | Boolean | Cờ bảo vệ ngăn sinh viên xóa hoặc sửa đổi các tệp cấu trúc lõi. |
+| `isFillInTheBlank` | Boolean | Đánh dấu tệp chứa các phân vùng ranh giới (Marking chunks). |
 
-1. **Thực thể USER (Người dùng):** Trung tâm định danh, phân quyền RBAC và quản lý hồ sơ năng lực.
-2. **Thực thể PROBLEM & TESTCASE (Học liệu):** Lưu trữ đa dạng các loại bài tập từ tiêu chuẩn đến điền vào chỗ trống, đi kèm hệ thống kiểm thử tự động.
-3. **Thực thể SUBMISSIONS (Giao dịch nộp bài):** Lưu trữ toàn bộ lịch sử code và kết quả đánh giá để phục vụ tra soát và chống đạo văn.
-4. **Thực thể EXAM & BATTLE (Đánh giá & Tương tác):** Quản lý các kỳ thi tập trung và các trận đấu đối kháng thời gian thực.
+***
+
+#### 3.1.3. Phân hệ Kiểm thử và Đánh giá (Testcase & Submission Module)
+
+Đây là phân hệ lưu trữ khối lượng dữ liệu lớn nhất, đòi hỏi sự tối ưu hóa cao về chỉ mục (Indexing) và truy vấn.
+
+**A. Thực thể TESTCASE (Bộ kiểm thử)**
+Dữ liệu dùng để đối soát kết quả đầu ra của sinh viên.
+
+| Tên trường | Kiểu dữ liệu | Ý nghĩa |
+| :--- | :--- | :--- |
+| `input` | Text | Dữ liệu đầu vào truyền qua Standard Input (stdin). |
+| `expectedOutput` | Text | Kết quả mong đợi để so khớp (Exact match / Partial match). |
+| `score` | Integer | Trọng số điểm cho testcase này (ví dụ: 10 điểm). |
+| `isHidden` | Boolean | Nếu là `true`, sinh viên không thấy Input/Output này kể cả khi làm sai. |
+
+**B. Thực thể SUBMISSION (Lượt nộp bài)**
+Lưu trữ bằng chứng học tập và kết quả chấm điểm.
+
+| Tên trường | Kiểu dữ liệu | Chi tiết kỹ thuật |
+| :--- | :--- | :--- |
+| `status` | Enum | `AC` (Đúng), `WA` (Sai), `TLE` (Quá thời gian), `CE` (Lỗi biên dịch). |
+| `finalCode` | Text | Toàn bộ mã nguồn sinh viên đã nộp (dùng cho Plagiarism Check). |
+| `executionTime` | Integer | Thời gian chạy thực tế tính bằng miligiây (ms). |
+| `memoryUsage` | Integer | Lượng RAM tiêu thụ cao nhất tính bằng Kilobytes (KB). |
+
+***
+
+### 3.2. Sơ đồ Cơ sở Dữ liệu Phân mảnh (Detailed Module ERDs)
+
+Thay vì một sơ đồ tổng quát khó quan sát, chúng tôi phân tách thành các ERD chi tiết cho từng nhóm nghiệp vụ.
+
+#### 3.3.1. ERD Nhóm Người dùng & Đào tạo (User & Enrollment)
+Sơ đồ này thể hiện mối quan hệ giữa sinh viên, lớp học và lộ trình kỹ năng.
 
 ```mermaid
 erDiagram
-    %% --- NHÓM NGƯỜI DÙNG & HỆ THỐNG ---
-    USER ||--o{ AUDIT_LOG : "sinh nhật ký"
-    USER ||--o{ ENROLLMENT : "đăng ký học"
-    USER ||--o{ USER_WORKSPACE : "sở hữu"
-    USER ||--o{ USER_SKILL_NODE : "phát triển kỹ năng"
-    USER ||--o{ BATTLE_SESSION : "tham gia thi đấu"
-    USER ||--o{ ROOM_PARTICIPANT : "tham gia phòng"
-    SYSTEM_SETTING ||--o{ USER : "áp dụng cho"
-
-    %% --- NHÓM KHÓA HỌC & ĐÀO TẠO ---
-    COURSE ||--o{ ENROLLMENT : "có học viên"
-    COURSE ||--o{ ASSIGNMENT : "giao bài tập"
-    COURSE ||--o{ EXAM : "tổ chức kỳ thi"
-
-    %% --- NHÓM NGÂN HÀNG ĐỀ THI & BÀI TOÁN ---
-    QUESTION_BANK ||--o{ BANK_ITEM : "lưu trữ"
-    BANK_ITEM ||--o{ PROBLEM : "tham chiếu"
-    PROBLEM ||--o{ PROBLEM_VERSION : "quản lý phiên bản"
-    PROBLEM ||--o{ PROBLEM_LANGUAGE_FILE : "định nghĩa ngôn ngữ"
-    PROBLEM ||--o{ PROBLEM_STATS : "thống kê hiệu năng"
-    PROBLEM ||--o{ TESTCASE : "kiểm thử bởi"
-    PROBLEM ||--o{ ASSIGNMENT_PROBLEM : "gán vào assignment"
-    PROBLEM ||--o{ EXAM_PROBLEM : "gán vào exam"
-    PROBLEM_LANGUAGE_FILE }|--|| LANGUAGE : "sử dụng"
-    PROBLEM_LANGUAGE_FILE ||--o{ PROBLEM_FILE : "chứa mã nguồn mẫu"
-
-    %% --- NHÓM ĐÁNH GIÁ (ASSIGNMENT/EXAM) ---
-    ASSIGNMENT ||--o{ ASSIGNMENT_PROBLEM : "bao gồm"
-    EXAM ||--o{ EXAM_PROBLEM : "bao gồm"
-    EXAM ||--o{ EXAM_ATTEMPT : "lượt làm bài"
-    EXAM_ATTEMPT ||--o{ EXAM_LOG : "giám sát hành vi"
-
-    %% --- NHÓM LUỒNG CHẤM BÀI (SUBMISSION) ---
-    ASSIGNMENT_PROBLEM ||--o{ SUBMISSION : "nhận lời giải"
-    EXAM_PROBLEM ||--o{ SUBMISSION : "nhận lời giải"
-    SUBMISSION ||--o{ SUBMISSION_FILE : "mã nguồn nộp"
-    SUBMISSION ||--o{ SUBMISSION_RESULT : "kết quả chi tiết"
-    SUBMISSION ||--o{ EXECUTION_JOB : "định danh hàng đợi"
-
-    %% --- NHÓM WORKSPACE & CỘNG TÁC ---
-    USER_WORKSPACE ||--o{ WORKSPACE_FILE : "tệp tin cá nhân"
-    ROOM ||--o{ ROOM_PARTICIPANT : "thành viên"
-    ROOM ||--o{ ROOM_SESSION : "phiên làm việc"
-    ROOM_SESSION ||--o{ BATTLE_SESSION : "khởi tạo trận đấu"
+    USER ||--o{ ENROLLMENT : "đăng ký"
+    USER ||--o{ USER_SKILL_NODE : "có"
+    COURSE ||--o{ ENROLLMENT : "chứa"
+    COURSE ||--o{ ASSIGNMENT : "giao bài"
 
     USER {
-        uuid id PK
-        string email UK
-        enum role "ADMIN, LECTURER, STUDENT"
-        json profile_info "phone, university, xp, rank"
-        datetime created_at
+        id uuid PK
+        email string
+        fullName string
+        role enum
+        rating int
     }
-    PROBLEM {
-        uuid id PK
-        string title
-        enum difficulty "EASY, MEDIUM, HARD"
-        boolean is_public
-        integer time_limit_ms
+    ENROLLMENT {
+        id uuid PK
+        user_id uuid FK
+        course_id uuid FK
+        enrolled_at datetime
     }
-    SUBMISSION {
-        uuid id PK
-        uuid user_id FK
-        uuid exercise_id FK
-        enum status "AC, WA, TLE, CE, PENDING"
-        float score
-        text final_code
+    USER_SKILL_NODE {
+        id uuid PK
+        parent_id uuid FK
+        title string
+        progress float
     }
-    BATTLE_SESSION {
-        uuid id PK
-        uuid winner_id FK
-        enum state "WAITING, IN_PROGRESS, FINISHED"
-        datetime match_time
+    COURSE {
+        id uuid PK
+        title string
     }
-    EXAM {
-        uuid id PK
-        string title
-        datetime start_at
-        datetime end_at
-        boolean proctoring_enabled
+    ASSIGNMENT {
+        id uuid PK
+        course_id uuid FK
+        title string
     }
 ```
 
-
-### 3.4. Kiến trúc luồng Thực thi ảo hóa (Sandbox Submission Workflow)
-Nhằm bảo vệ hệ thống trước sự cố nghẽn mạng cục bộ, quy trình chấm bài code của sinh viên được thiết kế theo cơ chế Pub/Sub hoàn toàn bất đồng bộ (Asynchronous Design):
-1. **Tiếp nhận API / Hàng đợi (Queue Buffering):** Web server tiếp nhận mã nguồn, nhưng tuyệt đối không chạy lệnh ngay. Mã nguồn và bài toán được đóng gói, dán nhãn Job và đẩy vào **Redis Queue** để bảo đảm hàng đợi FIFO ổn định nhờ Engine **BullMQ**.
-2. **Worker xử lý biệt lập (Isolated Sandboxing):** Nhóm máy chủ nhận nhiệm vụ (Worker Nodes) tiến hành Consume job từ hàng đợi. Nó khởi tạo một container **Docker** ngắn hạn cách ly tài nguyên (CPU, RAM). Bên trong rào cản này, code sinh viên được biên dịch, truyền Input thông qua Pipe và xuất ra Log đầu ra trong giới hạn 2 giây (Time Limits).
-3. **Phản hồi thời gian thực qua WebSockets:** Kết quả Test-case xuất về được ghi thẳng vào Database và phát sự kiện Broadcast thông qua **Socket.io**. Phía giao diện của sinh viên sẽ tự bắt event đổi trạng thái sang hiệu ứng Màu xanh (Passed) hay Đỏ (Compiler Error) ngay lập tức mà không cần F5 trình duyệt. Đồng thời, API phụ được kích hoạt để hỏi Gemini AI nhằm giải thích chi tiết lỗi để đút kết thành log phản hồi cho sinh viên.
+#### 3.3.2. ERD Nhóm Bài tập & Kiểm thử (Problem & Submission)
+Đây là cấu trúc "xương sống" xử lý logic chấm điểm của CodeLearn.
 
 ```mermaid
-graph TB
-    subgraph Client_Layer [Tầng Giao diện (Next.js)]
-        FE(Frontend Portal)
-        WS_Client(WebSocket Client)
-    end
-
-    subgraph API_Layer [Tầng Nghiệp vụ (NestJS)]
-        Gate(Gateway / Controllers)
-        Auth(Auth Service)
-        Prob(Problem Service)
-        Exec(Execution Service)
-        AI_S(Gemini AI Service)
-    end
-
-    subgraph Data_Layer [Tầng Lưu trữ & Hàng đợi]
-        DB[(PostgreSQL)]
-        Redis_Queue{Redis Queue / BullMQ}
-    end
-
-    subgraph Execution_Layer [Tầng Thực thi Sandbox]
-        W1(Worker Node 1)
-        W2(Worker Node 2)
-        Docker1[[Docker Container 1]]
-        Docker2[[Docker Container 2]]
-    end
-
-    FE -->|HTTPS / JWT| Gate
-    Gate --> Auth
-    Gate --> Prob
-    Gate --> Exec
+erDiagram
+    PROBLEM ||--o{ PROBLEM_VERSION : "có"
+    PROBLEM_VERSION ||--o{ PROBLEM_FILE : "chứa"
+    PROBLEM_VERSION ||--o{ TESTCASE : "kiểm thử bằng"
+    PROBLEM_VERSION ||--o{ SUBMISSION : "nhận"
+    SUBMISSION ||--o{ SUBMISSION_RESULT : "chi tiết"
+    PROBLEM_FILE }|--|| LANGUAGE : "ngôn ngữ"
     
-    Exec -->|Push Job| Redis_Queue
-    Redis_Queue -->|Pull Job| W1
-    Redis_Queue -->|Pull Job| W2
-    
-    W1 --> Docker1
-    W2 --> Docker2
-    
-    Docker1 -->|Ghi điểm| DB
-    W1 -->|Push Event| WS_Client
-    
-    Exec --> AI_S
-    AI_S -.->|Gemini AI Flash 2.0| Exec
+    PROBLEM {
+        id uuid PK
+        slug string
+        difficulty string
+    }
+    PROBLEM_VERSION {
+        id uuid PK
+        problem_id uuid FK
+        description jsonb
+        entry_file string
+    }
+    PROBLEM_FILE {
+        id uuid PK
+        version_id uuid FK
+        path string
+        type enum
+    }
+    SUBMISSION {
+        id uuid PK
+        user_id uuid FK
+        problem_version_id uuid FK
+        status enum
+        execution_time int
+        score float
+    }
+    SUBMISSION_RESULT {
+        id uuid PK
+        submission_id uuid FK
+        testcase_id uuid FK
+        status enum
+    }
+    TESTCASE {
+        id uuid PK
+        version_id uuid FK
+        input text
+        expected_output text
+    }
+    LANGUAGE {
+        id int PK
+        name string
+    }
 ```
 
-#### Quy trình chấm bài Chi tiết (Submission Lifecycle Sequence)
+#### 3.1.4. Phân hệ Đào tạo và Thi cử (Exam & Assignment Module)
+
+Phân hệ này quản lý các kỳ kiểm tra tập trung, đòi hỏi sự kiểm soát nghiêm ngặt về thời gian và tính ngẫu nhiên của đề thi.
+
+**A. Thực thể EXAM (Kỳ thi tập trung)**
+Quản lý các thông số vận hành của một kỳ thi chính thức.
+
+| Tên trường | Kiểu dữ liệu | Ý nghĩa & Quy tắc |
+| :--- | :--- | :--- |
+| `startTime / endTime` | DateTime | Khoảng thời gian hệ thống mở/đóng cổng thi. Ngoài giờ này, sinh viên không thể truy cập. |
+| `duration` | Integer | Thời lượng làm bài tính bằng phút (ví dụ: 90 phút). |
+| `allowedLanguageIds`| Array[Int] | Danh sách các ngôn ngữ lập trình được phép sử dụng trong kỳ thi này. |
+| `isPerUserRandom` | Boolean | **Cơ chế chống gian lận:** Mỗi sinh viên sẽ nhận được một bộ đề bài ngẫu nhiên từ ngân hàng câu hỏi. |
+| `generationRules` | JSONB | Các quy tắc chọn đề (ví dụ: Chọn 2 bài Dễ, 2 bài Trung bình, 1 bài Khó). |
+
+**B. Thực thể EXAM_LOG (Nhật ký giám thi số)**
+Lưu trữ các hành vi của sinh viên trong quá trình thi.
+
+| Tên trường | Kiểu dữ liệu | Ý nghĩa kỹ thuật |
+| :--- | :--- | :--- |
+| `event_type` | String | `TAB_SWITCH` (Chuyển tab), `PASTE` (Dán code), `CONNECTION_LOST`. |
+| `metadata` | JSONB | Lưu thông tin chi tiết về sự kiện (ví dụ: Tên tab sinh viên đã chuyển sang). |
+
+***
+
+#### 3.1.5. Phân hệ Thi đấu và Cộng tác thời gian thực (Battle & Room Module)
+
+Đây là phân hệ ứng dụng công nghệ WebSockets (Socket.io) để duy trì sự đồng bộ trạng thái giữa các người chơi.
+
+**A. Thực thể BATTLE_SESSION (Trận đấu đối kháng)**
+Quản lý vòng đời của một trận Solo Battle 1vs1.
+
+| Tên trường | Kiểu dữ liệu | Vai trò |
+| :--- | :--- | :--- |
+| `player1_id / player2_id` | UUID | Hai người chơi tham gia trận đấu. |
+| `player1_progress / 2` | Integer | Số lượng test case đã vượt qua. Dùng để cập nhật thanh tiến trình trực quan. |
+| `winner_id` | UUID | Người hoàn thành bài tập sớm nhất với số test case vượt qua cao nhất. |
+| `status` | Enum | `WAITING` (Chờ đối thủ), `ACTIVE` (Đang thi đấu), `ENDED` (Kết thúc). |
+
+**B. Thực thể ROOM (Phòng học nhóm)**
+Không gian cho phép giảng viên hướng dẫn hoặc sinh viên cùng học tập.
+
+| Tên trường | Kiểu dữ liệu | Ý nghĩa |
+| :--- | :--- | :--- |
+| `type` | Enum | `MEETING` (Thảo luận video), `CODE` (Cùng lập trình trên IDE). |
+| `problem_slug` | String | Bài tập mà cả phòng đang cùng thực hiện. |
+| `maxParticipants` | Integer | Giới hạn số lượng người tham gia để đảm bảo băng thông ổn định. |
+
+***
+
+### 3.2. Sơ đồ Cơ sở Dữ liệu Phân mảnh (Tiếp theo)
+
+#### 3.2.3. ERD Nhóm Thi cử & Đào tạo (Exam & Course)
+```mermaid
+erDiagram
+    COURSE ||--o{ EXAM : "tổ chức"
+    COURSE ||--o{ ASSIGNMENT : "giao bài"
+    QUESTION_BANK ||--o{ EXAM : "cung cấp đề"
+    EXAM ||--o{ EXAM_ATTEMPT : "có lượt làm"
+    EXAM_ATTEMPT ||--o{ EXAM_LOG : "sinh nhật ký"
+
+    EXAM {
+        id uuid PK
+        course_id uuid FK
+        start_time datetime
+        end_time datetime
+        is_per_user_random boolean
+    }
+    EXAM_ATTEMPT {
+        id uuid PK
+        exam_id uuid FK
+        user_id uuid FK
+        started_at datetime
+        total_score float
+    }
+    EXAM_LOG {
+        id uuid PK
+        attempt_id uuid FK
+        event_type string
+        timestamp datetime
+    }
+    COURSE {
+        id uuid PK
+    }
+    ASSIGNMENT {
+        id uuid PK
+    }
+    QUESTION_BANK {
+        id uuid PK
+    }
+```
+
+#### 3.2.4. ERD Nhóm Cộng tác & Thi đấu (Collaboration & Battle)
+```mermaid
+erDiagram
+    ROOM ||--o{ ROOM_PARTICIPANT : "có thành viên"
+    ROOM ||--o{ ROOM_SESSION : "phiên làm việc"
+    ROOM_SESSION ||--o{ BATTLE_SESSION : "khởi tạo"
+    USER ||--o{ ROOM_PARTICIPANT : "tham gia"
+
+    ROOM {
+        id uuid PK
+        problem_slug string
+        type enum
+    }
+    ROOM_PARTICIPANT {
+        room_id uuid FK
+        user_id uuid FK
+        role string
+    }
+    BATTLE_SESSION {
+        id uuid PK
+        room_session_id uuid FK
+        winner_id uuid FK
+        player1_progress int
+        player2_progress int
+    }
+    USER {
+        id uuid PK
+    }
+```
+
+***
+
+### 3.4. Thiết kế các Luồng Nghiệp vụ Sequence Chi tiết (Sequence Diagrams)
+
+Phần này đặc tả trình tự giao tiếp giữa Client, Server, Database và các dịch vụ bên thứ 3 (AI, Sandbox).
+
+#### 3.4.1. Luồng Chấm bài Tự động với Cơ chế Hàng đợi (Execution Flow)
+Đây là luồng quan trọng nhất, đảm bảo hệ thống không bị quá tải.
 
 ```mermaid
 sequenceDiagram
     autonumber
+    participant S as Sinh viên (Frontend)
+    participant API as Backend (NestJS)
+    participant Q as Queue (Redis/BullMQ)
+    participant W as Worker (Docker Sandbox)
+    participant DB as Database (PostgreSQL)
+
+    S->>API: POST /submissions (Source Code + ProbID)
+    API->>API: Validate Boilerplate & Auth
+    API->>DB: Lưu Submission (Status: PENDING)
+    API->>Q: Đẩy Job vào Queue
+    API-->>S: Trả về SubmissionID (HTTP 202)
+    
+    W->>Q: Nhận Job (Long Polling)
+    W->>W: Khởi tạo Docker Container
+    W->>W: Chạy Testcases
+    W-->>DB: Cập nhật Kết quả (AC/WA/TLE) & Score
+    W-->>API: Notify Success via Event
+    API-->>S: Gửi tín hiệu WebSocket (Update UI)
+```
+
+#### 3.4.2. Luồng Kiểm tra Đạo văn và Đối soát (Plagiarism Check Flow)
+Luồng này giúp giảng viên đánh giá tính trung thực của sinh viên.
+
+```mermaid
+sequenceDiagram
+    participant L as Giảng viên
+    participant API as Backend
+    participant Engine as Moss/Plagiarism Engine
+    participant DB as Database
+
+    L->>API: Yêu cầu Check Plagiarism cho Bài tập X
+    API->>DB: Lấy danh sách finalCode của tất cả Sinh viên
+    API->>Engine: Gửi gói Code so sánh
+    Engine->>Engine: Thuật toán so khớp chuỗi/cấu trúc (AST)
+    Engine-->>API: Trả về tỷ lệ % trùng lặp giữa các cặp
+    API->>DB: Lưu báo cáo đạo văn
+    API-->>L: Hiển thị Dashboard Đạo văn (Heatmap)
+```
+
+#### 3.4.3. Luồng Tương tác Trợ lý AI (AI Suggestion Flow)
+```mermaid
+sequenceDiagram
     participant S as Sinh viên
-    participant FE as Frontend Portal
-    participant API as Backend API
-    participant Q as Redis Queue
-    participant W as Worker Node
-    participant D as Docker Sandbox
-    participant AI as Gemini AI
+    participant API as Backend
+    participant Gemini as Gemini AI API
+    participant Prompt as Prompt Manager
 
-    S->>FE: Bấm nút "Submit Code"
-    FE->>API: POST /submissions (Source Code + Prob ID)
-    API->>API: Kiểm tra ranh giới Boilerplate & Gộp Code
-    API->>Q: Đẩy Job vào BullMQ (Status: PENDING)
-    API-->>FE: Trả về SubmissionID (HTTP 202 Accepted)
-    FE->>S: Hiển thị trạng thái "Đang trong hàng đợi..."
-
-    loop Chờ Worker
-        W->>Q: Pull Job từ Redis
-    end
-    
-    W->>D: Khởi tạo Container (Resource Limits)
-    W->>D: Copy Code, Chạy Testcases qua Pipe
-    D-->>W: Xuất Standard Output / Error
-    W->>API: Cập nhật kết quả chấm bài (AC / WA / TLE)
-    W->>FE: Phát tín hiệu WebSocket (Submission SUCCESS / FAILED)
-    FE->>S: Đổi màu UI sang Xanh/Đỏ
-
-    opt Nếu bài làm bị lỗi
-        API->>AI: Gửi Source Code + Lỗi biên dịch
-        AI-->>API: Trả về giải thích lỗi & gợi ý hướng sửa
-        API->>FE: Đẩy gợi ý AI vào Tab "AI Assistant"
-    end
+    S->>API: Gửi mã lỗi + Mã nguồn đang viết
+    API->>Prompt: Chèn Context (Đề bài, Testcase sai, Rule sư phạm)
+    Prompt-->>API: Prompt hoàn thiện (Instruction)
+    API->>Gemini: Gửi yêu cầu phân tích
+    Gemini-->>API: Trả về hướng dẫn (Markdown)
+    API-->>S: Hiển thị hướng dẫn trong Tab AI
 ```
 
-### 3.5. Thiết kế Logic các tính năng mở rộng (Advanced Features Logic)
+### 3.5. Phân tích chi tiết Cấu trúc Dữ liệu Giao tiếp (API Payload Analysis)
 
-#### 3.5.1. Chế độ thi đấu Đối kháng (Battle Mode State-Machine)
-Tính năng thi đấu yêu cầu sự đồng bộ trạng thái cực cao giữa các người chơi thông qua nền tảng Socket.io.
+Để đảm bảo tính nhất quán và hiệu năng, CodeLearn quy chuẩn hóa các gói tin JSON trao đổi giữa Frontend và Backend. Dưới đây là phân tích chi tiết cho hai luồng dữ liệu quan trọng nhất.
 
-```mermaid
-stateDiagram-v2
-    [*] --> LOBBY: Chủ phòng tạo Battle
-    LOBBY --> LOBBY: join_room (Người chơi gia nhập)
-    LOBBY --> IN_PROGRESS: start_battle (Bắt đầu)
-    
-    state IN_PROGRESS {
-        [*] --> CODING: Nhận đề bài
-        CODING --> SUBMITTING: Nộp bài (Execution Flow)
-        SUBMITTING --> CODING: Kết quả Sai (WA/TLE)
-        SUBMITTING --> FINISHED_USER: Kết quả AC (Hoàn thành)
-    }
-    
-    IN_PROGRESS --> EVALUATING: Hết giờ (Timeout) hoặc Tất cả hoàn thành
-    EVALUATING --> COMPLETED: Tính toán Xếp hạng & Cộng điểm XP
-    COMPLETED --> [*]
+#### 3.5.1. Cấu trúc Gói tin nộp bài (Submission Payload)
+Khi sinh viên bấm nút Submit, hệ thống không gửi toàn bộ file mà gửi một cấu trúc cây mã nguồn đã được định dạng.
+
+**Endpoint:** `POST /api/submissions`
+**Cấu trúc dữ liệu:**
+```json
+{
+  "problemId": "uuid-v4-identifier",
+  "languageId": 1, // 1: C++, 2: Java, 3: Python...
+  "code": {
+    "files": [
+      {
+        "path": "src/main.cpp",
+        "content": "string_content_of_the_code",
+        "isEntry": true
+      },
+      {
+        "path": "src/utils.h",
+        "content": "string_content_of_header"
+      }
+    ]
+  },
+  "metadata": {
+    "clientTimestamp": "2026-04-30T...",
+    "browserInfo": "Chrome/124.0.0",
+    "isExamMode": false
+  }
+}
 ```
+**Phân tích kỹ thuật:**
+- `languageId`: Giúp Backend xác định chính xác Docker Image nào cần khởi tạo (ví dụ: `gcc:latest` cho C++).
+- `files`: Cấu trúc mảng cho phép hệ thống mở rộng sang các bài tập đa file (Multi-file projects), một tính năng vượt trội so với các hệ thống chỉ hỗ trợ 1 file duy nhất.
 
-#### 3.5.2. Lộ trình học tập cá nhân hóa (Learning Path Mastery)
-Dựa trên lịch sử Submission, hệ thống sử dụng cấu trúc cây kỹ năng (Skill Tree) để gợi ý bài tập tiếp theo.
+#### 3.5.2. Giải thuật Nội suy và Bảo vệ ranh giới (Boilerplate Protection Algorithm)
+Đây là phần lõi kỹ thuật nhằm ngăn chặn việc sinh viên can thiệp vào mã nguồn khung.
 
-```mermaid
-graph LR
-    Sub(Lịch sử Nộp bài) --> Engine(Phân tích Score & Difficulty)
-    Engine --> SkillMap{Cập nhật Skill Node}
-    SkillMap -->|Mastered| NextLevel(Mở khóa bài tập nâng cao)
-    SkillMap -->|Weak| AI_Suggest(Gemini AI gợi ý tài liệu ôn tập)
-    NextLevel --> Dashboard(Cập nhật UI Lộ trình)
-```
+**Bước 1: Lưu trữ ranh giới (Server-side)**
+Giảng viên định nghĩa vùng được phép sửa thông qua các thẻ đánh dấu ẩn trong code:
+`/* START_STUDENT_CODE */` ... `/* END_STUDENT_CODE */`
+
+**Bước 2: Đối soát khi nộp bài**
+Khi nhận Payload từ Client, Backend thực hiện quy trình:
+1.  Tải mã nguồn khung (Boilerplate) từ Database.
+2.  Trích xuất phần mã sinh viên đã gửi trong mảng `files`.
+3.  Sử dụng biểu thức chính quy (Regex) hoặc kỹ thuật cắt chuỗi để thay thế chính xác phần mã sinh viên vào giữa hai thẻ đánh dấu trong mã nguồn khung.
+4.  Nếu sinh viên cố tình gửi mã nguồn nằm ngoài ranh giới (bằng cách sử dụng Postman hay can thiệp API), Engine Merge sẽ tự động loại bỏ hoặc báo lỗi `Security Violation`.
+
+***
+
+### 3.6. Thiết kế Giao diện lập trình (API Endpoints Specification)
+
+Dưới đây là bảng đặc tả một số API hạt nhân phục vụ các phân hệ chính:
+
+| Phương thức | Endpoint | Mô tả chức năng | Quyền hạn (Role) |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/problems` | Lấy danh sách bài tập kèm bộ lọc nâng cao. | ALL |
+| `POST` | `/api/problems` | Khởi tạo bài tập mới, bao gồm định nghĩa Metadata. | LECTURER |
+| `GET` | `/api/submissions/:id` | Lấy kết quả chấm bài chi tiết kèm log Sandbox. | OWNER / LECTURER |
+| `POST` | `/api/battles/join` | Tìm kiếm và gia nhập phòng chờ đối kháng. | STUDENT |
+| `PATCH` | `/api/admin/users/:id` | Cập nhật thông tin và trạng thái tài khoản. | ADMIN |
+| `GET` | `/api/ai/suggest` | Gửi yêu cầu phân tích lỗi và nhận gợi ý từ AI. | STUDENT |
+
+***
+*Kết luận Chương 3: Với sự phân tách rõ ràng giữa các thực thể, luồng nghiệp vụ và đặc tả giao tiếp, hệ thống CodeLearn đã xây dựng được một nền tảng vững chắc, sẵn sàng cho việc hiện thực hóa các giao diện phức tạp ở Chương tiếp theo.*

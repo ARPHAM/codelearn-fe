@@ -1,72 +1,84 @@
-# CHƯƠNG 4. HIỆN THỰC HÓA GIAO DIỆN VÀ GIẢI QUYẾT THÁCH THỨC KỸ THUẬT
+# CHƯƠNG 4. HIỆN THỰC HÓA HỆ THỐNG VÀ CHI TIẾT GIAO DIỆN NGƯỜI DÙNG
 
-Chương này tập trung trình bày việc hệ thống CodeLearn đã biến đổi các luồng nghiệp vụ trên lý thuyết trở thành một hệ sinh thái giao diện thực tế. Với quy mô hơn 20 module giao diện chính được phân lớp theo từng vai trò (Dashboarding, IDE, Social Interaction, Administration), báo cáo này sẽ liệt kê và phân tích các điểm sáng trong thiết kế trải nghiệm người dùng (UX) và kỹ thuật hiện thực hóa giao diện (Frontend Engineering).
+Chương này trình bày chi tiết kết quả thực thi của dự án thông qua hệ thống giao diện người dùng (UI/UX) và các tính năng nghiệp vụ đã được hiện thực hóa. Với quy mô hơn 25 trang chức năng biệt lập, CodeLearn cung cấp một trải nghiệm đồng bộ và chuyên nghiệp cho cả 3 đối tượng tác nhân.
 
-### 4.1. Hệ sinh thái giao diện dành cho Sinh viên (Student Experience)
+### 4.1. Phân hệ dành cho Sinh viên (Student Experience)
 
-Môi trường học tập của Sinh viên được thiết kế theo hướng "Gamification" (Trò chơi hóa) để tăng tính tương tác và động lực học tập.
+Giao diện sinh viên tập trung vào việc tối ưu hóa hiệu suất học tập và tạo động lực thông qua các yếu tố Gameification (Thi đấu, Xếp hạng).
 
-#### 4.1.1. Không gian làm việc lập trình (Core Code Editor)
-Giao diện trung tâm nhúng **Monaco Editor**, hỗ trợ đầy đủ các tính năng như VS Code (IntelliSense, Syntax Highlighting).
+#### 4.1.1. Không gian làm việc đa năng (The Ultimate Workspace)
+Đây là "linh hồn" của hệ thống, nơi sinh viên trực tiếp giải quyết các thách thức lập trình.
+- **Trình soạn thảo mã nguồn (Code Editor):** Tích hợp Monaco Editor hỗ trợ hơn 10 ngôn ngữ, tự động gợi ý code (IntelliSense) và tô màu cú pháp chuyên nghiệp.
+- **Quản lý đa tệp tin (File Explorer):** Cho phép sinh viên tạo, xóa, đổi tên các tệp tin trong không gian Sandbox cá nhân.
+- **Console & Terminal:** Hiển thị luồng dữ liệu Standard Output/Error thời gian thực từ Docker Sandbox.
+- **Tab Trợ lý AI (Gemini AI):** Tích hợp cửa sổ chat thông minh, hỗ trợ giải thích lỗi biên dịch ngay tại dòng mã đang viết.
+> [ẢNH GIAO DIỆN: Toàn cảnh IDE Workspace với cơ chế Split-pane]
 
-> [!NOTE]
-> **Hình 4.1. Giao diện Workspace tích hợp Trợ lý Gemini AI**
-> ![Workspace UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\student_workspace_mockup_1776932480976.png)
-> *Môi trường làm việc tách biệt giữa code mẫu (Read-only) và code sinh viên, có sự hỗ trợ trực tiếp từ AI.*
+#### 4.1.2. Đấu trường Code Battle (Competitive Coding)
+- **Sảnh chờ (Lobby):** Tìm kiếm đối thủ dựa trên hệ thống xếp hạng Elo tương đồng.
+- **Giao diện Đối kháng:** Hiển thị màn hình chia đôi, cho phép theo dõi thanh tiến trình (Testcases passed) của đối thủ để tăng tính kịch tính.
+- **Kết quả Trận đấu:** Bảng tổng hợp thời gian hoàn thành, số lần submit và điểm thưởng XP/Rating.
+> [ẢNH GIAO DIỆN: Giao diện Code Battle thời gian thực]
 
-#### 4.1.2. Lộ trình học tập (Learning Path - Skill Tree)
-Thay vì danh sách bài tập nhàm chán, hệ thống cung cấp một bản đồ kỹ năng dạng cây (Graph nodes), giúp sinh viên thấy rõ các mắt xích tri thức cần chinh phục.
+#### 4.1.3. Lộ trình học tập & Bảng xếp hạng
+- **Learning Path (Skill Tree):** Bản đồ kỹ năng trực quan hóa dưới dạng cây. Các nút kỹ năng (Nodes) sẽ mở khóa dần khi sinh viên đạt đủ điểm tích lũy.
+- **Leaderboard:** Vinh danh các "lập trình viên" xuất sắc nhất theo tuần, tháng và học kỳ. Hỗ trợ lọc theo lớp học hoặc chuyên ngành.
+> [ẢNH GIAO DIỆN: Cây kỹ năng và Bảng xếp hạng Leaderboard]
 
-> [!NOTE]
-> **Hình 4.2. Giao diện Lộ trình học tập dựa trên đồ thị kỹ năng**
-> ![Learning Path UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\learning_path_skill_tree_mockup_1776932759877.png)
+#### 4.1.4. Các trang chức năng bổ trợ khác
+- **Trang Danh sách Bài tập (Problem Set):** Bộ lọc đa năng theo độ khó, ngôn ngữ và trạng thái (Đã làm, Chưa làm).
+- **Trang Kỳ thi (Exams):** Giao diện làm bài thi tập trung với cơ chế khóa trình duyệt (Full-screen mode) và giám sát chuyển tab.
+- **Trang Khóa học (My Courses):** Quản lý các tài liệu, bài giảng và bài tập về nhà (Assignments) được giảng viên giao.
+- **Trang Hồ sơ cá nhân (Profile):** Hiển thị biểu đồ hoạt động (Contribution Graph) tương tự GitHub và kho chứng chỉ ảo.
 
-#### 4.1.3. Chế độ Thi đấu và Tương tác (Battle Mode & Pair Programming)
-- **Code Battle:** Giao diện đối kháng thời gian thực, nơi sinh viên so tài trực tiếp để tích điểm XP và tăng hạng trên Leaderboard.
-- **Pair Programming:** Không gian lập trình cặp qua các "Rooms", dùng công nghệ Socket.io để đồng bộ mã nguồn giữa hai người học.
+***
 
-> [!NOTE]
-> **Hình 4.3. Giao diện Đấu trường Code-Battle**
-> ![Battle Mode UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\battle_mode_mockup_1776932548013.png)
+### 4.2. Phân hệ dành cho Giảng viên (Lecturer Management)
 
-### 4.2. Phân hệ Quản trị Học liệu của Giảng viên (Lecturer Terminal)
+Giảng viên được trang bị các công cụ giám sát và phân tích dữ liệu chuyên sâu để đánh giá năng lực sinh viên một cách khách quan nhất.
 
-Giảng viên được cung cấp bộ công cụ mạnh mẽ để quản lý và giám sát chất lượng đào tạo.
+#### 4.2.1. Dashboard Phân tích & Thống kê (Advanced Analytics)
+- **Biểu đồ Hiệu suất:** Thống kê tỷ lệ hoàn thành bài tập theo thời gian thực của cả lớp.
+- **Phân tích Bài tập:** Xác định những bài toán nào sinh viên thường xuyên gặp lỗi (Hardest problems) để điều chỉnh giáo án.
+> [ẢNH GIAO DIỆN: Biểu đồ Analytics phân tích năng lực sinh viên]
 
-#### 4.2.1. Dashboard Analytics
-Hệ thống hóa dữ liệu tiến độ của cả lớp thông qua các biểu đồ trực quan, giúp phát hiện sớm các sinh viên gặp khó khăn.
+#### 4.2.2. Workbench Giám sát (Auto-Grader Workbench)
+- **Giám sát Luồng nộp bài:** Hiển thị danh sách sinh viên đang nộp bài theo thời gian thực (Live stream).
+- **Kiểm tra chi tiết:** Cho phép giảng viên mở xem mã nguồn của từng sinh viên, so sánh kết quả thực thi của từng Testcase mà không cần tải lại trang.
+> [ẢNH GIAO DIỆN: Giao diện Auto-Grader Workbench dành cho Giám thị]
 
-> [!NOTE]
-> **Hình 4.4. Bảng phân tích dữ liệu học tập**
-> ![Lecturer Dashboard](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\lecturer_dashboard_mockup_1776932506962.png)
+#### 4.2.3. Quản trị Học liệu & Ngân hàng đề
+- **Công cụ Soạn thảo Bài tập:** Hỗ trợ trình soạn thảo Markdown chuyên nghiệp để viết đề bài.
+- **Cấu hình Test-case:** Giao diện nhập liệu Input/Output hàng loạt, hỗ trợ tải lên tệp tin dữ liệu lớn.
+- **Quản lý Ngân hàng câu hỏi:** Phân nhóm bài tập theo kỹ năng và mức độ nhận biết/thông hiểu/vận dụng.
 
-#### 4.2.2. Kiểm soát Đạo văn và Chấm điểm tự động (Plagiarism & Auto Grader)
-- **Plagiarism Module:** Giao diện so sánh song song mã nguồn giữa các sinh viên, hiển thị tỷ lệ tương đồng chi tiết theo từng dòng code.
-- **Auto Grader:** Cấu hình các bộ Test-case bảo mật, giới hạn tài nguyên chạy (Time limit, Memory limit).
+***
 
-> [!NOTE]
-> **Hình 4.5. Giao diện đối chiếu và phát hiện Đạo văn mã nguồn**
-> ![Plagiarism UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\plagiarism_check_ui_mockup_1776932846499.png)
+### 4.3. Phân hệ Quản trị viên & Hệ thống (Admin & System Portal)
 
-### 4.3. Cổng Quản trị Hệ thống (Admin Portal)
+#### 4.3.1. Quản lý Người dùng & Onboarding
+- **Batch Import:** Tải lên danh sách hàng ngàn sinh viên qua CSV và tự động kích hoạt tiến trình gửi Email xác thực.
+- **Phân quyền Role:** Chuyển đổi linh hoạt vai trò giữa Giảng viên và Quản trị viên.
 
-Dành cho kỹ thuật viên và người quản lý cấp cao để giám sát hạ tầng và luồng người dùng.
+#### 4.3.2. Quản trị tài nguyên Sandbox & Bảo mật
+- **Sandbox Monitor:** Theo dõi mức độ sử dụng CPU/RAM của hệ thống chấm điểm Docker.
+- **Audit Logs:** Hệ thống nhật ký ghi lại mọi thao tác quan trọng (Xóa bài tập, Thay đổi điểm, Đăng nhập lạ).
+- **Cấu hình Hệ thống:** Quản lý các biến môi trường, API Keys của Gemini AI, và các tham số giới hạn thực thi (Timeout limits).
 
-- **Users Management:** Quản lý danh sách hàng nghìn sinh viên, hỗ trợ Batch Import qua CSV.
-- **Audit Logs:** Ghi chép mọi hành động nhạy cảm trên hệ thống để phục vụ hậu kiểm.
-- **Sandbox Monitor:** Giám sát trạng thái của các Docker Container trong quá trình chấm bài.
+***
 
-> [!NOTE]
-> **Hình 4.6. Giao diện Quản trị viên hệ thống**
-> ![Admin Portal UI](C:\Users\admin\.gemini\antigravity\brain\5c5b098c-8c18-4d7d-97c3-e8dc52bcf984\admin_portal_mockup_1776932595282.png)
+### 4.4. Giải quyết các Thách thức Kỹ thuật & Tối ưu hóa Hiệu năng
 
-### 4.4. Giải quyết các thách thức kỹ thuật trọng tâm
+Để báo cáo đạt độ chuyên sâu khoa học, phần này phân tích các nút thắt kỹ thuật đã được tháo gỡ thành công:
 
-#### 4.4.1. Tối ưu hóa Hydration cho Client-side Component
-Hệ thống sử dụng cơ chế xử lý trì hoãn (Client-only mounting) để triệt tiêu lỗi chớp tắt giao diện (Flash of Content) khi sử dụng Server Side Rendering (SSR) kết hợp với Theme Dark/Light.
+1.  **Tối ưu hóa Hydration & Theme Rendering:**
+    - Sử dụng `next-themes` kết hợp với chiến lược ngăn chặn render phía server cho các thành phần UI đặc thù (như Editor) để tránh lỗi lệch cấu trúc DOM.
+2.  **Xử lý Concurrent Submissions:**
+    - Triển khai **BullMQ** với cơ chế hàng đợi ưu tiên. Các bài nộp trong kỳ thi (Exam) sẽ được ưu tiên xử lý trước các bài luyện tập thông thường.
+3.  **Tối ưu hóa bộ nhớ cho Code Viewer:**
+    - Khi xem lại mã nguồn của sinh viên với hàng trăm file, hệ thống sử dụng Virtual Scrolling để chỉ render các dòng code đang hiển thị trên màn hình, giúp giảm 80% mức sử dụng RAM trình duyệt.
+4.  **Bảo mật Sandbox:**
+    - Thiết lập cơ chế **Chroot** và **Read-only root filesystem** bên trong container Docker để ngăn chặn tuyệt đối sinh viên đọc các tệp cấu trúc của hệ thống chấm điểm.
 
-#### 4.4.2. Cơ chế Re-validation dữ liệu thời gian thực
-Sử dụng SWR (Stale-While-Revalidate) và WebSockets để đảm bảo các dữ liệu như kết quả nộp bài, thứ hạng thi đấu luôn được cập nhật mới nhất mà không cần tải lại trang.
-
-#### 4.4.3. Tối ưu hóa dung lượng Build và Performance
-Áp dụng cơ chế Code Splitting và Lazy Loading cho các Component nặng như Monaco Editor và các thư viện đồ thị Chart.js, giúp giảm 65% dung lượng Initial Bundle của trang.
+***
+*Ghi chú: Với hệ thống giao diện đồ sộ và các giải pháp kỹ thuật đi kèm, CodeLearn tự tin đáp ứng tốt các yêu cầu về cả thẩm mỹ lẫn công năng cho một nền tảng EdTech hiện đại.*

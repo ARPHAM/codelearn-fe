@@ -1,98 +1,40 @@
-# TRANG BÌA CHÍNH (Bìa cứng, in chữ nhũ, màu xanh)
+# PHẦN MỞ ĐẦU VÀ CÁC THÔNG TIN CHUNG
 
-<div align="center">
-  <p>ĐẠI HỌC KINH TẾ QUỐC DÂN</p>
-  <p>BAN QUẢN LÝ CHƯƠNG TRÌNH TIÊN TIẾN, CHẤT LƯỢNG CAO & POHE</p>
-  <br><br><br><br>
-  <p><b>KHÓA LUẬN TỐT NGHIỆP</b></p>
-  <p>Công nghệ thông tin & Chuyển đổi số</p>
-  <br><br>
-  <p><b>ĐỀ TÀI: [Tên đề tài của bạn]</b></p>
-  <p>Họ và tên sinh viên: [Họ và tên sinh viên]</p>
-  <br><br><br><br><br><br><br><br>
-  <p>HÀ NỘI 2025</p>
-</div>
+### TỔNG QUAN DỰ ÁN
+- **Tên dự án:** CodeLearn - Nền tảng học lập trình trực tuyến thông minh.
+- **Lĩnh vực:** EdTech (Công nghệ giáo dục).
+- **Mục tiêu:** Xây dựng hệ sinh thái thực hành lập trình toàn diện, tích hợp AI và chấm điểm tự động.
 
-\newpage
+***
 
-# TRANG BÌA PHỤ
+### MỤC LỤC BÁO CÁO (Cấu trúc mới)
 
-<div align="center">
-  <p>ĐẠI HỌC KINH TẾ QUỐC DÂN</p>
-  <p>BAN QUẢN LÝ CHƯƠNG TRÌNH TIÊN TIẾN, CHẤT LƯỢNG CAO & POHE</p>
-  <br><br><br><br>
-  <p><b>KHÓA LUẬN TỐT NGHIỆP</b></p>
-  <br><br>
-  <p><b>ĐỀ TÀI: [Tên đề tài của bạn]</b></p>
-  <br><br>
-  <table style="width:100%; border:none;">
-    <tr>
-      <td style="width:40%; text-align:left;">Sinh viên:</td>
-      <td style="text-align:left;">[Họ và tên sinh viên]</td>
-    </tr>
-    <tr>
-      <td style="text-align:left;">Mã số SV:</td>
-      <td style="text-align:left;">[Mã SV]</td>
-    </tr>
-    <tr>
-      <td style="text-align:left;">Chương trình:</td>
-      <td style="text-align:left;">Chất lượng cao</td>
-    </tr>
-    <tr>
-      <td style="text-align:left;">Lớp:</td>
-      <td style="text-align:left;">[Tên lớp]</td>
-    </tr>
-    <tr>
-      <td style="text-align:left;">Giáo viên hướng dẫn:</td>
-      <td style="text-align:left;">[Tên GVHD]</td>
-    </tr>
-  </table>
-  <br><br><br><br><br><br><br><br>
-  <p>HÀ NỘI 2025</p>
-</div>
+**CHƯƠNG 1. KHỞI NGUỒN Ý TƯỞNG VÀ ĐỊNH HƯỚNG GIẢI PHÁP**
+- 1.1. Bối cảnh thực tiễn và Sự cấp thiết của đề tài
+- 1.2. Phân tích "Điểm nghẽn" (Pain points) trong quy trình truyền thống
+- 1.3. Định vị giải pháp CodeLearn
+- 1.4. Phân tích luồng người dùng tổng quát
 
-\newpage
+**CHƯƠNG 2. CƠ SỞ NỀN TẢNG VÀ LỰA CHỌN CÔNG NGHỆ CỐT LÕI**
+- 2.1. Lựa chọn hệ sinh thái phát triển (Tech Stack)
+- 2.2. Các Engine đặc thù và Giải pháp xử lý chuyên sâu
+- 2.3. Kiến trúc Hệ thống Tổng thể
 
-# LỜI CẢM ƠN
+**CHƯƠNG 3. PHÂN TÍCH MÔ HÌNH NGHIỆP VỤ VÀ KIẾN TRÚC HỆ THỐNG**
+- 3.1. Phân tích thực thể hạt nhân (Core Entities)
+- 3.2. Thiết kế luồng nghiệp vụ đặc thù (Onboarding, Boilerplate, Sandbox)
+- 3.3. Sơ đồ Kiến trúc và Luồng dữ liệu (Mermaid Diagrams)
 
-[Viết lời cảm ơn tại đây. Lời cảm ơn cần chân thành, không khuôn sáo, dành cho những người thực sự giúp đỡ việc hoàn thành khóa luận.]
+**CHƯƠNG 4. HIỆN THỰC HÓA KHÔNG GIAN SỐ VÀ TRẢI NGHIỆM NGƯỜI DÙNG**
+- 4.1. Phân hệ Sinh viên: Không gian thực hành tối giản
+- 4.2. Phân hệ Giảng viên: Giám sát và Điều phối thông minh
+- 4.3. Phân hệ Quản trị viên (Admin Portal)
+- 4.4. Tháo gỡ các thách thức kỹ thuật (Troubleshooting)
 
-\newpage
+**CHƯƠNG 5. ĐÁNH GIÁ THÀNH QUẢ VÀ TẦM NHÌN PHÁT TRIỂN**
+- 5.1. Tổng kết kết quả đạt được
+- 5.2. Lộ trình nâng cấp và Mở rộng
+- 5.3. Kết luận chung
 
-# LỜI CAM ĐOAN
-
-Tôi xin cam đoan đây là công trình nghiên cứu của riêng tôi. Các số liệu, kết quả nêu trong khóa luận tốt nghiệp này là do tôi tự thu thập, trích dẫn, tuyệt đối không sao chép từ bất kỳ một tài liệu nào.
-
-<div align="right">
-  <p>Hà Nội, ngày ........ tháng ........ năm 20........</p>
-  <p><b>Tác giả khóa luận tốt nghiệp</b></p>
-  <br><br><br>
-  <p>[Họ và tên sinh viên]</p>
-</div>
-
-\newpage
-
-# MỤC LỤC
-[Mục lục sẽ được tạo tự động khi xuất file Word]
-
-\newpage
-
-# DANH MỤC CÁC CHỮ VIẾT TẮT
-| Viết tắt | Giải nghĩa |
-|----------|------------|
-| API      | Application Programming Interface |
-| CSDL     | Cơ sở dữ liệu |
-| IDE      | Integrated Development Environment |
-| ...      | ... |
-
-\newpage
-
-# DANH MỤC CÁC BẢNG, BIỂU, SƠ ĐỒ, HÌNH VẼ
-[Danh mục sẽ được tạo tự động]
-
-\newpage
-
-# TÓM TẮT NGHIÊN CỨU
-[Viết tóm tắt nghiên cứu ngắn gọn về đề tài, phương pháp và kết quả đạt được.]
-
-\newpage
+***
+*Tài liệu này được soạn thảo nhằm phản ánh trung thực quá trình nghiên cứu, thiết kế và triển khai sản phẩm thực tế.*
