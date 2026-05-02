@@ -1,46 +1,84 @@
-# CHƯƠNG 1. KHỞI NGUỒN Ý TƯỞNG VÀ ĐỊNH HƯỚNG GIẢI PHÁP CHI TIẾT
+# CHƯƠNG 1. TỔNG QUAN VỀ ĐỀ TÀI
 
-### 1.1. Bối cảnh thực tiễn của Giáo dục Công nghệ Thông tin
+## 1.1. Đặt vấn đề và Lý do chọn đề tài
 
-Trong thập kỷ qua, ngành giáo dục Công nghệ Thông tin (CNTT) đã chứng kiến một sự chuyển dịch mạnh mẽ từ các mô hình học tập tập trung tại giảng đường sang các mô hình học tập trực tuyến và linh hoạt (Blended Learning). Tuy nhiên, đặc thù của việc dạy và học lập trình không chỉ dừng lại ở việc đọc tài liệu hay xem video, mà cốt lõi nằm ở quá trình **"Thực hành - Phản hồi - Hiệu chỉnh"**.
+Trong kỷ nguyên của nền kinh tế tri thức, Công nghệ Thông tin (CNTT) đóng vai trò là "hệ điều hành" của xã hội hiện đại. Sự phát triển thần tốc của các công nghệ như Trí tuệ nhân tạo (AI), Dữ liệu lớn (Big Data) và Điện toán đám mây (Cloud Computing) đã thúc đẩy nhu cầu về nguồn nhân lực lập trình chất lượng cao trên toàn cầu. Tại Việt Nam, mục tiêu chuyển đổi số quốc gia theo **Quyết định số 749/QĐ-TTg của Thủ tướng Chính phủ** đã đặt giáo dục đại học vào tâm thế phải đổi mới căn bản và toàn diện, đặc biệt là trong công tác đào tạo các ngành kỹ thuật.
 
-Hiện nay, tại đa số các cơ sở đào tạo đại học, quy trình thực hành lập trình vẫn đang gặp phải sự đứt gãy về mặt công nghệ. Sinh viên thường phải đối mặt với các rào cản về môi trường cài đặt, trong khi giảng viên lại quá tải với khối lượng chấm bài thủ công khổng lồ. Sự ra đời của dự án **CodeLearn** là một lời giải cho bài toán hợp nhất không gian số, tạo ra một cầu nối công nghệ vững chắc giữa người dạy và người học.
+Tuy nhiên, qua khảo sát thực tế tại nhiều cơ sở đào tạo, quy trình dạy và học lập trình hiện nay vẫn đang vấp phải những rào cản mang tính hệ thống, làm hạn chế khả năng phát triển tư duy của sinh viên:
 
-### 1.2. Phân tích chi tiết các "Nỗi đau" (Pain points) của hệ thống hiện tại
+### 1.1.1. Sự bất cập của các công cụ quản lý học tập truyền thống
+Hầu hết các trường đại học hiện nay đang sử dụng các hệ thống quản lý học tập (LMS) như Moodle hoặc Google Classroom. Mặc dù các hệ thống này hỗ trợ tốt việc lưu trữ tài liệu và thu bài tập, nhưng chúng hoàn toàn thiếu hụt các tính năng chuyên biệt cho lập trình như: biên dịch mã nguồn trực tuyến, kiểm thử tự động (Auto-testing) hay phân tích độ phức tạp thuật toán. Điều này khiến giảng viên phải tải từng bài tập về máy cục bộ để chấm điểm thủ công, dẫn đến tình trạng quá tải và thiếu nhất quán trong đánh giá.
 
-Để xây dựng một giải pháp thực sự hiệu quả, chúng tôi đã tiến hành phân tích sâu các vấn đề mà các tác nhân đang gặp phải trong mô hình truyền thống:
+### 1.1.2. Khoảng cách về môi trường thực thi và phản hồi
+Việc học lập trình đòi hỏi sự thực hành liên tục và phản hồi tức thì (Instant Feedback). Tuy nhiên, sinh viên thường mất quá nhiều thời gian vào việc cấu hình môi trường (Environment setup) thay vì tập trung vào tư duy logic. Theo các nghiên cứu về tâm lý học giáo dục, việc nhận phản hồi chậm sau khi hoàn thành nhiệm vụ làm giảm động lực học tập và khả năng ghi nhớ lỗi sai. Một hệ thống lý tưởng cần phải xóa bỏ rào cản về cài đặt và cung cấp kết quả chấm điểm chỉ trong vài giây sau khi nộp bài.
 
-#### 1.2.1. Mô hình "Môi trường phân mảnh" (The Fragmented Environment)
-- **Vấn đề:** Sinh viên thực hành trên các môi trường cục bộ (local) với cấu hình phần cứng và phần mềm khác nhau. Các lỗi như "Version mismatch" hay "Missing dependencies" chiếm đến 30% thời gian lên lớp của giảng viên để hỗ trợ kỹ thuật thay vì tập trung vào tư duy lập trình.
-- **Hệ quả:** Làm nản lòng sinh viên mới bắt đầu và tạo ra sự không công bằng trong việc đánh giá kết quả (bài chạy được trên máy sinh viên nhưng không chạy được trên máy giảng viên).
+### 1.1.3. Thách thức đạo đức và học thuật trong kỷ nguyên AI
+Sự ra đời của các mô hình ngôn ngữ lớn (LLM) như ChatGPT đã thay đổi hoàn toàn cách sinh viên tiếp cận bài tập. Thay vì tự tư duy, sinh viên có xu hướng lạm dụng AI để lấy lời giải có sẵn. Điều này đòi hỏi một hệ thống học tập mới không chỉ biết "chấm điểm đúng sai" mà còn phải đóng vai trò là một "người hướng dẫn thông minh", biết sử dụng AI để gợi mở tư duy thay vì cung cấp kết quả cuối cùng.
 
-#### 1.2.2. Chu kỳ phản hồi chậm (The Delayed Feedback Loop)
-- **Vấn đề:** Trong mô hình truyền thống, sinh viên nộp bài và phải chờ từ vài ngày đến vài tuần để nhận được kết quả chấm điểm từ giảng viên. 
-- **Hệ quả:** Khi nhận được phản hồi, sinh viên thường đã quên mất luồng tư duy tại thời điểm viết code, khiến việc sửa lỗi trở nên kém hiệu quả. Một hệ thống lý tưởng cần cung cấp phản hồi trong vòng **dưới 10 giây** ngay khi sinh viên bấm nút Submit.
+Xuất phát từ những trăn trở trên, dự án **CodeLearn** được hình thành với sứ mệnh kiến tạo một nền tảng thực hành lập trình hiện đại, nơi công nghệ AI và các quy trình tự động hóa được kết hợp hài hòa để tối ưu hóa trải nghiệm dạy và học.
 
-#### 1.2.3. Thách thức về Đạo văn và Sự bùng nổ của AI
-- **Vấn đề:** Với sự hỗ trợ của ChatGPT, GitHub Copilot, việc sinh viên "copy-paste" mã nguồn đã trở nên cực kỳ dễ dàng. Giảng viên gần như không thể kiểm soát được tính trung thực nếu chỉ nhìn vào kết quả cuối cùng.
-- **Hệ quả:** Làm giảm sút chất lượng đào tạo và giá trị thực chất của các bằng cấp chuyên môn.
+## 1.2. Mục tiêu nghiên cứu
 
-### 1.3. Mục tiêu và Phạm vi của Dự án CodeLearn
+### 1.2.1. Mục tiêu tổng quát
+Thiết kế và hiện thực hóa hệ thống CodeLearn - một nền tảng Web-based quản trị thực hành lập trình toàn diện, hỗ trợ giảng viên trong việc tổ chức đào tạo và giúp sinh viên rèn luyện kỹ năng thông qua cơ chế phản hồi tức thì và trợ lý AI thông minh.
 
-#### 1.3.1. Mục tiêu chức năng (Functional Goals)
-1.  **Xây dựng Web-IDE chuyên dụng:** Hỗ trợ đa tệp tin, tự động lưu và tích hợp trực tiếp với hệ thống chấm điểm.
-2.  **Tự động hóa toàn diện quy trình chấm bài:** Hỗ trợ đa ngôn ngữ (C++, Java, Python, JavaScript) với độ chính xác tuyệt đối.
-3.  **Tích hợp trợ lý sư phạm AI:** Sử dụng LLM để chỉ dẫn tư duy thay vì cung cấp lời giải có sẵn.
-4.  **Tối ưu hóa quản trị lớp học:** Hệ thống Dashboard phân tích năng lực theo thời gian thực (Real-time Analytics).
-5.  **Cơ chế thi đấu và cộng tác:** Tạo ra môi trường học tập xã hội hóa (Social Learning) thông qua Code Battle và Rooms.
+### 1.2.2. Mục tiêu cụ thể
+1.  **Xây dựng môi trường thực thi an toàn (Sandbox):** Nghiên cứu và triển khai cơ chế cô lập mã nguồn bằng công nghệ Container (Docker), đảm bảo hệ thống có thể thực thi mã nguồn lạ mà không ảnh hưởng đến an ninh máy chủ.
+2.  **Tự động hóa đánh giá đa ngôn ngữ:** Hỗ trợ chấm điểm tự động cho các ngôn ngữ phổ biến (C/C++, Java, Python, JavaScript) với độ chính xác tuyệt đối dựa trên bộ testcase mẫu.
+3.  **Tối ưu hóa quy trình tương tác AI:** Xây dựng hệ thống Prompt Engineering để kết nối với Gemini AI, cung cấp các hướng dẫn sửa lỗi logic chuẩn sư phạm cho sinh viên.
+4.  **Phát triển hệ thống Dashboard phân tích:** Trực quan hóa tiến độ học tập qua mô hình Skill Tree (Cây kỹ năng), giúp định danh chính xác điểm mạnh và điểm yếu của từng cá nhân.
+5.  **Đảm bảo hiệu năng cao:** Hệ thống phải duy trì độ trễ thấp ngay cả khi số lượng truy cập đồng thời tăng cao trong các kỳ thi tập trung.
 
-#### 1.3.2. Mục tiêu phi chức năng (Non-functional Goals)
-- **Tính bảo mật:** Cách ly hoàn toàn mã nguồn thực thi của người dùng khỏi hệ thống chính.
-- **Khả năng mở rộng:** Đáp ứng hàng ngàn lượt truy cập đồng thời trong các kỳ thi tập trung.
-- **Trải nghiệm người dùng (UX):** Giao diện hiện đại, hỗ trợ chế độ Dark Mode chuyên nghiệp và tương thích tốt trên nhiều thiết bị.
+## 1.3. Đối tượng nghiên cứu
 
-### 1.4. Định vị giải pháp trong hệ sinh thái EdTech
+Đề tài tập trung nghiên cứu các khía cạnh kỹ thuật và nghiệp vụ sau:
+- **Kỹ thuật thực thi mã nguồn trực tuyến:** Nghiên cứu về kiến trúc của các hệ thống Online Judge, cơ chế xử lý hàng đợi (Message Queue) và phân phối job chấm bài.
+- **An ninh hệ thống:** Nghiên cứu các kỹ thuật Sandbox, Linux Namespaces, Cgroups để kiểm soát tài nguyên thực thi (CPU, RAM).
+- **Trí tuệ nhân tạo trong giáo dục (AIEd):** Nghiên cứu cách ứng dụng mô hình ngôn ngữ lớn để phân tích mã nguồn và hỗ trợ học tập cá nhân hóa.
+- **Trải nghiệm người dùng (UX) trên nền Web:** Nghiên cứu kiến trúc Single Page Application (SPA) với Next.js để tối ưu tốc độ tương tác.
 
-CodeLearn không chỉ là một công cụ Online Judge đơn thuần như LeetCode hay HackerRank. Chúng tôi định vị sản phẩm là một **Hệ quản trị thực hành (Practice Management System - PMS)**. Khác biệt lớn nhất nằm ở:
-- **Kiểm soát quy trình:** Giảng viên có thể tham gia vào từng bước làm bài của sinh viên thông qua cơ chế Boilerplate Protection.
-- **Tính hàn lâm:** Tích hợp bộ công cụ xuất báo cáo học thuật chuyên nghiệp phục vụ cho việc lưu trữ và kiểm định chất lượng giáo dục.
+## 1.4. Phạm vi nghiên cứu
 
-***
-*Kết luận: Chương 1 đã phác thảo một bức tranh toàn cảnh về lý do tại sao CodeLearn cần tồn tại và những mục tiêu cao cả mà dự án hướng tới. Đây là kim chỉ nam cho mọi quyết định thiết kế kiến trúc ở các chương tiếp theo.*
+### 1.4.1. Phạm vi về đối tượng sử dụng
+Hệ thống hướng tới ba nhóm đối tượng chính:
+- **Sinh viên:** Người thực hành, làm bài tập và tham gia các kỳ thi.
+- **Giảng viên:** Người tạo đề bài, quản lý lớp học và giám sát tiến độ.
+- **Quản trị viên:** Người vận hành hệ thống, quản lý người dùng và hạ tầng máy chủ.
+
+### 1.4.2. Phạm vi về chức năng
+Hệ thống tập trung vào các phân hệ cốt lõi:
+- **Module Học tập:** Quản lý bài tập theo chủ đề, lưu vết lịch sử nộp bài và hiển thị cây kỹ năng.
+- **Module Thực thi (The Engine):** Biên dịch và chạy mã nguồn đa tệp tin, so khớp kết quả output.
+- **Module Cộng tác (Collaboration):** Cho phép tạo phòng học chung, chia sẻ mã nguồn thời gian thực qua WebSockets.
+- **Module AI Mentor:** Phân tích lỗi biên dịch và lỗi logic, đưa ra gợi ý gợi mở.
+
+### 1.4.3. Phạm vi về phi chức năng
+- **Độ tin cậy:** Kết quả chấm bài phải đảm bảo tính khách quan và lặp lại được.
+- **Tính bảo mật:** Mã nguồn sinh viên nộp phải được mã hóa và lưu trữ an toàn.
+- **Tính tương thích:** Hệ thống hoạt động tốt trên các trình duyệt hiện đại (Chrome, Edge, Firefox).
+
+### 1.4.4. Các vấn đề ngoài phạm vi
+- Đề tài không tập trung vào việc thay thế hoàn toàn giảng viên mà chỉ đóng vai trò công cụ hỗ trợ.
+- Không nghiên cứu sâu về các bài toán đặc thù như chấm điểm các ứng dụng có giao diện đồ họa (GUI) hay lập trình phần cứng.
+
+## 1.5. Phương pháp nghiên cứu
+
+Để thực hiện đề tài này, nhóm tác giả đã kết hợp các phương pháp nghiên cứu sau:
+1.  **Phương pháp nghiên cứu lý thuyết:** Thu thập và phân tích các tài liệu khoa học về kiến trúc Online Judge, các tiêu chuẩn an ninh Sandbox và các bài báo về ứng dụng AI trong giáo dục.
+2.  **Phương pháp khảo sát thực tế:** Phân tích các hệ thống hiện có như LeetCode, Codeforces để rút ra các ưu điểm và hạn chế.
+3.  **Phương pháp chuyên gia:** Tham khảo ý kiến của các giảng viên bộ môn để xây dựng quy trình quản lý bài tập sát với thực tế giảng dạy.
+4.  **Phương pháp thực nghiệm:** Xây dựng prototype (bản thử nghiệm), tiến hành chạy thử và tinh chỉnh dựa trên kết quả đo lường hiệu năng.
+
+## 1.6. Ý nghĩa khoa học và thực tiễn của đề tài
+
+- **Ý nghĩa khoa học:** Đề tài góp phần chuẩn hóa mô hình hệ thống học tập lập trình tích hợp AI, đưa ra giải pháp kỹ thuật cụ thể cho việc kết hợp giữa công nghệ Sandbox và LLM.
+- **Ý nghĩa thực tiễn:** Tạo ra một công cụ hữu ích cho các khoa đào tạo CNTT, giúp nâng cao chất lượng dạy và học, giảm tải công việc hành chính cho giảng viên và tạo hứng khởi cho sinh viên thông qua các tính năng tương tác hiện đại.
+
+## 1.7. Cấu trúc của đồ án
+
+Đồ án được chia thành 5 chương chính:
+- **Chương 1:** Tổng quan về đề tài (Lý do, mục tiêu, phạm vi).
+- **Chương 2:** Cơ sở lý thuyết và công nghệ sử dụng (Nghiên cứu về Docker, NestJS, Next.js, AI Gemini).
+- **Chương 3:** Phân tích và thiết kế hệ thống (Phân tích Use Case, ERD, Sequence Diagram).
+- **Chương 4:** Hiện thực hóa và kết quả triển khai (Giới thiệu các giao diện, chức năng đã hoàn thành).
+- **Chương 5:** Kết luận và hướng phát triển (Đánh giá kết quả đạt được và những dự định trong tương lai).
