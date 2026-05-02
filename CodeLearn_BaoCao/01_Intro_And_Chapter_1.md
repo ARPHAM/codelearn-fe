@@ -10,10 +10,10 @@ Tuy nhiên, qua khảo sát thực tế tại nhiều cơ sở đào tạo, quy 
 Hầu hết các trường đại học hiện nay đang sử dụng các hệ thống quản lý học tập (LMS) như Moodle hoặc Google Classroom. Mặc dù các hệ thống này hỗ trợ tốt việc lưu trữ tài liệu và thu bài tập, nhưng chúng hoàn toàn thiếu hụt các tính năng chuyên biệt cho lập trình như: biên dịch mã nguồn trực tuyến, kiểm thử tự động (Auto-testing) hay phân tích độ phức tạp thuật toán. Điều này khiến giảng viên phải tải từng bài tập về máy cục bộ để chấm điểm thủ công, dẫn đến tình trạng quá tải và thiếu nhất quán trong đánh giá.
 
 ### 1.1.2. Khoảng cách về môi trường thực thi và phản hồi
-Việc học lập trình đòi hỏi sự thực hành liên tục và phản hồi tức thì (Instant Feedback). Tuy nhiên, sinh viên thường mất quá nhiều thời gian vào việc cấu hình môi trường (Environment setup) thay vì tập trung vào tư duy logic. Theo các nghiên cứu về tâm lý học giáo dục, việc nhận phản hồi chậm sau khi hoàn thành nhiệm vụ làm giảm động lực học tập và khả năng ghi nhớ lỗi sai. Một hệ thống lý tưởng cần phải xóa bỏ rào cản về cài đặt và cung cấp kết quả chấm điểm chỉ trong vài giây sau khi nộp bài.
+Việc học lập trình đòi hỏi sự thực hành liên tục và phản hồi tức thì (Instant Feedback). Tuy nhiên, sinh viên thường mất quá nhiều thời gian vào việc cấu hình môi trường (Environment setup) thay vì tập trung vào tư duy logic. Theo các nghiên cứu về tâm lý học giáo dục và thực nghiệm AI trong STEM [1], [2], việc nhận phản hồi chậm sau khi hoàn thành nhiệm vụ làm giảm động lực học tập và khả năng ghi nhớ lỗi sai. Một hệ thống lý tưởng cần phải xóa bỏ rào cản về cài đặt và cung cấp kết quả chấm điểm chỉ trong vài giây sau khi nộp bài.
 
 ### 1.1.3. Thách thức đạo đức và học thuật trong kỷ nguyên AI
-Sự ra đời của các mô hình ngôn ngữ lớn (LLM) như ChatGPT đã thay đổi hoàn toàn cách sinh viên tiếp cận bài tập. Thay vì tự tư duy, sinh viên có xu hướng lạm dụng AI để lấy lời giải có sẵn. Điều này đòi hỏi một hệ thống học tập mới không chỉ biết "chấm điểm đúng sai" mà còn phải đóng vai trò là một "người hướng dẫn thông minh", biết sử dụng AI để gợi mở tư duy thay vì cung cấp kết quả cuối cùng.
+Sự ra đời của các mô hình ngôn ngữ lớn (LLM) như ChatGPT và Gemini [3] đã thay đổi hoàn toàn cách sinh viên tiếp cận bài tập. Thay vì tự tư duy, sinh viên có xu hướng lạm dụng AI để lấy lời giải có sẵn. Điều này đòi hỏi một hệ thống học tập mới không chỉ biết "chấm điểm đúng sai" mà còn phải đóng vai trò là một "người hướng dẫn thông minh", biết sử dụng AI để gợi mở tư duy thay vì cung cấp kết quả cuối cùng.
 
 Xuất phát từ những trăn trở trên, dự án **CodeLearn** được hình thành với sứ mệnh kiến tạo một nền tảng thực hành lập trình hiện đại, nơi công nghệ AI và các quy trình tự động hóa được kết hợp hài hòa để tối ưu hóa trải nghiệm dạy và học.
 
@@ -23,7 +23,7 @@ Xuất phát từ những trăn trở trên, dự án **CodeLearn** được hì
 Thiết kế và hiện thực hóa hệ thống CodeLearn - một nền tảng Web-based quản trị thực hành lập trình toàn diện, hỗ trợ giảng viên trong việc tổ chức đào tạo và giúp sinh viên rèn luyện kỹ năng thông qua cơ chế phản hồi tức thì và trợ lý AI thông minh.
 
 ### 1.2.2. Mục tiêu cụ thể
-1.  **Xây dựng môi trường thực thi an toàn (Sandbox):** Nghiên cứu và triển khai cơ chế cô lập mã nguồn bằng công nghệ Container (Docker), đảm bảo hệ thống có thể thực thi mã nguồn lạ mà không ảnh hưởng đến an ninh máy chủ.
+1.  **Xây dựng môi trường thực thi an toàn (Sandbox):** Nghiên cứu và triển khai cơ chế cô lập mã nguồn bằng công nghệ Container (Docker) [4], đảm bảo hệ thống có thể thực thi mã nguồn lạ mà không ảnh hưởng đến an ninh máy chủ.
 2.  **Tự động hóa đánh giá đa ngôn ngữ:** Hỗ trợ chấm điểm tự động cho các ngôn ngữ phổ biến (C/C++, Java, Python, JavaScript) với độ chính xác tuyệt đối dựa trên bộ testcase mẫu.
 3.  **Tối ưu hóa quy trình tương tác AI:** Xây dựng hệ thống Prompt Engineering để kết nối với Gemini AI, cung cấp các hướng dẫn sửa lỗi logic chuẩn sư phạm cho sinh viên.
 4.  **Phát triển hệ thống Dashboard phân tích:** Trực quan hóa tiến độ học tập qua mô hình Skill Tree (Cây kỹ năng), giúp định danh chính xác điểm mạnh và điểm yếu của từng cá nhân.

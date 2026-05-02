@@ -242,12 +242,97 @@ stop
 @enduml
 ```
 
+
+### 3.4.8. Biểu đồ hoạt động chức năng tạo và chỉnh sửa bài tập
+**Hình 3.10. Biểu đồ hoạt động chức năng tạo và chỉnh sửa bài tập**
+
+```plantuml
+@startuml AD_CreateProblem
+skinparam monochrome true
+!theme plain
+skinparam backgroundColor #FFFFFF
+title Biểu đồ hoạt động: Tạo và chỉnh sửa bài tập (Giảng viên)
+
+|Giảng viên|
+start
+:Truy cập "Tạo bài tập mới";
+:Nhập tiêu đề, mô tả, độ khó, tags;
+:Cấu hình workspace (files, template);
+
+if (Dạng bài Fill-in-the-blank?) then (Có)
+  :Đánh dấu vùng cho phép chỉnh sửa;
+else (Không)
+  :Để toàn bộ file là TEMPLATE;
+endif
+
+:Thêm Testcase (Input / Expected Output);
+:Nhập code giải mẫu (Solution);
+
+|Hệ thống CodeLearn|
+:Gửi solution sang Judge0 để xác minh;
+
+if (Tất cả Testcase Pass?) then (Có)
+  :Đánh dấu isVerified = true;
+  |Giảng viên|
+  :Chọn trạng thái PUBLIC hoặc PRIVATE;
+  :Nhấn "Xuất bản";
+  |Hệ thống CodeLearn|
+  :Lưu Problem + ProblemVersion vào DB;
+else (Không)
+  :Hiển thị Testcase thất bại;
+  |Giảng viên|
+  :Sửa lại Testcase hoặc Solution;
+endif
+
+stop
+@enduml
+```
+
+### 3.4.9. Biểu đồ hoạt động chức năng kiểm tra đạo văn mã nguồn
+**Hình 3.11. Biểu đồ hoạt động chức năng kiểm tra đạo văn mã nguồn**
+
+```plantuml
+@startuml AD_Plagiarism
+skinparam monochrome true
+!theme plain
+skinparam backgroundColor #FFFFFF
+title Biểu đồ hoạt động: Kiểm tra đạo văn mã nguồn
+
+|Giảng viên|
+start
+:Chọn bài tập cần kiểm tra;
+:Nhấn "Kiểm tra đạo văn";
+
+|Hệ thống CodeLearn|
+:Thu thập tất cả bài nộp của bài tập;
+:Chuẩn hóa mã nguồn (xóa comment, format);
+:Tính toán độ tương đồng cặp đôi (Similarity Score);
+
+if (Score > ngưỡng cảnh báo?) then (Có)
+  :Đánh dấu cặp bài nộp nghi ngờ;
+  :Tạo báo cáo so sánh chi tiết;
+else (Không)
+  :Ghi nhận "Không phát hiện đạo văn";
+endif
+
+|Giảng viên|
+:Xem báo cáo đạo văn;
+if (Xác nhận đạo văn?) then (Có)
+  :Gắn cờ Flag bài nộp;
+  :Áp dụng chính sách điểm số;
+else (Không)
+  :Bỏ qua cảnh báo;
+endif
+stop
+@enduml
+```
+
 ---
 
 ## 3.5. Biểu đồ tuần tự
 
 ### 3.5.1. Biểu đồ tuần tự chức năng đăng ký tài khoản
-**Hình 3.15. Biểu đồ tuần tự chức năng đăng ký tài khoản**
+**Hình 3.12. Biểu đồ tuần tự chức năng đăng ký tài khoản**
 
 ```plantuml
 @startuml SD_Register
@@ -270,7 +355,7 @@ AC --> FE: 201 Created
 ```
 
 ### 3.5.2. Biểu đồ tuần tự chức năng đăng nhập hệ thống
-**Hình 3.16. Biểu đồ tuần tự chức năng đăng nhập hệ thống**
+**Hình 3.13. Biểu đồ tuần tự chức năng đăng nhập hệ thống**
 
 ```plantuml
 @startuml SD_Login
@@ -292,8 +377,31 @@ AC --> FE: 200 OK
 @enduml
 ```
 
-### 3.5.3. Biểu đồ tuần tự chức năng chấm điểm bài nộp
-**Hình 3.23. Biểu đồ tuần tự chức năng chấm điểm bài nộp**
+### 3.5.3. Biểu đồ tuần tự chức năng chạy thử mã nguồn
+**Hình 3.14. Biểu đồ tuần tự chức năng chạy thử mã nguồn**
+
+```plantuml
+@startuml SD_RunCode
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Chạy thử mã nguồn (Run Code)
+
+actor "Sinh viên" as SV
+participant "Frontend" as FE
+participant "Run Controller" as RC
+participant "Judge0 API" as J0
+
+SV -> FE: Nhấn "Run Code"
+FE -> RC: POST /run {code, languageId, stdin}
+RC -> J0: POST /submissions?wait=true
+J0 --> RC: {stdout, stderr, status}
+RC --> FE: {output, status}
+FE --> SV: Hiển thị kết quả trong Terminal
+@enduml
+```
+
+### 3.5.4. Biểu đồ tuần tự chức năng chấm điểm bài nộp
+**Hình 3.15. Biểu đồ tuần tự chức năng chấm điểm bài nộp**
 
 ```plantuml
 @startuml SD_SubmitCode
@@ -302,6 +410,7 @@ skinparam monochrome true
 title Biểu đồ tuần tự: Nộp bài (Submit)
 
 actor "Sinh viên" as SV
+participant "Frontend" as FE
 participant "Run Controller" as RC
 database "PostgreSQL" as DB
 
@@ -314,4 +423,225 @@ RC --> FE: Final Result
 @enduml
 ```
 
-*(Lưu ý: Toàn bộ 46 biểu đồ trong mục này đã được cập nhật tiêu đề theo định dạng: Biểu đồ [Loại] chức năng [Tên chức năng]).*
+### 3.5.5. Biểu đồ tuần tự chức năng nhận gợi ý từ AI Mentor
+**Hình 3.16. Biểu đồ tuần tự chức năng nhận gợi ý từ AI Mentor**
+
+```plantuml
+@startuml SD_AIMentor
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Nhận gợi ý từ AI Mentor
+
+actor "Sinh viên" as SV
+participant "Frontend" as FE
+participant "AI Controller" as AC
+participant "Gemini API" as AI
+
+SV -> FE: Nhấn "Hỏi AI Mentor"
+FE -> AC: POST /ai/chat {code, stderr, problemId}
+AC -> AC: Xây dựng prompt (system + context)
+AC -> AI: generateContent(prompt)
+AI --> AC: stream text response
+AC --> FE: stream chunks
+FE --> SV: Hiển thị gợi ý dần (streaming)
+@enduml
+```
+
+### 3.5.6. Biểu đồ tuần tự chức năng phòng cộng tác
+**Hình 3.17. Biểu đồ tuần tự chức năng phòng cộng tác**
+
+```plantuml
+@startuml SD_CollabRoom
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Phòng cộng tác (WebSocket)
+
+actor "Sinh viên A" as A
+actor "Sinh viên B" as B
+participant "Frontend" as FE
+participant "Room Gateway" as RG
+database "PostgreSQL" as DB
+
+A -> FE: Tạo phòng mới
+FE -> RG: WS connect + emit create-room
+RG -> DB: INSERT INTO rooms
+RG --> A: room-created {roomCode}
+
+B -> FE: Nhập mã phòng, tham gia
+FE -> RG: WS connect + emit join-room
+RG --> A: user-joined {userId}
+RG --> B: room-joined {members}
+
+A -> RG: emit code-change {code, fileId}
+RG -> DB: UPDATE workspace
+RG --> A: workspace-updated (ACK)
+
+B -> RG: emit watch-user {targetUserId}
+RG --> B: workspace-snapshot {code}
+@enduml
+```
+
+### 3.5.7. Biểu đồ tuần tự chức năng thi đấu Code Battle
+**Hình 3.18. Biểu đồ tuần tự chức năng thi đấu Code Battle**
+
+```plantuml
+@startuml SD_Battle
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Thi đấu Code Battle 1v1
+
+actor "Sinh viên A" as A
+actor "Sinh viên B" as B
+participant "Battle Gateway" as BG
+database "PostgreSQL" as DB
+
+A -> BG: emit find-match
+B -> BG: emit find-match
+BG -> BG: Matchmaking (Elo-based)
+BG -> DB: INSERT INTO battles
+BG --> A: match-found {battleId, problem}
+BG --> B: match-found {battleId, problem}
+
+A -> BG: emit submit-battle {code}
+BG -> DB: UPDATE battles SET winner=A
+BG --> A: battle-result {won, ratingDelta}
+BG --> B: battle-result {lost, ratingDelta}
+@enduml
+```
+
+### 3.5.8. Biểu đồ tuần tự chức năng tham gia kỳ thi trực tuyến
+**Hình 3.19. Biểu đồ tuần tự chức năng tham gia kỳ thi trực tuyến**
+
+```plantuml
+@startuml SD_Exam
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Tham gia kỳ thi
+
+actor "Sinh viên" as SV
+participant "Frontend" as FE
+participant "Exam Controller" as EC
+database "PostgreSQL" as DB
+
+SV -> FE: Vào trang kỳ thi
+FE -> EC: GET /exam/{examId}
+EC -> DB: SELECT exam + problems
+EC --> FE: {exam, problems, timeLeft}
+FE --> SV: Hiển thị đề thi + đếm ngược
+
+SV -> FE: Nhấn Submit bài thi
+FE -> EC: POST /exam/{examId}/submit {answers}
+EC -> DB: INSERT INTO exam_submissions
+EC --> FE: {score, rank}
+@enduml
+```
+
+### 3.5.9. Biểu đồ tuần tự chức năng tạo bài tập của giảng viên
+**Hình 3.20. Biểu đồ tuần tự chức năng tạo bài tập của giảng viên**
+
+```plantuml
+@startuml SD_CreateProblem
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Tạo bài tập (Giảng viên)
+
+actor "Giảng viên" as GV
+participant "Frontend" as FE
+participant "Problem Controller" as PC
+participant "Judge0 API" as J0
+database "PostgreSQL" as DB
+
+GV -> FE: Điền thông tin bài tập
+FE -> PC: POST /problem {title, description, testcases, files}
+PC -> DB: INSERT INTO problems + problem_versions
+PC -> J0: Verify solution vs testcases
+J0 --> PC: all passed
+PC -> DB: UPDATE problem_versions SET isVerified=true
+PC --> FE: 201 Created {problemId}
+@enduml
+```
+
+### 3.5.10. Biểu đồ tuần tự chức năng phê duyệt bài tập
+**Hình 3.21. Biểu đồ tuần tự chức năng phê duyệt bài tập**
+
+```plantuml
+@startuml SD_ApproveProblem
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Phê duyệt bài tập (Admin)
+
+actor "Admin" as AD
+participant "Frontend" as FE
+participant "Problem Controller" as PC
+database "PostgreSQL" as DB
+
+AD -> FE: Xem danh sách bài chờ duyệt
+FE -> PC: GET /problem/admin/versions/pending
+PC -> DB: SELECT pending versions
+PC --> FE: [{versionId, title, ...}]
+
+AD -> FE: Nhấn "Phê duyệt"
+FE -> PC: PATCH /problem/admin/versions/{id}/approve
+PC -> DB: UPDATE problem_versions SET status=APPROVED
+PC --> FE: 200 OK
+FE --> AD: Thông báo phê duyệt thành công
+@enduml
+```
+
+### 3.5.11. Biểu đồ tuần tự chức năng xem lộ trình học kỹ năng
+**Hình 3.22. Biểu đồ tuần tự chức năng xem lộ trình học kỹ năng**
+
+```plantuml
+@startuml SD_LearningPath
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Xem lộ trình học Skill Tree
+
+actor "Sinh viên" as SV
+participant "Frontend" as FE
+participant "Student Controller" as SC
+database "PostgreSQL" as DB
+
+SV -> FE: Mở trang Skill Tree
+FE -> SC: GET /student/learning-path
+SC -> DB: SELECT user_skill_nodes WHERE userId=?
+SC --> FE: [{tag, status, progress}]
+FE --> SV: Render đồ thị Skill Tree
+
+SV -> FE: Nhấn "Gợi ý thông minh"
+FE -> SC: GET /student/learning-path/suggestions
+SC -> DB: Phân tích điểm yếu, lọc bài tập
+SC --> FE: [{problemId, title, difficulty}]
+FE --> SV: Danh sách 5 bài tập gợi ý
+@enduml
+```
+
+### 3.5.12. Biểu đồ tuần tự chức năng kiểm tra đạo văn mã nguồn
+**Hình 3.23. Biểu đồ tuần tự chức năng kiểm tra đạo văn mã nguồn**
+
+```plantuml
+@startuml SD_Plagiarism
+skinparam monochrome true
+!theme plain
+title Biểu đồ tuần tự: Kiểm tra đạo văn
+
+actor "Giảng viên" as GV
+participant "Frontend" as FE
+participant "Plagiarism Controller" as PC
+participant "Plagiarism Service" as PS
+database "PostgreSQL" as DB
+
+GV -> FE: Nhấn "Kiểm tra đạo văn"
+FE -> PC: POST /plagiarism/check/{problemId}
+PC -> DB: SELECT all submissions for problem
+DB --> PC: submissions data
+PC -> PS: checkPlagiarism(submissions)
+PS -> PS: So sánh cặp đôi (MOSS/JPlag logic)
+PS --> PC: results (similarity scores)
+PC -> DB: INSERT INTO plagiarism_results
+PC --> FE: {status: "Completed", resultId}
+FE --> GV: Hiển thị danh sách các bài trùng lặp
+@enduml
+```
+
+*(Lưu ý: Toàn bộ 21 biểu đồ trong mục 3.4 và 3.5 bao gồm 9 biểu đồ hoạt động (Hình 3.3–3.11) và 12 biểu đồ tuần tự (Hình 3.12–3.23), đã được đặt tên theo định dạng: Biểu đồ [Loại] chức năng [Tên chức năng].)*

@@ -28,11 +28,11 @@ CMS là hệ thống quản lý thi đấu mã nguồn mở, được thiết k�
 
 **B. DOMjudge**
 
-DOMjudge là hệ thống quản lý thi đấu mã nguồn mở phổ biến nhất, được sử dụng rộng rãi trong các vòng thi ICPC khu vực và thế giới. Điểm mạnh của DOMjudge là tính ổn định cao, giao diện quản lý trực quan và cộng đồng hỗ trợ đông đảo. Tuy nhiên, tương tự CMS, kiến trúc của nó cũng theo hướng nguyên khối, được xây dựng bằng công nghệ cũ là PHP/Symfony. Hệ thống được tối ưu hóa cho mô hình "thi cố định thời gian với bộ đề cố định", thiếu linh hoạt cho việc tổ chức học tập liên tục (perpetual learning). Việc tùy biến sâu logic chấm bài hay xây dựng giao diện người dùng tách biệt đều gặp nhiều hạn chế do sự ràng buộc chặt chẽ với các thành phần nội bộ [23].
+DOMjudge là hệ thống quản lý thi đấu mã nguồn mở phổ biến nhất, được sử dụng rộng rãi trong các vòng thi ICPC khu vực và thế giới. Điểm mạnh của DOMjudge là tính ổn định cao, giao diện quản lý trực quan và cộng đồng hỗ trợ đông đảo. Tuy nhiên, tương tự CMS, kiến trúc của nó cũng theo hướng nguyên khối, được xây dựng bằng công nghệ cũ là PHP/Symfony. Hệ thống được tối ưu hóa cho mô hình "thi cố định thời gian với bộ đề cố định", thiếu linh hoạt cho việc tổ chức học tập liên tục (perpetual learning). Việc tùy biến sâu logic chấm bài hay xây dựng giao diện người dùng tách biệt đều gặp nhiều hạn chế do sự ràng buộc chặt chẽ với các thành phần nội bộ [17].
 
 **C. Judge0 — Lớp thực thi lý tưởng cho CodeLearn**
 
-Khác với CMS và DOMjudge vốn là các hệ thống thi đấu hoàn chỉnh, **Judge0** (Došilović và Mekterović, 2020) định vị mình là một "công cụ thực thi mã nguồn" (Code Execution Engine) thuần túy, được thiết kế theo kiến trúc API-first. Judge0 hỗ trợ hơn 60 ngôn ngữ lập trình, cung cấp kết quả thực thi chi tiết (stdout, stderr, exit code, thời gian chạy, bộ nhớ sử dụng) thông qua giao diện REST API chuẩn. Kiến trúc module hóa của nó là nền tảng lý thuyết cho quyết định thiết kế của CodeLearn: sử dụng một lõi thực thi (execution engine) tách biệt hoàn toàn khỏi lớp ứng dụng giáo dục, đảm bảo cả hai có thể phát triển và mở rộng độc lập.
+Khác với CMS và DOMjudge vốn là các hệ thống thi đấu hoàn chỉnh, **Judge0** [13] định vị mình là một "công cụ thực thi mã nguồn" (Code Execution Engine) thuần túy, được thiết kế theo kiến trúc API-first. Judge0 hỗ trợ hơn 60 ngôn ngữ lập trình, cung cấp kết quả thực thi chi tiết (stdout, stderr, exit code, thời gian chạy, bộ nhớ sử dụng) thông qua giao diện REST API chuẩn. Kiến trúc module hóa của nó là nền tảng lý thuyết cho quyết định thiết kế của CodeLearn: sử dụng một lõi thực thi (execution engine) tách biệt hoàn toàn khỏi lớp ứng dụng giáo dục, đảm bảo cả hai có thể phát triển và mở rộng độc lập.
 
 ### 2.3.3. Bảng so sánh tổng hợp và khoảng trống cần lấp đầy
 

@@ -22,7 +22,7 @@ Sau khi thực thi, đầu ra của chương trình (stdout) được đọc và
 
 ### 2.2.2. Mô hình phân lớp của hệ sinh thái OJ hiện đại
 
-Nghiên cứu của Došilović và Mekterović (2020) trong bài báo giới thiệu **Judge0** tại hội nghị MIPRO 2020 đã đề xuất một mô hình kiến trúc module hóa, tách biệt rõ ràng trách nhiệm từng thành phần [20]. Đây là cơ sở lý thuyết quan trọng để thiết kế hệ thống CodeLearn theo hướng microservices hiện đại, thay vì nguyên khối (monolithic). Mô hình này phân tách hệ thống thành các lớp chức năng độc lập:
+Nghiên cứu của Došilović và Mekterović (2020) trong bài báo giới thiệu **Judge0** tại hội nghị MIPRO 2020 đã đề xuất một mô hình kiến trúc module hóa, tách biệt rõ ràng trách nhiệm từng thành phần [13]. Đây là cơ sở lý thuyết quan trọng để thiết kế hệ thống CodeLearn theo hướng microservices hiện đại, thay vì nguyên khối (monolithic). Mô hình này phân tách hệ thống thành các lớp chức năng độc lập:
 
 **A. Lớp Giao diện và Nghiệp vụ (Application Layer)**
 
@@ -38,7 +38,7 @@ Lớp lõi thực thi (CEE) là tập hợp các "công nhân" (workers) chịu 
 
 **D. Lớp Sandbox (Cô lập và Bảo mật)**
 
-Lớp Sandbox hay còn gọi là "hộp cô lập" là lớp thấp nhất và quan trọng nhất về an toàn bảo mật. Đây là lớp trực tiếp cung cấp môi trường bị cô lập hoàn toàn với môi trường máy chủ vật lý để thực thi các đoạn mã không đáng tin cậy từ người dùng. Việc tách lớp Sandbox ra khỏi nền tảng ứng dụng giúp hệ thống có thể tối ưu hóa bảo mật và hiệu năng độc lập với nhau, đồng thời nếu một sandbox bị tấn công, kẻ tấn công chỉ bị giới hạn trong một "hộp kín" dùng một lần, không thể truy cập vào máy chủ vật lý hay gây ảnh hưởng đến các sandbox khác [21].
+Lớp Sandbox hay còn gọi là "hộp cô lập" là lớp thấp nhất và quan trọng nhất về an toàn bảo mật. Đây là lớp trực tiếp cung cấp môi trường bị cô lập hoàn toàn với môi trường máy chủ vật lý để thực thi các đoạn mã không đáng tin cậy từ người dùng. Việc tách lớp Sandbox ra khỏi nền tảng ứng dụng giúp hệ thống có thể tối ưu hóa bảo mật và hiệu năng độc lập với nhau, đồng thời nếu một sandbox bị tấn công, kẻ tấn công chỉ bị giới hạn trong một "hộp kín" dùng một lần, không thể truy cập vào máy chủ vật lý hay gây ảnh hưởng đến các sandbox khác [16].
 
 ### 2.2.3. Kỹ thuật ảo hóa và cô lập môi trường (Sandboxing)
 
@@ -56,11 +56,11 @@ Hiện nay, việc xây dựng môi trường thực thi an toàn thường đư
 | **Tài nguyên sử dụng** | Cao, cần RAM và CPU cho Guest OS | Thấp, chia sẻ kernel với host | Rất thấp, overhead gần bằng 0 |
 | **Đánh giá cho OJ** | Không phù hợp cho quy mô lớn | Khả thi nhưng cần cấu hình bảo mật cẩn thận | Tối ưu nhất về hiệu năng |
 
-Dựa trên các benchmark thực nghiệm năm 2024, Docker container chạy trên Linux native cho thấy chi phí tính toán (compute overhead) chỉ khoảng **0.12%** so với thực thi gốc, một con số hoàn toàn không đáng kể trong thực tế. Thời gian tạo Linux namespace (thao tác cốt lõi của container) chỉ mất khoảng **8-10 mili-giây** [Hathora, 2024], khiến Docker trở thành lựa chọn cân bằng giữa bảo mật và hiệu năng cho các hệ thống OJ quy mô vừa và lớn.
+Dựa trên các benchmark thực nghiệm năm 2024, Docker container chạy trên Linux native cho thấy chi phí tính toán (compute overhead) chỉ khoảng **0.12%** so với thực thi gốc, một con số hoàn toàn không đáng kể trong thực tế. Thời gian tạo Linux namespace (thao tác cốt lõi của container) chỉ mất khoảng **8-10 mili-giây** [14], khiến Docker trở thành lựa chọn cân bằng giữa bảo mật và hiệu năng cho các hệ thống OJ quy mô vừa và lớn.
 
 **B. Cơ chế hoạt động của Isolate**
 
-Isolate là một công cụ sandbox chuyên dụng được phát triển bởi Martin Mareš và Bernard Blackham, được sử dụng trong CMS (Contest Management System) cho kỳ thi Olympic tin học quốc tế (IOI) [22]. Điểm khác biệt lớn nhất của Isolate so với Docker là nó không sử dụng Docker engine, mà tương tác trực tiếp với Linux kernel để tạo ra các sandbox siêu nhẹ thông qua hai cơ chế chính:
+Isolate là một công cụ sandbox chuyên dụng được phát triển bởi Martin Mareš và Bernard Blackham, được sử dụng trong CMS (Contest Management System) cho kỳ thi Olympic tin học quốc tế (IOI) [15]. Điểm khác biệt lớn nhất của Isolate so với Docker là nó không sử dụng Docker engine, mà tương tác trực tiếp với Linux kernel để tạo ra các sandbox siêu nhẹ thông qua hai cơ chế chính:
 
 **Cơ chế 1: Linux Namespaces (Không gian tên)**
 Linux Namespaces cung cấp sự cô lập về mặt "tầm nhìn" cho tiến trình, khiến nó không thể nhìn thấy hay tác động đến các tiến trình khác của hệ thống:
@@ -72,7 +72,7 @@ Linux Namespaces cung cấp sự cô lập về mặt "tầm nhìn" cho tiến t
 Cgroups là cơ chế của nhân Linux cho phép giới hạn và đo lường tài nguyên phần cứng mà một nhóm tiến trình có thể sử dụng:
 - **Memory Cgroup:** Đặt giới hạn cứng cho RAM. Nếu tiến trình vượt quá, Kernel sẽ kích hoạt Out-Of-Memory Killer (OOM Killer) để dừng tiến trình ngay lập tức, trả về trạng thái "Memory Limit Exceeded".
 - **CPU Cgroup:** Giới hạn thời gian sử dụng CPU và gán tiến trình vào các lõi cụ thể để đảm bảo kết quả đo đạc thời gian là chính xác và nhất quán, tránh bị ảnh hưởng bởi các tác vụ nền của hệ thống.
-- **PIDs Cgroup:** Giới hạn số lượng tiến trình con tối đa có thể được tạo ra. Kể từ Linux kernel 4.3, cơ chế `pids.max` cho phép thiết lập giới hạn cứng (hard limit) trực tiếp trên hệ thống tệp cgroup (`/sys/fs/cgroup/`). Đây là vũ khí quan trọng nhất để ngăn chặn tấn công Fork Bomb [kernel.org].
+- **PIDs Cgroup:** Giới hạn số lượng tiến trình con tối đa có thể được tạo ra. Kể từ Linux kernel 4.3, cơ chế `pids.max` cho phép thiết lập giới hạn cứng (hard limit) trực tiếp trên hệ thống tệp cgroup (`/sys/fs/cgroup/`). Đây là vũ khí quan trọng nhất để ngăn chặn tấn công Fork Bomb [16].
 
 **C. Các nguy cơ bảo mật và phương án phòng chống**
 

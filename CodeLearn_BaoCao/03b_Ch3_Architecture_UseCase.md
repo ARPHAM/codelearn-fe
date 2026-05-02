@@ -2,9 +2,9 @@
 
 ### 3.1.1. Mô hình kiến trúc Client-Server và phân tách trách nhiệm
 
-CodeLearn được xây dựng theo mô hình kiến trúc phân tầng (Layered Architecture) kết hợp với triết lý phân tách mối quan tâm (Separation of Concerns). Toàn bộ hệ thống được chia thành ba tầng độc lập, giao tiếp với nhau thông qua các giao thức chuẩn hóa:
+CodeLearn được xây dựng theo mô hình kiến trúc phân tầng (Layered Architecture) kết hợp với triết lý phân tách mối quan tâm (Separation of Concerns) [18]. Toàn bộ hệ thống được chia thành ba tầng độc lập, giao tiếp với nhau thông qua các giao thức chuẩn hóa:
 
-- **Tầng Giao diện (Presentation Layer):** Được xây dựng bằng **Next.js 14** theo mô hình App Router, chịu trách nhiệm toàn bộ trải nghiệm người dùng. Tầng này giao tiếp với Backend thông qua REST API (cho các yêu cầu CRUD thông thường) và WebSocket (cho các tính năng thời gian thực như phòng cộng tác và theo dõi kết quả chấm bài).
+- **Tầng Giao diện (Presentation Layer):** Được xây dựng bằng **Next.js 14** theo mô hình App Router, chịu trách nhiệm toàn bộ trải nghiệm người dùng. Tầng này giao tiếp với Backend thông qua REST API (cho các yêu cầu CRUD thông thường) và WebSocket (cho các tính năng thời gian thực như phòng cộng tác và theo dõi kết quả chấm bài) dựa trên thư viện **Socket.io**.
 - **Tầng Nghiệp vụ (Business Logic Layer):** Được xây dựng bằng **NestJS** (Node.js framework), đây là trung tâm xử lý logic toàn hệ thống. Tầng này nhận yêu cầu, xác thực phân quyền (RBAC), điều phối các luồng nghiệp vụ và giao tiếp với cả cơ sở dữ liệu lẫn hệ thống thực thi mã nguồn bên ngoài.
 - **Tầng Dữ liệu (Data Layer):** Sử dụng **PostgreSQL** làm cơ sở dữ liệu quan hệ chính, quản lý toàn bộ dữ liệu người dùng, bài tập, kết quả chấm bài và trạng thái hệ thống. ORM **Prisma** đóng vai trò trừu tượng hóa các truy vấn phức tạp và quản lý schema migration.
 
@@ -15,64 +15,83 @@ CodeLearn được xây dựng theo mô hình kiến trúc phân tầng (Layered
 *[Ghi chú: Sơ đồ Component Diagram dưới đây được vẽ bằng PlantUML. Render tại: https://www.plantuml.com/plantuml/uml/]*
 
 ```plantuml
-@startuml CodeLearn_Architecture
-skinparam monochrome true`n!theme plain
-skinparam backgroundColor #FEFEFE
-skinparam componentStyle rectangle
+@startuml CodeLearn_Architecture_Final
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 5
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
 
-title Kiến trúc Tổng thể Hệ thống CodeLearn
+' Định nghĩa màu sắc
+!define TIER_COLOR #E8F0FE
+!define INFRA_COLOR #F1F3F4
 
-actor "Sinh viên" as SV
-actor "Giảng viên" as GV
-actor "Admin" as AD
+title BIỂU ĐỒ KIẾN TRÚC TỔNG THỂ HỆ THỐNG CODELEARN
 
-package "Tầng Giao diện (Next.js 14)" {
-  [Student Dashboard]
-  [Lecturer Dashboard]
-  [Admin Dashboard]
-  [Monaco Web IDE]
-  [Real-time Collaboration UI]
+actor "Người dùng\n(SV/GV/Admin)" as User
+
+package "CLIENT TIER (Web Browser)" #E8F0FE {
+  component "Next.js 14 Application" as NextApp {
+    [UI Components (Shadcn/UI)]
+    [Editor Engine (Monaco)]
+    [Socket Client (Socket.io)] as SocketClient
+  }
 }
 
-package "Tầng Nghiệp vụ (NestJS)" {
-  [Auth Module\n(JWT + RBAC)]
-  [Problem Module]
-  [Submission Module]
-  [AI Mentor Module\n(Gemini API)]
-  [Room Gateway\n(WebSocket)]
-  [Battle Module]
-  [Analytics Module]
-  [Plagiarism Module]
+node "CLOUD / SERVER INFRASTRUCTURE" #FFFFFF {
+  component "Nginx Reverse Proxy" as Nginx #D1E1FF
+
+  package "APPLICATION TIER (NestJS Backend)" #TIER_COLOR {
+    component "Main API Gateway" as Gateway
+    package "Logic Modules (Prisma ORM)" as Modules {
+      [Auth & RBAC]
+      [Problem/Exam Mgmt]
+      [AI Mentor Service] as AIMentor
+      [Room/Battle Gateway] as SocketGW
+    }
+    component "Background Workers\n(BullMQ)" as Workers #FFF2CC
+  }
+
+  package "MIDDLEWARE & STORAGE" #INFRA_COLOR {
+    database "PostgreSQL\n(Main DB)" as Postgres #E1F5FE
+    database "Redis\n(Cache & Queue)" as Redis #FFEBEE
+    database "Vector DB\n(RAG Context)" as VectorDB #E8F5E9 
+  }
+
+  package "EXECUTION TIER (Judge0 Engine)" #INFRA_COLOR {
+    component "Judge0 Server" as J0Server
+    node "Docker Sandbox Host" {
+      [Isolated Containers] as Containers #D7FFD7
+    }
+  }
 }
 
-package "Tầng Dữ liệu" {
-  database "PostgreSQL\n(Prisma ORM)" as DB
+cloud "External Services" {
+  cloud "Google Gemini API" as Gemini
 }
 
-package "Hệ thống thực thi bên ngoài" {
-  [Judge0 API\n(Code Execution Engine)]
-  cloud "Google Gemini API" as GEMINI
-}
+' Kết nối cơ bản
+User -down-> Nginx : HTTPS / WSS
+Nginx -down-> Gateway
+Gateway -down-> Modules
 
-SV --> [Student Dashboard]
-GV --> [Lecturer Dashboard]
-AD --> [Admin Dashboard]
+' Tương tác dữ liệu
+Modules -down-> Postgres : SQL
+Modules -down-> Redis : State / PubSub
+AIMentor -right-> VectorDB : Semantic Search (RAG)
+AIMentor -right-> Gemini : HTTPS (Prompt + Context)
 
-[Student Dashboard] --> [Auth Module\n(JWT + RBAC)] : REST API
-[Lecturer Dashboard] --> [Problem Module] : REST API
-[Admin Dashboard] --> [Analytics Module] : REST API
-[Monaco Web IDE] --> [Submission Module] : REST API
-[Real-time Collaboration UI] --> [Room Gateway\n(WebSocket)] : WS
+' Luồng nộp bài (Job Queue)
+Modules -down-> Redis : Push Job (BullMQ)
+Redis -down-> Workers : Pull Job
+Workers -down-> J0Server : HTTP Request
+J0Server -down-> Containers : Spawn / Run
+Containers .up.> J0Server : Result
+J0Server .up.> Workers : Callback / Polling (HTTP)
 
-[Submission Module] --> [Judge0 API\n(Code Execution Engine)] : HTTP
-[AI Mentor Module\n(Gemini API)] --> GEMINI : HTTPS
-[Auth Module\n(JWT + RBAC)] --> DB
-[Problem Module] --> DB
-[Submission Module] --> DB
-[Room Gateway\n(WebSocket)] --> DB
-[Battle Module] --> DB
-[Analytics Module] --> DB
-[Plagiarism Module] --> DB
+' Luồng thông báo thời gian thực (Notify)
+Workers .up.> SocketGW : Notify Result
+SocketGW .up.> SocketClient : Update UI (Socket.io)
 
 @enduml
 ```
@@ -86,7 +105,10 @@ Next.js 14 được lựa chọn vì khả năng hỗ trợ cả Server-Side Ren
 NestJS cung cấp kiến trúc module hóa mạnh mẽ, được lấy cảm hứng từ Angular. Mỗi tính năng (Problems, Submissions, Battles...) được đóng gói thành một Module độc lập với Controller, Service và Repository riêng, tuân thủ nguyên tắc Single Responsibility và tạo điều kiện cho việc mở rộng và kiểm thử độc lập.
 
 **C. Tích hợp Judge0 thay vì tự xây dựng Sandbox**
-Thay vì tự xây dựng hệ thống thực thi mã nguồn từ đầu (tốn kém và nhiều rủi ro bảo mật), CodeLearn tích hợp **Judge0** — engine thực thi mã nguồn mã nguồn mở đã được kiểm chứng trong môi trường sản xuất — thông qua REST API. Quyết định này cho phép nhóm tập trung nguồn lực vào phát triển tính năng giáo dục đặc thù (AI Mentor, Skill Tree, Collaboration) thay vì giải quyết các vấn đề Sandbox cấp thấp.
+Thay vì tự xây dựng hệ thống thực thi mã nguồn từ đầu (tốn kém và nhiều rủi ro bảo mật), CodeLearn tích hợp **Judge0** [13] — engine thực thi mã nguồn mã nguồn mở đã được kiểm chứng trong môi trường sản xuất — thông qua REST API. Quyết định này cho phép nhóm tập trung nguồn lực vào phát triển tính năng giáo dục đặc thù (AI Mentor, Skill Tree, Collaboration) thay vì giải quyết các vấn đề Sandbox cấp thấp.
+
+**D. Sử dụng Vector Database cho giải pháp RAG (Retrieval-Augmented Generation)**
+Để tính năng AI Mentor hoạt động chính xác và tránh hiện tượng ảo giác (hallucination) của mô hình ngôn ngữ lớn (LLM), hệ thống sử dụng kiến trúc **RAG** [12] kết hợp với một **Vector Database**. Tài liệu học tập và ngữ cảnh bài tập được vector hóa (Embedding) và lưu trữ tại đây, giúp AI có thể truy xuất dữ liệu chính xác trước khi đưa ra gợi ý cho sinh viên, đảm bảo tính sư phạm và độ tin cậy của nội dung gợi ý.
 
 ---
 
@@ -106,64 +128,74 @@ Hệ thống CodeLearn phục vụ ba nhóm tác nhân chính với phạm vi qu
 
 **Hình 3.2. Sơ đồ Use Case tổng thể hệ thống CodeLearn**
 
-*[Render bằng PlantUML tại: https://www.plantuml.com/plantuml/uml/]*
-
 ```plantuml
-@startuml CodeLearn_UseCase_Overview
-skinparam monochrome true`n!theme plain
+@startuml CodeLearn_UseCase_Final
+!theme plain
 left to right direction
 skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
 
-title Sơ đồ Use Case Tổng thể - Hệ thống CodeLearn
+title SƠ ĐỒ USE CASE TỔNG THỂ - HỆ THỐNG CODELEARN (BẢN CHUẨN CUỐI)
 
-actor "Sinh viên\n(Student)" as SV
-actor "Giảng viên\n(Lecturer)" as GV
-actor "Quản trị viên\n(Admin)" as AD
-actor "Hệ thống AI\n(Gemini)" as AI <<system>>
-actor "Hệ thống chấm\n(Judge0)" as J0 <<system>>
+actor "Người dùng" as U
+actor "Sinh viên" as SV
+actor "Giảng viên" as GV
+actor "Quản trị viên" as AD
+actor "Gemini AI" as AI <<system>>
+actor "Judge0" as J0 <<system>>
+
+' Quan hệ kế thừa (Inheritance)
+SV --|> U
+GV --|> U
+GV --|> SV
+AD --|> U
 
 rectangle "CodeLearn System" {
 
-  package "Phân hệ Xác thực" {
-    usecase "UC-01: Đăng nhập hệ thống" as UC01
+  package "Xác thực & Cá nhân" {
+    usecase "UC-01: Đăng nhập" as UC01
     usecase "UC-02: Đổi mật khẩu" as UC02
-    usecase "UC-03: Quản lý hồ sơ cá nhân" as UC03
+    usecase "UC-03: Quản lý hồ sơ" as UC03
   }
 
-  package "Phân hệ Học tập (Student)" {
-    usecase "UC-04: Xem danh sách bài tập" as UC04
-    usecase "UC-05: Làm bài tập với Web IDE" as UC05
-    usecase "UC-06: Nộp bài và xem kết quả" as UC06
-    usecase "UC-07: Nhận gợi ý từ AI Mentor" as UC07
-    usecase "UC-08: Xem lộ trình Skill Tree" as UC08
-    usecase "UC-09: Tham gia phòng cộng tác" as UC09
-    usecase "UC-10: Thi đấu Code Battle 1v1" as UC10
-    usecase "UC-11: Tham gia kỳ thi (Exam)" as UC11
-    usecase "UC-12: Xem bảng xếp hạng" as UC12
+  package "Phân hệ Sinh viên" {
+    usecase "UC-04: Xem bài tập" as UC04
+    usecase "UC-05: Làm bài trực tuyến" as UC05
+    usecase "UC-06: Nộp bài & Chấm điểm" as UC06
+    usecase "UC-07: Hỏi AI Mentor" as UC07
+    usecase "UC-08: Xem Skill Tree" as UC08
+    usecase "UC-09: Phòng cộng tác" as UC09
+    usecase "UC-10: Đấu trường Battle" as UC10
+    usecase "UC-11: Tham gia kỳ thi" as UC11
+    usecase "UC-12: Bảng xếp hạng" as UC12
   }
 
-  package "Phân hệ Quản lý nội dung (Lecturer)" {
-    usecase "UC-13: Tạo & chỉnh sửa bài tập" as UC13
+  package "Phân hệ Giảng viên" {
+    usecase "UC-13: Soạn thảo bài tập" as UC13
     usecase "UC-14: Quản lý Testcase" as UC14
-    usecase "UC-15: Tạo khóa học & chương trình" as UC15
+    usecase "UC-15: Quản lý khóa học" as UC15
     usecase "UC-16: Tổ chức kỳ thi" as UC16
-    usecase "UC-17: Theo dõi kết quả qua Auto-Grader" as UC17
-    usecase "UC-18: Phân tích thống kê lớp học" as UC18
-    usecase "UC-19: Kiểm tra đạo văn mã nguồn" as UC19
+    usecase "UC-17: Giám sát Auto-Grader" as UC17
+    usecase "UC-18: Phân tích thống kê" as UC18
+    usecase "UC-19: Kiểm tra đạo văn" as UC19
   }
 
-  package "Phân hệ Quản trị (Admin)" {
-    usecase "UC-20: Quản lý tài khoản người dùng" as UC20
-    usecase "UC-21: Quản lý ngôn ngữ lập trình" as UC21
-    usecase "UC-22: Kiểm tra Sandbox" as UC22
-    usecase "UC-23: Xem Audit Log hệ thống" as UC23
+  package "Phân hệ Quản trị" {
+    usecase "UC-20: Quản trị người dùng" as UC20
+    usecase "UC-21: Cấu hình Sandbox" as UC21
+    usecase "UC-22: Phê duyệt bài tập" as UC22
+    usecase "UC-23: Xem Audit Logs" as UC23
     usecase "UC-24: Cấu hình hệ thống" as UC24
   }
 }
 
-SV --> UC01
-SV --> UC02
-SV --> UC03
+' Kết nối Common
+U --> UC01
+U --> UC02
+U --> UC03
+
+' Kết nối Sinh viên
 SV --> UC04
 SV --> UC05
 SV --> UC06
@@ -174,25 +206,31 @@ SV --> UC10
 SV --> UC11
 SV --> UC12
 
-GV --> UC01
+' Quan hệ Logic nội bộ
+UC05 <.. UC06 : <<extend>>
+UC05 <.. UC07 : <<extend>>
+UC13 <.. UC14 : <<include>>
+UC11 ..> UC05 : <<include>>
+
+' Kết nối Giảng viên
 GV --> UC13
-GV --> UC14
 GV --> UC15
 GV --> UC16
 GV --> UC17
 GV --> UC18
 GV --> UC19
 
-AD --> UC01
+' Kết nối Admin
 AD --> UC20
 AD --> UC21
 AD --> UC22
 AD --> UC23
 AD --> UC24
 
-UC06 ..> J0 : <<uses>>
-UC07 ..> AI : <<uses>>
-UC22 ..> J0 : <<uses>>
+' Kết nối Hệ thống ngoài (Association chuẩn)
+UC06 -- J0
+UC07 -- AI
+UC21 -- J0
 
 @enduml
 ```
