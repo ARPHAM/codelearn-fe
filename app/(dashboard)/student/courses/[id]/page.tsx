@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useExamsByCourse, useStartExam } from '@/hooks/useExams';
+import { useExercisesByCourse } from '@/hooks/useExercises';
 import { 
     Clock, 
     Play, 
@@ -11,9 +12,13 @@ import {
     Calendar,
     Award,
     ChevronLeft,
-    ShieldAlert
+    ShieldAlert,
+    FileText,
+    Target,
+    ArrowRight
 } from 'lucide-react';
 import { toast } from '@/components/ui/Toast';
+import { Skeleton } from '@/app/components/ui/Skeleton';
 
 export default function StudentCourseDetailPage() {
     const params = useParams();
@@ -21,6 +26,7 @@ export default function StudentCourseDetailPage() {
     const courseId = params.id as string;
 
     const { data: exams, isLoading } = useExamsByCourse(courseId);
+    const { data: exercisesData, isLoading: isExercisesLoading } = useExercisesByCourse(courseId);
     const startExamMutation = useStartExam();
 
     const handleStartExam = async (exam: any) => {
@@ -39,14 +45,8 @@ export default function StudentCourseDetailPage() {
         }
 
         try {
-            const resp = await startExamMutation.mutateAsync(exam.id);
-            // BE trả về list bài tập, ta lấy slug bài đầu tiên để vào editor
-            if (resp && resp.length > 0) {
-                const firstProblem = resp[0];
-                router.push(`/student/problems/code-editor?slug=${firstProblem.slug}&examId=${exam.id}`);
-            } else {
-                toast({ type: 'error', title: 'Lỗi', message: 'Không thể bốc đề thi (không có bài tập).' });
-            }
+            // No need to fetch problems here, the dedicated exam page will handle it
+            router.push(`/student/exams/${exam.id}`);
         } catch (e: any) {
             toast({ type: 'error', title: 'Lỗi', message: e.response?.data?.message || 'Không thể bắt đầu thi.' });
         }
@@ -83,11 +83,11 @@ export default function StudentCourseDetailPage() {
             </h2>
 
             {isLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
-                    <Loader2 className="animate-spin" size={40} color="var(--accent-purple)" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[1, 2].map(i => <Skeleton key={i} height={100} borderRadius={16} />)}
                 </div>
             ) : exams?.length === 0 ? (
-                <div className="card" style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                <div className="card" style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', border: '1px dashed var(--border)', background: 'transparent' }}>
                     <p>Lớp học này hiện chưa có kì thi nào.</p>
                 </div>
             ) : (
@@ -139,6 +139,51 @@ export default function StudentCourseDetailPage() {
                             </div>
                         );
                     })}
+                </div>
+            )}
+
+            <div style={{ marginTop: 48, marginBottom: 16 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <FileText size={20} color="var(--accent-cyan)" /> Bài tập & Thực hành
+                </h2>
+            </div>
+
+            {isExercisesLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[1, 2, 3].map(i => <Skeleton key={i} height={72} borderRadius={16} />)}
+                </div>
+            ) : !exercisesData?.exercises || exercisesData.exercises.length === 0 ? (
+                <div className="card" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', border: '1px dashed var(--border)', background: 'transparent' }}>
+                    <p>Hiện chưa có bài tập nào được giao.</p>
+                </div>
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {exercisesData.exercises.map((ex: any) => (
+                        <div key={ex.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                <div style={{ 
+                                    width: 40, height: 40, borderRadius: 12, 
+                                    background: 'rgba(6, 182, 212, 0.1)', 
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                                }}>
+                                    <Target size={20} color="var(--accent-cyan)" />
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: 15 }}>{ex.title}</div>
+                                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                                        Độ khó: <span style={{ color: ex.difficulty === 'EASY' ? 'var(--accent-green)' : ex.difficulty === 'MEDIUM' ? 'var(--accent-orange)' : 'var(--accent-red)' }}>{ex.difficulty}</span> • {ex.score} điểm
+                                    </div>
+                                </div>
+                            </div>
+                            <button 
+                                className="btn btn-ghost" 
+                                style={{ padding: 8 }}
+                                onClick={() => router.push(`/student/problems/code-editor?slug=${ex.slug}`)}
+                            >
+                                <ArrowRight size={18} />
+                            </button>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

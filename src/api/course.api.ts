@@ -9,6 +9,10 @@ export const courseApi = {
     const response = await axios.get(`/course/${id}`);
     return response.data.data;
   },
+  getSemesters: async () => {
+    const response = await axios.get('/course/semesters');
+    return response.data.data;
+  },
   enroll: async (courseId: string) => {
     const response = await axios.post(`/course/${courseId}/enroll`);
     return response.data.data;
@@ -25,8 +29,20 @@ export const courseApi = {
     const response = await axios.post(`/course/${id}/users`, data);
     return response.data.data;
   },
-  getCourseStudents: async (id: string) => {
-    const response = await axios.get(`/course/${id}/students`);
+  getCourseUsers: async (id: string, params?: any) => {
+    const response = await axios.get(`/course/${id}/users`, { params });
+    return response.data.data;
+  },
+  updateCourse: async (id: string, data: any) => {
+    const response = await axios.patch(`/course/${id}`, data);
+    return response.data.data;
+  },
+  deleteCourse: async (id: string) => {
+    const response = await axios.delete(`/course/${id}`);
+    return response.data.data;
+  },
+  removeUser: async (courseId: string, userId: string) => {
+    const response = await axios.delete(`/course/${courseId}/users/${userId}`);
     return response.data.data;
   },
 };

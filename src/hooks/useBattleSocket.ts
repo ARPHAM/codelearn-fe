@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { toast } from '@/components/ui/Toast';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -11,14 +12,26 @@ export const useBattleSocket = (battleId?: string) => {
   const [isStarted, setIsStarted] = useState(false);
 
   useEffect(() => {
-    const s = io(`${SOCKET_URL}/battles`);
+    if (!battleId) return;
+
+    const s = io(`${SOCKET_URL}/battle`, {
+      transports: ['websocket'],
+      auth: {
+        token: localStorage.getItem('accessToken'),
+      },
+    });
     setSocket(s);
 
-    if (battleId) {
-      s.emit('join_battle', { battleId });
-    }
+    // Reset states
+    setIsStarted(false);
+    setBattleData(null);
+    setProgress({});
+    setTimer(0);
+
+    s.emit('join_battle', { battleId });
 
     s.on('battle_started', (data) => {
+      console.log('Battle started received:', data);
       setBattleData(data);
       setIsStarted(true);
     });
@@ -30,13 +43,17 @@ export const useBattleSocket = (battleId?: string) => {
     s.on('code_progress', (data) => {
       setProgress(prev => ({
         ...prev,
-        [data.userId]: data.percent
+        [data.userId]: data.progress // Backend sends 'progress' field
       }));
     });
 
     s.on('battle_cancelled', (data) => {
-      alert(`Trận đấu đã bị hủy: ${data.reason}`);
+      toast({ type: 'info', title: 'Trận đấu kết thúc', message: data.reason });
       setIsStarted(false);
+    });
+
+    s.on('battle_end', (data) => {
+      setBattleData((prev: any) => ({ ...prev, winner: data }));
     });
 
     return () => {

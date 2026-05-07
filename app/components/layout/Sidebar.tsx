@@ -37,6 +37,7 @@ const navGroups = [
     items: [
       { href: '/lecturer/analytics', icon: LayoutDashboard, label: 'Thống kê & Phân tích' },
       { href: '/lecturer/courses', icon: BookOpen, label: 'Lớp học giảng dạy' },
+      { href: '/lecturer/exams', icon: Trophy, label: 'Kỳ thi & Kiểm tra' },
       { href: '/lecturer/auto-grader', icon: Zap, label: 'Chấm điểm Tự động' },
       { href: '/lecturer/problems', icon: FolderLock, label: 'Quản lý Bài tập' },
       { href: '/lecturer/question-bank', icon: Database, label: 'Ngân hàng Câu hỏi' },
@@ -47,8 +48,10 @@ const navGroups = [
     role: 'STUDENT',
     color: '#22d3ee',
     items: [
+      { href: '/student/dashboard', icon: LayoutDashboard, label: 'Bảng điều khiển' },
       { href: '/student/problems', icon: Target, label: 'Luyện tập (Bài tập)' },
       { href: '/student/courses', icon: GraduationCap, label: 'Lớp học của tôi' },
+      { href: '/student/exams', icon: Trophy, label: 'Kỳ thi & Kiểm tra' },
       { href: '/student/code-battle', icon: Swords, label: 'Code Battle' },
       { href: '/student/learning-path', icon: Map, label: 'Lộ trình Học tập' },
       { href: '/student/leaderboard', icon: Trophy, label: 'Bảng xếp hạng' },
@@ -62,6 +65,7 @@ const navGroups = [
     items: [
       { href: '/admin/users', icon: Users, label: 'Quản lý Người dùng' },
       { href: '/admin/courses', icon: GraduationCap, label: 'Quản lý Lớp học' },
+      { href: '/admin/exams', icon: Trophy, label: 'Phê duyệt Kỳ thi' },
       { href: '/admin/problems', icon: ShieldCheck, label: 'Phê duyệt Bài tập' },
       { href: '/admin/sandbox', icon: Box, label: 'Tài nguyên Sandbox' },
       { href: '/admin/audit-log', icon: ClipboardList, label: 'Nhật ký hệ thống' },

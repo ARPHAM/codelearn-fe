@@ -14,8 +14,11 @@ import {
     Rocket,
     Circle,
     ChevronDown,
-    CheckCircle2
+    CheckCircle2,
+    Inbox,
+    ArrowUpDown
 } from 'lucide-react';
+import { Skeleton } from '@/app/components/ui/Skeleton';
 import { useState, useRef, useEffect } from 'react';
 
 const diffColors: Record<string, string> = { EASY: 'badge-green', MEDIUM: 'badge-yellow', HARD: 'badge-red' };
@@ -151,6 +154,8 @@ export default function StudentProblemsListPage() {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
     const PAGE_LIMIT = 10;
 
     // Reset to page 1 when filters change
@@ -171,7 +176,9 @@ export default function StudentProblemsListPage() {
         limit: PAGE_LIMIT,
         search: debouncedSearch || undefined,
         difficulty: difficulty === 'ALL' ? undefined : difficulty,
-        status: status === 'ALL' ? undefined : status
+        status: status === 'ALL' ? undefined : status,
+        sortBy,
+        sortOrder
     });
 
     const totalPages = data ? Math.ceil(data.total / PAGE_LIMIT) : 0;
@@ -260,12 +267,31 @@ export default function StudentProblemsListPage() {
                             ]}
                             minWidth={160}
                         />
+                        <CustomSelect
+                            label="Sắp xếp"
+                            icon={ArrowUpDown}
+                            value={`${sortBy}-${sortOrder}`}
+                            onChange={(val: string) => {
+                                const [field, order] = val.split('-');
+                                setSortBy(field);
+                                setSortOrder(order as 'ASC' | 'DESC');
+                            }}
+                            options={[
+                                { value: 'createdAt-DESC', label: 'Mới nhất' },
+                                { value: 'createdAt-ASC', label: 'Cũ nhất' },
+                                { value: 'title-ASC', label: 'Tên A-Z' },
+                                { value: 'title-DESC', label: 'Tên Z-A' },
+                                { value: 'totalSubmissions-DESC', label: 'Nộp bài nhiều' },
+                                { value: 'acceptanceRate-DESC', label: 'Dễ trúng tuyển' },
+                            ]}
+                            minWidth={190}
+                        />
                     </div>
                 </div>
 
                 {isLoading && (
-                    <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
-                        Đang tải danh sách bài tập...
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} height={80} borderRadius={16} />)}
                     </div>
                 )}
 
@@ -276,8 +302,16 @@ export default function StudentProblemsListPage() {
                 )}
 
                 {!isLoading && !isError && data?.items?.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: 60, border: '1px dashed var(--border)', borderRadius: 12, color: 'var(--text-muted)' }}>
-                        Chưa có bài tập nào khả dụng.
+                    <div className="animate-in" style={{ textAlign: 'center', padding: '80px 40px', border: '1px dashed var(--border)', borderRadius: 16, background: 'rgba(255,255,255,0.01)' }}>
+                        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
+                            <div style={{ padding: 20, background: 'rgba(255,255,255,0.03)', borderRadius: '50%' }}>
+                                <Inbox size={48} color="var(--text-muted)" />
+                            </div>
+                        </div>
+                        <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>Không tìm thấy bài tập nào</h3>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 14, maxWidth: 300, margin: '0 auto' }}>
+                            Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm để có kết quả khác.
+                        </p>
                     </div>
                 )}
 

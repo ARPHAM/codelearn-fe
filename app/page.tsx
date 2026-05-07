@@ -13,7 +13,7 @@ export default function Home() {
   const roleRedirects: Record<string, string> = {
     admin: '/admin/users',
     lecturer: '/lecturer/analytics',
-    student: '/student/problems', // Chuyển về danh sách bài tập là hợp lý nhất cho sinh viên
+    student: '/student/dashboard',
   };
 
   if (!user) {

@@ -3,13 +3,11 @@
 import { usePathname } from 'next/navigation';
 import { useCurrentUserInfo } from "../_api/queries";
 import {
-  Search,
-  Bell,
   ChevronRight,
-  Command,
   LayoutGrid
 } from 'lucide-react';
 import Link from 'next/link';
+import NotificationPopover from "./NotificationPopover";
 
 const routeLabels: Record<string, string> = {
   'student': 'Sinh viên',
@@ -101,66 +99,8 @@ export default function Topbar() {
 
       {/* Right Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        {/* Search Trigger */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          borderRadius: '10px',
-          padding: '8px 14px',
-          width: 240,
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-        }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'}
-        >
-          <Search size={16} color="#64748b" />
-          <span style={{ color: '#64748b', fontSize: 13, flex: 1 }}>Tìm kiếm nhanh...</span>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 2,
-            background: 'rgba(0,0,0,0.2)',
-            borderRadius: '4px',
-            padding: '2px 4px',
-            fontSize: 10,
-            color: '#475569',
-            border: '1px solid rgba(255,255,255,0.05)'
-          }}>
-            <Command size={10} />
-            <span>K</span>
-          </div>
-        </div>
-
         {/* Notifications */}
-        <div style={{ position: 'relative', cursor: 'pointer' }}>
-          <div style={{
-            width: 38, height: 38, borderRadius: '10px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#94a3b8',
-            transition: 'all 0.2s',
-          }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-              e.currentTarget.style.color = '#94a3b8';
-            }}
-          >
-            <Bell size={18} />
-          </div>
-          <div style={{
-            position: 'absolute', top: -2, right: -2,
-            width: 18, height: 18, borderRadius: '50%',
-            background: '#ef4444',
-            border: '2px solid #0d1117',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 10, fontWeight: 700, color: 'white',
-          }}>3</div>
-        </div>
+        <NotificationPopover />
 
         <div style={{ width: 1, height: 24, background: 'rgba(255, 255, 255, 0.05)' }} />
 

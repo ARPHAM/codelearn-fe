@@ -38,13 +38,27 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { setError('Vui lòng điền đầy đủ thông tin'); return; }
+    if (!email || !password) {
+      setError('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
     setError('');
-    await loginMutation.mutateAsync({ email, password, role })
     setLoading(true);
-    broadcastAuthChange();
-    setTimeout(() => { window.location.href = '/' }, 800);
-    setLoading(false);
+
+    try {
+      await loginMutation.mutateAsync({ email, password, role });
+      broadcastAuthChange();
+      toast({ type: 'success', title: 'Thành công', message: 'Đăng nhập thành công, đang chuyển hướng...' });
+      
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 800);
+    } catch (err: any) {
+      setLoading(false);
+      const msg = err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại.';
+      setError(msg);
+      toast({ type: 'error', title: 'Lỗi', message: msg });
+    }
   };
 
   const handleLoginGoogle = useGoogleLogin({

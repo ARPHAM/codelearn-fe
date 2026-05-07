@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import PresenceHandler from '@/components/PresenceHandler'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(
@@ -21,6 +22,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     return (
         <QueryClientProvider client={queryClient}>
+            <PresenceHandler />
             {children}
         </QueryClientProvider>
     )

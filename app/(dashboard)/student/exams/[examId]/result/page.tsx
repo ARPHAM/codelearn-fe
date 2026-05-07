@@ -1,133 +1,106 @@
-'use client';
+'use client'
 
-import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { examApi } from '@/api/exam.api';
+import { use, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useExamResult } from '@/src/hooks/useExams';
 import { 
-    Award, 
+    Trophy, 
     CheckCircle2, 
+    AlertCircle, 
     ChevronLeft, 
-    ClipboardList, 
     Loader2, 
-    Trophy,
-    XCircle,
-    RotateCcw
+    Target,
+    Clock,
+    Award
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
-export default function ExamResultPage() {
-    const params = useParams();
+interface PageProps {
+    params: Promise<{ examId: string }>;
+}
+
+export default function ExamResultPage({ params }: PageProps) {
+    const { examId } = use(params);
     const router = useRouter();
-    const examId = params.examId as string;
-
-    const { data: results, isLoading, isError } = useQuery({
-        queryKey: ['exam-results', examId],
-        queryFn: () => examApi.getResults(examId),
-        refetchInterval: (query: any) => (query.state.data?.status === 'PROCESSING' || query.state.data?.status === 'QUEUED') ? 3000 : false,
-    });
+    const { data: result, isLoading, error } = useExamResult(examId);
 
     if (isLoading) return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-            <Loader2 className="animate-spin" size={40} color="var(--accent-purple)" />
+        <div style={{ height: 'calc(100vh - 124px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Loader2 className="animate-spin" size={32} color="var(--accent-purple)" />
         </div>
     );
 
+    if (error || !result) return (
+        <div style={{ height: 'calc(100vh - 124px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <AlertCircle size={48} color="var(--accent-red)" style={{ marginBottom: 16 }} />
+            <h2 style={{ fontSize: 20, fontWeight: 700 }}>Không tìm thấy kết quả</h2>
+            <button className="btn btn-ghost" style={{ marginTop: 20 }} onClick={() => router.push('/student/dashboard')}>Quay lại Dashboard</button>
+        </div>
+    );
+
+    const maxTotalScore = result.problems.reduce((acc: number, p: any) => acc + p.maxScore, 0);
+    const scorePercentage = (result.score / maxTotalScore) * 100;
+
     return (
-        <div className="page-container animate-in">
-            <div style={{ marginBottom: 24 }}>
-                <button className="btn btn-ghost" onClick={() => router.back()} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: 0 }}>
-                    <ChevronLeft size={16} /> Quay lại
-                </button>
-            </div>
+        <div className="page-container animate-in" style={{ maxWidth: 800, margin: '0 auto' }}>
+            <button className="btn btn-ghost" style={{ marginBottom: 24 }} onClick={() => router.push('/student/dashboard')}>
+                <ChevronLeft size={18} /> Quay lại Dashboard
+            </button>
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 40 }}>
+            <div className="card" style={{ padding: 40, textAlign: 'center', background: 'var(--gradient-dark)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.05)', marginBottom: 32 }}>
                 <div style={{ 
-                    width: 80, 
-                    height: 80, 
-                    borderRadius: '50%', 
+                    width: 80, height: 80, borderRadius: 24, 
                     background: 'var(--gradient-purple)', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    marginBottom: 20,
-                    boxShadow: 'var(--shadow-glow-purple)'
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 24px',
+                    boxShadow: '0 0 30px rgba(139, 92, 246, 0.4)'
                 }}>
-                    <Trophy size={40} color="white" />
+                    <Award size={40} color="white" />
                 </div>
-                <h1 className="page-title">Kết quả Kỳ thi</h1>
-                <p className="page-subtitle">Hệ thống đã hoàn tất chấm điểm bài làm của bạn</p>
+                
+                <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>{result.exam.title}</h1>
+                <p style={{ color: 'var(--text-muted)', marginBottom: 32 }}>Chúc mừng bạn đã hoàn thành kỳ thi!</p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, textAlign: 'left' }}>
+                    <div className="card" style={{ padding: 20, background: 'rgba(255,255,255,0.03)' }}>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Tổng điểm</div>
+                        <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--accent-purple)' }}>{result.score} <span style={{ fontSize: 16, color: 'var(--text-muted)' }}>/ {maxTotalScore}</span></div>
+                    </div>
+                    <div className="card" style={{ padding: 20, background: 'rgba(255,255,255,0.03)' }}>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Thời gian nộp</div>
+                        <div style={{ fontSize: 16, fontWeight: 700 }}>{new Date(result.endTime).toLocaleString('vi-VN')}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{formatDistanceToNow(new Date(result.endTime), { addSuffix: true, locale: vi })}</div>
+                    </div>
+                </div>
             </div>
 
-            {results?.status === 'PROCESSING' || results?.status === 'QUEUED' ? (
-                <div className="card" style={{ textAlign: 'center', padding: 60 }}>
-                    <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 16px', color: 'var(--accent-cyan)' }} />
-                    <h3 style={{ fontSize: 20, fontWeight: 700 }}>Đang chấm điểm...</h3>
-                    <p style={{ color: 'var(--text-muted)' }}>Vui lòng đợi trong giây lát, kết quả sẽ tự động cập nhật.</p>
-                </div>
-            ) : (
-                <div style={{ maxWidth: 800, margin: '0 auto' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
-                        <div className="card" style={{ textAlign: 'center', padding: 24 }}>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>Tổng điểm</div>
-                            <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--accent-purple)' }}>{results?.totalScore || 0}</div>
-                        </div>
-                        <div className="card" style={{ textAlign: 'center', padding: 24 }}>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>Số bài đạt</div>
-                            <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--accent-green)' }}>{results?.problemsPassed || 0}</div>
-                        </div>
-                        <div className="card" style={{ textAlign: 'center', padding: 24 }}>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>Trạng thái</div>
-                            <div style={{ fontSize: 18, fontWeight: 700, marginTop: 12 }}>HOÀN TẤT</div>
-                        </div>
-                    </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Target size={22} color="var(--accent-cyan)" /> Chi tiết từng bài
+            </h2>
 
-                    <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <ClipboardList size={20} color="var(--accent-purple)" /> Chi tiết từng bài tập
-                    </h3>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {results?.problemResults?.map((res: any, idx: number) => (
-                            <div key={idx} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                                    <div style={{ 
-                                        width: 36, height: 36, borderRadius: 8, 
-                                        background: res.score >= 50 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                    }}>
-                                        {res.score >= 50 ? <CheckCircle2 size={20} color="#10b981" /> : <XCircle size={20} color="#ef4444" />}
-                                    </div>
-                                    <div>
-                                        <div style={{ fontWeight: 700 }}>{res.problemTitle}</div>
-                                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{res.testcasesPassed} / {res.testcasesTotal} testcases</div>
-                                    </div>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: 20, fontWeight: 800, color: res.score >= 50 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{res.score}</div>
-                                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>ĐIỂM</div>
-                                </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {result.problems.map((p: any) => (
+                    <div key={p.id} className="card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                            <div style={{ 
+                                width: 36, height: 36, borderRadius: 10, 
+                                background: p.score === p.maxScore ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                {p.score === p.maxScore ? <CheckCircle2 size={20} color="var(--accent-green)" /> : <Award size={20} color="var(--text-muted)" />}
                             </div>
-                        ))}
-                    </div>
-
-                    {results?.isRegraded && (
-                        <div style={{ 
-                            marginTop: 32, 
-                            padding: 16, 
-                            background: 'rgba(6, 182, 212, 0.05)', 
-                            border: '1px dashed var(--accent-cyan)', 
-                            borderRadius: 12,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 12,
-                            color: 'var(--accent-cyan)'
-                        }}>
-                            <RotateCcw size={20} />
-                            <div style={{ fontSize: 13 }}>
-                                <strong>Lưu ý:</strong> Bài thi này đã được chấm lại bởi Giảng viên/Admin. Điểm số hiển thị là điểm cao nhất bạn đạt được.
+                            <div>
+                                <div style={{ fontWeight: 700, fontSize: 15 }}>{p.title}</div>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Trạng thái: {p.status}</div>
                             </div>
                         </div>
-                    )}
-                </div>
-            )}
+                        <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: 800, fontSize: 18 }}>{p.score} <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/ {p.maxScore}</span></div>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }

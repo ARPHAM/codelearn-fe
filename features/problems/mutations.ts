@@ -26,6 +26,8 @@ export interface SubmitCodeRequest {
         filePath: string;
         content: string;
     }[];
+    examId?: string;
+    battleId?: string;
 }
 
 export interface SubmitCodeResponse {

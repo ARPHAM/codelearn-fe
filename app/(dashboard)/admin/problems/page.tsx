@@ -48,6 +48,11 @@ export default function AdminProblemsPage() {
         getProblemAuthors().then(setAuthors).catch(console.error);
     }, []);
 
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, status, difficulty, authorId]);
+
     const handleReset = () => {
         setSearch('');
         setStatus('');
@@ -136,7 +141,7 @@ export default function AdminProblemsPage() {
                                             <span className={`badge ${p.status === 'ACTIVE' ? 'badge-green' :
                                                 p.status === 'REJECTED' ? 'badge-red' : 'badge-yellow'
                                                 }`}>
-                                                {p.status === 'INACTIVE' ? 'Chờ duyệt' : p.status}
+                                                {['INACTIVE', 'PENDING'].includes(p.status) ? 'Chờ duyệt' : p.status}
                                             </span>
 
                                             <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>

@@ -20,6 +20,11 @@ export const battlesApi = {
     const response = await axios.post(`/battle/${id}/cancel`);
     return response.data.data;
   },
+  
+  surrender: async (id: string) => {
+    const response = await axios.post(`/battle/${id}/surrender`);
+    return response.data.data;
+  },
     
   submitCode: async (id: string, code: string) => {
     const response = await axios.post(`/battle/${id}/submit`, { code });

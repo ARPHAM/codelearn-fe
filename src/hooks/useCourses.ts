@@ -11,7 +11,7 @@ export const useMyCourses = () => {
 export const useCourseStudents = (courseId: string) => {
   return useQuery({
     queryKey: ['course-students', courseId],
-    queryFn: () => courseApi.getCourseStudents(courseId),
-    enabled: !!courseId,
+    queryFn: () => courseApi.getCourseUsers(courseId),
+    enabled: !!courseId && courseId !== 'new',
   });
 };

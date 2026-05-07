@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-
+import { getStudentStats } from '@/src/api/user.api'
 import axios from '@/config/axios'
 
 type User = {
@@ -25,3 +25,10 @@ export const useCurrentUserInfo = () => {
 		},
 	})
 }
+
+export const useUserStats = () => {
+    return useQuery({
+        queryKey: ['user-stats'],
+        queryFn: getStudentStats,
+    });
+};

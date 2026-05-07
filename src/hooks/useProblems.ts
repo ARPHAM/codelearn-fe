@@ -21,7 +21,16 @@ export const useLecturerProblems = (params?: { page?: number; limit?: number; se
   });
 };
 
-export const useStudentProblems = (params?: { page?: number; limit?: number; search?: string; filter?: string; difficulty?: string; status?: string }) => {
+export const useStudentProblems = (params?: { 
+  page?: number; 
+  limit?: number; 
+  search?: string; 
+  filter?: string; 
+  difficulty?: string; 
+  status?: string;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+}) => {
   return useQuery({
     queryKey: ['student-problems', params],
     queryFn: () => getStudentProblems(params),
@@ -46,7 +55,7 @@ export const useProblemDetail = (id: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['problem-detail', id],
     queryFn: () => getProblemDetail(id),
-    enabled: !!id && enabled,
+    enabled: !!id && id !== 'new' && enabled,
   });
 };
 
