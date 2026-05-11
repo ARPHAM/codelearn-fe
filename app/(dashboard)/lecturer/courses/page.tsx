@@ -172,7 +172,7 @@ export default function LecturerCoursesPage() {
                                     <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <ClipboardCheck size={14} color="var(--accent-purple)" /> KÌ THI
                                     </div>
-                                    <div style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>--</div>
+                                    <div style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>{course.examsCount || 0}</div>
                                 </div>
                                 <div className="stat-box">
                                     <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>

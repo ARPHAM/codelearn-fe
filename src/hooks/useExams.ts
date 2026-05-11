@@ -77,3 +77,14 @@ export const useUpcomingExams = () => {
     queryFn: () => examApi.getUpcomingExams(),
   });
 };
+
+export const useApproveExam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => examApi.approveExam(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['exam', id] });
+      queryClient.invalidateQueries({ queryKey: ['admin-exams'] });
+    }
+  });
+};

@@ -93,11 +93,11 @@ export default function StudentCoursesPage() {
                                 <div style={{ display: 'flex', gap: 16 }}>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Kì thi</div>
-                                        <div style={{ fontWeight: 700 }}>--</div>
+                                        <div style={{ fontWeight: 700 }}>{course.examsCount || 0}</div>
                                     </div>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Bài tập</div>
-                                        <div style={{ fontWeight: 700 }}>--</div>
+                                        <div style={{ fontWeight: 700 }}>{course.exercisesCount || 0}</div>
                                     </div>
                                 </div>
                                 <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

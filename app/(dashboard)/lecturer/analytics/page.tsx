@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
     },
   ];
 
-  const days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+  const days = courseData?.weeklyDays || ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
   const weeklyData = courseData?.weeklySubmissions || [0, 0, 0, 0, 0, 0, 0];
   const maxSubmissions = Math.max(...weeklyData, 0);
   const maxDayIndex = weeklyData.lastIndexOf(maxSubmissions);

@@ -24,7 +24,8 @@ import {
     Trophy,
     ArrowRight,
     Target,
-    Activity
+    Activity,
+    Edit2
 } from 'lucide-react';
 import { toast } from '@/components/ui/Toast';
 
@@ -162,7 +163,7 @@ export default function LecturerCourseDetailPage() {
                                     >
                                         <Activity size={16} />
                                     </button>
-                                    <button className="btn btn-ghost" style={{ padding: 8 }} onClick={() => router.push(`/lecturer/exams/${exam.id}/edit`)}><Settings size={16} /></button>
+                                    <button className="btn btn-ghost" style={{ padding: 8 }} onClick={() => router.push(`/lecturer/exams/${exam.id}/edit`)} title="Chỉnh sửa kỳ thi"><Edit2 size={16} /></button>
                                 </div>
                             </div>
                         ))}

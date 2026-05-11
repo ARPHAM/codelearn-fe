@@ -2,7 +2,7 @@
 
 import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useExamDetail, useExamMonitoring } from '@/src/hooks/useExams';
+import { useExamDetail, useExamMonitoring, useApproveExam } from '@/src/hooks/useExams';
 import { useCourseStudents } from '@/src/hooks/useCourses';
 import { examApi } from '@/api/exam.api';
 import { toast } from '@/components/ui/Toast';
@@ -35,6 +35,7 @@ export default function AdminExamDetailPage({ params }: PageProps) {
     const { data: monitoringData } = useExamMonitoring(id);
     const [isRegrading, setIsRegrading] = useState(false);
     const [isRecalculating, setIsRecalculating] = useState(false);
+    const approveMutation = useApproveExam();
 
     const handleRegrade = async () => {
         if (!confirm('Bạn có chắc chắn muốn chấm lại toàn bộ bài làm? Hành động này sẽ đẩy tất cả bài nộp vào hàng đợi chấm.')) return;
@@ -179,17 +180,18 @@ export default function AdminExamDetailPage({ params }: PageProps) {
                                 <button 
                                     className="btn btn-primary" 
                                     style={{ width: '100%', background: 'var(--accent-green)', color: '#000', fontWeight: 700 }}
+                                    disabled={approveMutation.isPending}
                                     onClick={async () => {
                                         try {
-                                            await examApi.approveExam(id);
+                                            await approveMutation.mutateAsync(id);
                                             toast({ type: 'success', title: 'Thành công', message: 'Kỳ thi đã được phê duyệt.' });
-                                            router.refresh();
                                         } catch (e) {
                                             toast({ type: 'error', title: 'Lỗi', message: 'Không thể duyệt kỳ thi.' });
                                         }
                                     }}
                                 >
-                                    <CheckCircle2 size={18} style={{ marginRight: 8 }} /> Duyệt đề thi này
+                                    {approveMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} style={{ marginRight: 8 }} />}
+                                    Duyệt đề thi này
                                 </button>
                             )}
                             <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', width: '100%', fontSize: 13 }} onClick={() => router.push(`/admin/courses/${exam.course.id}/users`)}>

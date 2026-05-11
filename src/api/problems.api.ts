@@ -170,3 +170,7 @@ export const rejectProblemVersion = async (versionId: string): Promise<any> => {
   const response = await axios.patch(`/problem/admin/versions/${versionId}/reject`);
   return response.data.data;
 };
+export const getLanguages = async (): Promise<any[]> => {
+  const response = await axios.get('/problem/languages');
+  return response.data.data;
+};

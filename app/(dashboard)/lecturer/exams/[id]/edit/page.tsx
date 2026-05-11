@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef, use } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { examApi } from '@/api/exam.api';
 import { bankApi } from '@/api/bank.api';
 import { getLanguages } from '@/api/problems.api';
+import { useExamDetail } from '@/src/hooks/useExams';
 import { 
     ChevronLeft, 
     Save, 
@@ -39,7 +40,7 @@ const BankSelect = ({ value, onChange, options }: any) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const selectedOption = options.find((o: any) => o.id === value);
+    const selectedOption = options.find((o: any) => String(o.id) === String(value));
 
     return (
         <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
@@ -109,18 +110,22 @@ const BankSelect = ({ value, onChange, options }: any) => {
     );
 };
 
-const toLocalISO = (dateStr: Date | string) => {
+interface PageProps {
+    params: Promise<{ id: string }>;
+}
+
+const toLocalISO = (dateStr: string) => {
     const date = new Date(dateStr);
     const tzOffset = date.getTimezoneOffset() * 60000;
     return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
 };
 
-export default function NewExamPage() {
+export default function EditExamPage({ params }: PageProps) {
+    const { id } = use(params);
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const courseId = searchParams.get('courseId');
     const queryClient = useQueryClient();
 
+    const { data: exam, isLoading: isLoadingExam } = useExamDetail(id);
     const [banks, setBanks] = useState<any[]>([]);
     const [languages, setLanguages] = useState<any[]>([]);
     const [isLoadingBanks, setIsLoadingBanks] = useState(true);
@@ -130,13 +135,45 @@ export default function NewExamPage() {
         title: '',
         startTime: '',
         duration: 90 as number | string,
-        courseId: courseId || '',
+        courseId: '',
         bankId: null as number | null,
         shuffle: true,
         isPerUserRandom: true,
         generationRules: [] as any[],
         allowedLanguageIds: [] as number[]
     });
+
+    useEffect(() => {
+        loadBanks();
+        loadLanguages();
+    }, []);
+
+    const loadLanguages = async () => {
+        try {
+            const data = await getLanguages();
+            setLanguages(data);
+        } catch (error) {
+            toast({ type: 'error', title: 'Lỗi', message: 'Không thể tải danh sách ngôn ngữ.' });
+        } finally {
+            setIsLoadingLanguages(false);
+        }
+    };
+
+    useEffect(() => {
+        if (exam) {
+            setFormData({
+                title: exam.title,
+                startTime: toLocalISO(exam.startTime),
+                duration: exam.duration,
+                courseId: exam.course?.id || '',
+                bankId: exam.bank?.id ? Number(exam.bank.id) : null,
+                shuffle: exam.shuffle ?? true,
+                isPerUserRandom: exam.isPerUserRandom ?? true,
+                generationRules: exam.generationRules || [],
+                allowedLanguageIds: exam.allowedLanguageIds || []
+            });
+        }
+    }, [exam]);
 
     const addRule = () => {
         if (!formData.bankId) {
@@ -164,27 +201,6 @@ export default function NewExamPage() {
         setFormData({ ...formData, generationRules: newRules });
     };
 
-    useEffect(() => {
-        loadBanks();
-        loadLanguages();
-        // Mặc định thời gian bắt đầu là 1 giờ sau (giờ địa phương)
-        const nextHour = new Date();
-        nextHour.setHours(nextHour.getHours() + 1);
-        nextHour.setMinutes(0);
-        setFormData(prev => ({ ...prev, startTime: toLocalISO(nextHour) }));
-    }, []);
-
-    const loadLanguages = async () => {
-        try {
-            const data = await getLanguages();
-            setLanguages(data);
-        } catch (error) {
-            toast({ type: 'error', title: 'Lỗi', message: 'Không thể tải danh sách ngôn ngữ.' });
-        } finally {
-            setIsLoadingLanguages(false);
-        }
-    };
-
     const loadBanks = async () => {
         try {
             const data = await bankApi.getBanks();
@@ -196,15 +212,16 @@ export default function NewExamPage() {
         }
     };
 
-    const createMutation = useMutation({
-        mutationFn: (data: any) => examApi.createExam(data),
+    const updateMutation = useMutation({
+        mutationFn: (data: any) => examApi.updateExam(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['exams', courseId] });
-            toast({ type: 'success', title: 'Thành công', message: 'Kì thi mới đã được tạo và đang chờ phê duyệt.' });
-            router.push(`/lecturer/courses/${courseId}`);
+            queryClient.invalidateQueries({ queryKey: ['exam', id] });
+            queryClient.invalidateQueries({ queryKey: ['exams', formData.courseId] });
+            toast({ type: 'success', title: 'Thành công', message: 'Kì thi đã được cập nhật.' });
+            router.push(`/lecturer/courses/${formData.courseId}`);
         },
         onError: (error: any) => {
-            toast({ type: 'error', title: 'Lỗi', message: error.response?.data?.message || 'Không thể tạo kì thi.' });
+            toast({ type: 'error', title: 'Lỗi', message: error.response?.data?.message || 'Không thể cập nhật kì thi.' });
         }
     });
 
@@ -220,8 +237,14 @@ export default function NewExamPage() {
             return;
         }
 
-        createMutation.mutate(formData);
+        updateMutation.mutate(formData);
     };
+
+    if (isLoadingExam) return (
+        <div style={{ height: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Loader2 className="animate-spin" size={32} color="var(--accent-cyan)" />
+        </div>
+    );
 
     return (
         <div className="page-container animate-in">
@@ -312,10 +335,10 @@ export default function NewExamPage() {
 
             <div className="page-header" style={{ marginBottom: 40, textAlign: 'center' }}>
                 <div style={{ display: 'inline-flex', padding: 16, background: 'rgba(34, 211, 238, 0.1)', borderRadius: 20, marginBottom: 20 }}>
-                    <Trophy size={32} color="var(--accent-cyan)" />
+                    <Settings size={32} color="var(--accent-cyan)" />
                 </div>
-                <h1 className="page-title">Thiết lập Kì thi mới</h1>
-                <p className="page-subtitle">Tạo cấu trúc kì thi, thời gian và các quy tắc làm bài</p>
+                <h1 className="page-title">Chỉnh sửa Kì thi</h1>
+                <p className="page-subtitle">Cập nhật cấu trúc kì thi, thời gian và các quy tắc làm bài</p>
             </div>
 
             <div className="form-card">
@@ -401,7 +424,7 @@ export default function NewExamPage() {
                                 type="number" 
                                 className="form-input"
                                 value={formData.duration}
-                                onChange={e => setFormData({...formData, duration: e.target.value === '' ? '' : (parseInt(e.target.value) || 0)})}
+                                onChange={e => setFormData({...formData, duration: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) as any})}
                             />
                         </div>
                     </div>
@@ -443,7 +466,7 @@ export default function NewExamPage() {
                                         <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, border: '1px dashed var(--border)', borderRadius: 12 }}>
                                             Chưa có quy tắc nào. Vui lòng thêm quy tắc để sinh đề.
                                         </div>
-                                    ) : formData.generationRules.map((rule, idx) => (
+                                    ) : formData.generationRules.map((rule: any, idx: number) => (
                                         <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 100px 50px', gap: 12, alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 12 }}>
                                             <div>
                                                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Độ khó</div>
@@ -491,15 +514,15 @@ export default function NewExamPage() {
                     <div style={{ marginTop: 40, padding: 20, background: 'rgba(59, 130, 246, 0.05)', borderRadius: 16, border: '1px solid rgba(59, 130, 246, 0.1)', display: 'flex', gap: 16 }}>
                         <Info size={20} color="var(--accent-blue)" style={{ flexShrink: 0 }} />
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                            Sau khi tạo, kì thi sẽ ở trạng thái <strong>CHỜ DUYỆT</strong>. Bạn cần chờ Quản trị viên hệ thống phê duyệt trước khi kì thi có thể diễn ra.
+                            Sau khi lưu thay đổi, kì thi sẽ quay lại trạng thái <strong>CHỜ DUYỆT</strong>. Bạn cần chờ Quản trị viên hệ thống phê duyệt lại.
                         </p>
                     </div>
 
                     <div style={{ marginTop: 40, display: 'flex', gap: 12 }}>
                         <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => router.back()}>Hủy bỏ</button>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 2, background: 'var(--accent-cyan)', color: '#000', fontWeight: 700 }} disabled={createMutation.isPending}>
-                            {createMutation.isPending ? <Loader2 className="animate-spin" size={20} /> : <Check size={20} style={{ marginRight: 8 }} />} 
-                            Tạo kì thi ngay
+                        <button type="submit" className="btn btn-primary" style={{ flex: 2, background: 'var(--accent-cyan)', color: '#000', fontWeight: 700 }} disabled={updateMutation.isPending}>
+                            {updateMutation.isPending ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} style={{ marginRight: 8 }} />} 
+                            Lưu thay đổi
                         </button>
                     </div>
                 </form>

@@ -3,8 +3,9 @@
 // Refactored with dynamic status monitoring from backend
 
 import { useState, useMemo, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLecturerProblems } from '@/src/hooks/useProblems';
+import ConfirmModal from '@/app/components/ui/ConfirmModal';
 import { submissionsApi, Submission } from '@/src/api/submissions.api';
 import { 
   Loader2, 
@@ -65,12 +66,29 @@ export default function AutoGraderPage() {
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
   const [isProblemModalOpen, setIsProblemModalOpen] = useState(false);
   const [problemSearch, setProblemSearch] = useState('');
+  const [debouncedProblemSearch, setDebouncedProblemSearch] = useState('');
   const [studentSearch, setStudentSearch] = useState('');
   const [debouncedStudentSearch, setDebouncedStudentSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+  const [isConfirmRegradeOpen, setIsConfirmRegradeOpen] = useState(false);
   const [activeFileIndex, setActiveFileIndex] = useState(0);
   const pageSize = 15;
+  const queryClient = useQueryClient();
+
+  const regradeMutation = useMutation({
+    mutationFn: (exerciseId: string) => submissionsApi.regradeExercise(exerciseId),
+    onSuccess: (data) => {
+      setIsConfirmRegradeOpen(false);
+      // Automatically refresh list to show QUEUED status
+      setTimeout(() => refetch(), 1000);
+    },
+    onError: (err) => {
+      console.error(err);
+      setIsConfirmRegradeOpen(false);
+      alert('Có lỗi xảy ra khi yêu cầu chấm lại.');
+    }
+  });
 
   // Debounce search
   useEffect(() => {
@@ -81,8 +99,18 @@ export default function AutoGraderPage() {
     return () => clearTimeout(handler);
   }, [studentSearch]);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedProblemSearch(problemSearch);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [problemSearch]);
+
   // 1. Fetch lecturer's problems
-  const { data: problemsData, isLoading: loadingProblems } = useLecturerProblems();
+  const { data: problemsData, isLoading: loadingProblems } = useLecturerProblems({
+    search: debouncedProblemSearch,
+    limit: 50
+  });
 
   // 2. Fetch submissions for selected exercise
   const { data: submissionsData, isLoading: loadingSubmissions, refetch, isPlaceholderData } = useQuery({
@@ -107,9 +135,7 @@ export default function AutoGraderPage() {
   const summary = submissionsData?.summary || { totalSubmissions: 0, passRate: 0, averageScore: 0 };
 
   // Filtered problems for modal
-  const filteredProblems = problemsData?.items?.filter((p: any) => 
-    p.title.toLowerCase().includes(problemSearch.toLowerCase())
-  ) || [];
+  const filteredProblems = problemsData?.items || [];
 
   const handleSelectProblem = (id: string) => {
     setSelectedExerciseId(id);
@@ -150,15 +176,27 @@ export default function AutoGraderPage() {
           </button>
           
           {selectedProblem && (
-            <button 
-                className="btn btn-primary" 
-                onClick={() => refetch()}
-                disabled={loadingSubmissions}
-                style={{ gap: 8, height: 44, padding: '0 20px', borderRadius: 12 }}
-            >
-                <RefreshCcw size={18} className={loadingSubmissions ? 'spin' : ''} />
-                <span>Cập nhật</span>
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button 
+                  className="btn btn-secondary" 
+                  onClick={() => setIsConfirmRegradeOpen(true)}
+                  disabled={loadingSubmissions || regradeMutation.isPending}
+                  style={{ gap: 8, height: 44, padding: '0 20px', borderRadius: 12, border: '1px solid rgba(251, 191, 36, 0.3)', color: 'var(--accent-yellow)' }}
+              >
+                  <Zap size={18} className={regradeMutation.isPending ? 'spin' : ''} />
+                  <span>Chấm lại hàng loạt</span>
+              </button>
+              
+              <button 
+                  className="btn btn-primary" 
+                  onClick={() => refetch()}
+                  disabled={loadingSubmissions || regradeMutation.isPending}
+                  style={{ gap: 8, height: 44, padding: '0 20px', borderRadius: 12 }}
+              >
+                  <RefreshCcw size={18} className={loadingSubmissions ? 'spin' : ''} />
+                  <span>Cập nhật</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -619,6 +657,18 @@ export default function AutoGraderPage() {
             </div>
         </div>
       )}
+
+      {/* Confirm Regrade Modal */}
+      <ConfirmModal 
+        isOpen={isConfirmRegradeOpen}
+        onClose={() => !regradeMutation.isPending && setIsConfirmRegradeOpen(false)}
+        onConfirm={() => selectedExerciseId && regradeMutation.mutate(selectedExerciseId)}
+        title="Xác nhận chấm lại hàng loạt"
+        message="Hành động này sẽ đưa toàn bộ bài nộp của thử thách này vào hàng đợi để chấm lại bằng bộ Testcase mới nhất. Mức điểm của sinh viên sẽ không bị giảm nếu điểm chấm lại thấp hơn lần nộp cũ. Bạn có chắc chắn muốn tiếp tục?"
+        type="warning"
+        confirmText="Chấm lại ngay"
+        loading={regradeMutation.isPending}
+      />
 
       <style jsx>{`
         .badge-easy { color: var(--accent-green); background: rgba(34, 197, 94, 0.1); }

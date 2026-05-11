@@ -28,7 +28,10 @@ export default function AdminExamsPage() {
   });
 
   const filteredExams = exams?.filter((exam: any) => {
-    const matchesStatus = filterStatus === 'ALL' || exam.status === filterStatus;
+    // Admin không nên thấy các bản nháp chưa gửi duyệt
+    const matchesStatus = filterStatus === 'ALL' 
+        ? exam.status !== 'DRAFT' 
+        : exam.status === filterStatus;
     const matchesSearch = exam.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   }) || [];

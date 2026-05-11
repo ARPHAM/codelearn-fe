@@ -291,7 +291,6 @@ export default function AdminProblemDetailPage({ params }: { params: Promise<{ i
                                                             scrollBeyondLastLine: false,
                                                             fontSize: 12,
                                                             padding: { top: 12, bottom: 12 },
-                                                            fontFamily: 'JetBrains Mono',
                                                             lineNumbers: 'on',
                                                             renderLineHighlight: 'all',
                                                             scrollbar: {

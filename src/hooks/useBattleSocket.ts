@@ -34,6 +34,12 @@ export const useBattleSocket = (battleId?: string) => {
       console.log('Battle started received:', data);
       setBattleData(data);
       setIsStarted(true);
+      if (data.player1 && data.player2) {
+        setProgress({
+          [data.player1]: data.player1Progress || 0,
+          [data.player2]: data.player2Progress || 0,
+        });
+      }
     });
 
     s.on('battle_timer_update', (data) => {
@@ -41,9 +47,10 @@ export const useBattleSocket = (battleId?: string) => {
     });
 
     s.on('code_progress', (data) => {
+      console.log('[BattleSocket] Progress update:', data);
       setProgress(prev => ({
         ...prev,
-        [data.userId]: data.progress // Backend sends 'progress' field
+        [data.userId]: data.progress 
       }));
     });
 
@@ -54,6 +61,11 @@ export const useBattleSocket = (battleId?: string) => {
 
     s.on('battle_end', (data) => {
       setBattleData((prev: any) => ({ ...prev, winner: data }));
+      toast({ 
+        type: 'success', 
+        title: 'Trận đấu kết thúc!', 
+        message: data.winnerId === null ? 'Trận đấu hòa.' : `Người thắng: ${data.winnerName}` 
+      });
     });
 
     return () => {

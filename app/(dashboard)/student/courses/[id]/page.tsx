@@ -117,22 +117,34 @@ export default function StudentCourseDetailPage() {
                                 </div>
 
                                 <div style={{ display: 'flex', gap: 12 }}>
-                                    {isLive && (
+                                    {/* Nút vào thi: Chỉ hiện nếu đang diễn ra (hoặc đang làm dở) và CHƯA hoàn thành */}
+                                    {exam.status === 'APPROVED' && 
+                                     new Date().getTime() >= new Date(exam.startTime).getTime() && 
+                                     new Date().getTime() <= new Date(exam.endTime).getTime() && 
+                                     exam.userAttempt?.status !== 'COMPLETED' && (
                                         <button 
                                             className="btn btn-primary" 
-                                            style={{ background: 'var(--accent-green)', borderColor: 'var(--accent-green)' }}
+                                            style={{ background: exam.userAttempt?.status === 'IN_PROGRESS' ? 'var(--accent-orange)' : 'var(--accent-green)', borderColor: exam.userAttempt?.status === 'IN_PROGRESS' ? 'var(--accent-orange)' : 'var(--accent-green)' }}
                                             onClick={() => handleStartExam(exam)}
                                             disabled={startExamMutation.isPending}
                                         >
-                                            {startExamMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Play size={14} fill="currentColor" /> Vào thi ngay</div>}
+                                            {startExamMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : 
+                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <Play size={14} fill="currentColor" /> 
+                                                {exam.userAttempt?.status === 'IN_PROGRESS' ? 'Tiếp tục thi' : 'Vào thi ngay'}
+                                             </div>
+                                            }
                                         </button>
                                     )}
-                                    {new Date().getTime() > new Date(exam.endTime).getTime() && (
+
+                                    {/* Nút xem kết quả: Hiện nếu đã hoàn thành HOẶC đã quá giờ kết thúc */}
+                                    {(exam.userAttempt?.status === 'COMPLETED' || new Date().getTime() > new Date(exam.endTime).getTime()) && (
                                         <button 
                                             className="btn btn-ghost"
+                                            style={{ border: '1px solid var(--border)' }}
                                             onClick={() => router.push(`/student/exams/${exam.id}/result`)}
                                         >
-                                            <Award size={16} /> Xem kết quả
+                                            <Award size={16} style={{ marginRight: 8 }} /> Xem kết quả
                                         </button>
                                     )}
                                 </div>

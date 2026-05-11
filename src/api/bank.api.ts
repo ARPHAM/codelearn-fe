@@ -36,8 +36,8 @@ export const bankApi = {
     return response.data.data;
   },
 
-  addItem: async (bankId: string, problemId: number, note?: string) => {
-    const response = await axios.post(`/bank/${bankId}/items`, { problemId, note });
+  addItem: async (bankId: string, problemId: number, difficulty?: string, note?: string) => {
+    const response = await axios.post(`/bank/${bankId}/items`, { problemId, difficulty, note });
     return response.data.data;
   },
 

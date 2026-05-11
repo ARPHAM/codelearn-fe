@@ -13,16 +13,11 @@ import { useStudentProblemDetail } from '@/hooks/useProblems'
 import { examApi } from '@/api/exam.api'
 import FillInTheBlankEditor from '@/components/FillInTheBlankEditor'
 import { toast } from '@/components/ui/Toast'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import ProblemUiStudent from '../../components/problem-ui-student'
 import { Bot, Send, Target, ClipboardList, Code2, Play, Upload, Edit2, Star, X, Plus, Database, Terminal, Loader2, Sparkles, ChevronLeft, ChevronRight, PanelLeftOpen, PanelRightOpen, MessageSquareText } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { aiApi } from '@/src/api/ai.api';
-
-const mono = JetBrains_Mono({
-    subsets: ['latin'],
-    weight: ['400', '500', '600'],
-})
 
 const getMonacoLanguage = (ext: string): string => {
     const mapping: Record<string, string> = {
@@ -818,7 +813,7 @@ function CodeEditorContent() {
                                 )}
                             </div>
                         </div>
-                        <div className={mono.className} style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                        <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             {currentFile ? (
                                 <FillInTheBlankEditor
                                     file={{

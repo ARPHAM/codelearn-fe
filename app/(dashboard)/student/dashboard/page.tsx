@@ -46,7 +46,7 @@ export default function StudentDashboardPage() {
                     {/* Thống kê nhanh */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
                         {[
-                            { label: 'HẠNG CỦA BẠN', value: stats?.rank || 'Bronze', icon: Trophy, color: 'var(--accent-purple)', sub: 'Dựa trên XP' },
+                            { label: 'HẠNG CỦA BẠN', value: `#${stats?.numericalRank || '--'}`, icon: Trophy, color: 'var(--accent-purple)', sub: `${stats?.tier || 'Bronze'} Tier` },
                             { label: 'BÀI TẬP ĐÃ GIẢI', value: `${stats?.solvedCount || 0}`, icon: CheckCircle2, color: 'var(--accent-green)', sub: 'Đã hoàn thành' },
                             { label: 'RATING ELO', value: stats?.rating || 1500, icon: Rocket, color: 'var(--accent-blue)', sub: 'Xếp hạng toàn cầu' },
                         ].map((stat, i) => (

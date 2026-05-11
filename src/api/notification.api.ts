@@ -21,7 +21,7 @@ export const notificationApi = {
     return response.data.data;
   },
   markAllAsRead: async () => {
-    const response = await axios.patch('/notification/read-all');
+    const response = await axios.patch('/notification/mark-all-read');
     return response.data.data;
   },
   deleteNotification: async (id: string) => {

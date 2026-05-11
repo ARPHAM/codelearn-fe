@@ -39,8 +39,8 @@ export interface SubmitCodeResponse {
 export const useRunCode = () => {
     return useMutation({
         mutationFn: async (payload: RunCodeRequest) => {
-            const { data } = await axios.post<RunCodeResponse>('/run', payload);
-            return data;
+            const { data } = await axios.post<any>('/run', payload);
+            return data.data;
         },
         onError: (error: any) => {
             toast({ type: 'error', title: 'Chạy code thất bại!', message: error.response?.data?.message || error.message });
@@ -51,14 +51,14 @@ export const useRunCode = () => {
 export const getRunResult = async (id: string) => {
     console.log("getRunResult", id);
     const { data } = await axios.get(`/run/${id}`);
-    return data;
+    return data.data;
 }
 
 export const useSubmitCode = () => {
     return useMutation({
         mutationFn: async (payload: SubmitCodeRequest) => {
-            const { data } = await axios.post<SubmitCodeResponse>('/submission', payload);
-            return data;
+            const { data } = await axios.post<any>('/submission', payload);
+            return data.data;
         },
         onSuccess: (res) => {
             toast({ type: 'success', title: 'Đã nhận bài!', message: res.message });
@@ -71,5 +71,5 @@ export const useSubmitCode = () => {
 
 export const getSubmissionResult = async (id: string) => {
     const { data } = await axios.get(`/submission/${id}/result`);
-    return data;
+    return data.data;
 }

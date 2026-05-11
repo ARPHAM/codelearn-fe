@@ -48,4 +48,9 @@ export const submissionsApi = {
     const response = await axios.patch(`/submission/${id}/score`, { score });
     return response.data.data;
   },
+
+  regradeExercise: async (exerciseId: string) => {
+    const response = await axios.post(`/exercise/${exerciseId}/submission/regrade`);
+    return response.data.data;
+  },
 };

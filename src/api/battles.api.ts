@@ -35,4 +35,14 @@ export const battlesApi = {
     const response = await axios.get(`/battle/${id}/result`);
     return response.data.data;
   },
+
+  getMyHistory: async () => {
+    const response = await axios.get(`/battle/my-history`);
+    return response.data.data;
+  },
+
+  getLobby: async (params?: { page?: number; limit?: number; search?: string }) => {
+    const response = await axios.get(`/battle/lobby`, { params });
+    return response.data.data;
+  },
 };

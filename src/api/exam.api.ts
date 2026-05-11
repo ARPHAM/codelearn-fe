@@ -9,6 +9,10 @@ export const examApi = {
     const response = await axios.post('/exam/create', data);
     return response.data.data;
   },
+  updateExam: async (id: string, data: any) => {
+    const response = await axios.patch(`/exam/${id}`, data);
+    return response.data.data;
+  },
   getExams: async (params?: any) => {
     const response = await axios.get('/exam', { params });
     return response.data.data;

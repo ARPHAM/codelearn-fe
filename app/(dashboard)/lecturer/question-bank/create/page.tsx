@@ -3,15 +3,9 @@
 import { useState, useRef } from 'react'
 
 import Editor from '@monaco-editor/react'
-import { JetBrains_Mono } from 'next/font/google'
 import { useCreateExercise } from '../_api/mutations'
 import { useRouter } from 'next/navigation'
 import { Plus, Save, Code2, Lightbulb } from 'lucide-react'
-
-const mono = JetBrains_Mono({
-    subsets: ['latin'],
-    weight: ['400', '500', '600'],
-})
 
 const languageOptions = [
     { label: "C++", value: "cpp", extension: ".cpp" },
@@ -174,7 +168,7 @@ export default function CreateQuestionPage() {
                             <Lightbulb size={14} color="var(--accent-yellow)" /> Sinh viên sẽ bắt đầu làm bài với code này khi chọn ngôn ngữ tương ứng.
                         </div>
 
-                        <div className={mono.className} style={{ flex: 1 }}>
+                        <div style={{ flex: 1 }}>
                             <Editor
                                 height="100%"
                                 language={selectedLanguage}
@@ -183,7 +177,6 @@ export default function CreateQuestionPage() {
                                 theme="vs-dark"
                                 options={{
                                     fontSize: 13,
-                                    fontFamily: 'JetBrains Mono',
                                     minimap: { enabled: false },
                                     scrollBeyondLastLine: false,
                                     automaticLayout: true,
